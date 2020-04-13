@@ -11,7 +11,6 @@ MesonToolItemSettings::MesonToolItemSettings(QWidget *parent)
     ui->setupUi(this);
     ui->mesonPathChooser->setExpectedKind(Utils::PathChooser::ExistingCommand);
     ui->mesonPathChooser->setHistoryCompleter(QLatin1String("Meson.Command.History"));
-    ui->mesonPathChooser->setCommandVersionArguments({"--version"});
     connect(ui->mesonPathChooser, &Utils::PathChooser::rawPathChanged, this, &MesonToolItemSettings::store);
     connect(ui->mesonNameLineEdit, &QLineEdit::textChanged, this, &MesonToolItemSettings::store);
 }

@@ -24,25 +24,29 @@
 ****************************************************************************/
 
 #include "mesonprojectplugin.h"
+#include "MesonProject/mesonproject.h"
+#include "MesonProject/mesonbuildstep.h"
+#include "MesonProject/mesonbuildconfiguration.h"
 #include "MesonToolSettings/mesonsettingpage.h"
-#include "MesonWrapper/mesonwrapper.h"
+#include "MesonToolSettings/mesontoolkitaspect.h"
 #include "MesonToolSettings/mesontoolsettingaccessor.h"
+#include "MesonWrapper/mesonwrapper.h"
 
-#include <coreplugin/actionmanager/actioncontainer.h>
-#include <coreplugin/actionmanager/actionmanager.h>
-#include <coreplugin/fileiconprovider.h>
-#include <coreplugin/icore.h>
+#include "coreplugin/actionmanager/actioncontainer.h"
+#include "coreplugin/actionmanager/actionmanager.h"
+#include "coreplugin/fileiconprovider.h"
+#include "coreplugin/icore.h"
 
-#include <projectexplorer/kitmanager.h>
-#include <projectexplorer/projectmanager.h>
-#include <projectexplorer/projecttree.h>
-#include <projectexplorer/runcontrol.h>
-#include <projectexplorer/target.h>
+#include "projectexplorer/kitmanager.h"
+#include "projectexplorer/projectmanager.h"
+#include "projectexplorer/projecttree.h"
+#include "projectexplorer/runcontrol.h"
+#include "projectexplorer/target.h"
 
-#include <texteditor/snippets/snippetprovider.h>
+#include "pluginmanager.h"
 
-#include <utils/parameteraction.h>
 #include <memory>
+#include <utils/parameteraction.h>
 #include <QObject>
 
 using namespace Core;
@@ -52,28 +56,40 @@ using namespace Utils;
 namespace MesonProjectManager {
 namespace Internal {
 
-class MesonProjectPluginPrivate:public QObject
+class MesonProjectPluginPrivate : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     MesonProjectPluginPrivate()
-        :m_tools{new MesonTools},
-        settingsPage{m_tools}
+        : m_tools{new MesonTools}
+        , m_settingsPage{m_tools}
+        , m_kitAspect{m_tools}
     {
         m_tools->setTools(m_settings.loadMesonTools(ICore::dialogParent()));
-        connect(ICore::instance(), &ICore::saveSettingsRequested,
-                this, &MesonProjectPluginPrivate::saveMesonTools);
+        connect(ICore::instance(),
+                &ICore::saveSettingsRequested,
+                this,
+                &MesonProjectPluginPrivate::saveMesonTools);
+        ExtensionSystem::PluginManager::addObject(m_tools.get());
     }
+
+    ~MesonProjectPluginPrivate()
+    {
+        ExtensionSystem::PluginManager::removeObject(m_tools.get());
+    }
+
 private:
     std::shared_ptr<MesonTools> m_tools;
-    MesonSettingsPage settingsPage;
+    MesonSettingsPage m_settingsPage;
     MesonToolSettingAccessor m_settings;
+    MesonToolKitAspect m_kitAspect;
+    MesonBuildStepFactory m_buildStepFactory;
+    MesonBuildConfigurationFactory m_buildConfigurationFactory;
     Q_SLOT void saveMesonTools()
     {
         m_settings.saveMesonTools(m_tools->tools(), ICore::dialogParent());
     }
 };
-
 
 MesonProjectPlugin::~MesonProjectPlugin()
 {
@@ -85,21 +101,15 @@ bool MesonProjectPlugin::initialize(const QStringList & /*arguments*/, QString *
     Q_UNUSED(errorMessage)
 
     d = new MesonProjectPluginPrivate;
-
+    ProjectManager::registerProjectType<MesonProject>(Constants::Project::MIMETYPE);
     return true;
 }
 
-void MesonProjectPlugin::extensionsInitialized()
-{
+void MesonProjectPlugin::extensionsInitialized() {}
 
-}
+void MesonProjectPlugin::updateContextActions() {}
 
-void MesonProjectPlugin::updateContextActions()
-{
-
-}
-
-} // Internal
-} // MesonProjectManager
+} // namespace Internal
+} // namespace MesonProjectManager
 
 #include "mesonprojectplugin.moc"

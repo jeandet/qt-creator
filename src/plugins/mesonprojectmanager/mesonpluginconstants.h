@@ -28,6 +28,12 @@
 namespace MesonProjectManager {
 namespace Constants {
 
+const char MIMETYPE[]  = "text/x-meson";
+namespace Project {
+    const char MIMETYPE[]  = "text/x-meson-project";
+    const char ID[] = "MesonProjectManager.MesonProject";
+}
+
 // Settings page
 const char MESON_SETTINGSPAGE_ID[] = "Z.Meson";
 
@@ -50,6 +56,11 @@ const char MESON_INTRO_INSTALLED[] = "intro-installed.json";
 const char MESON_INTRO_PROJECTINFO[] = "intro-projectinfo.json";
 const char MESON_INTRO_TARGETS[] = "intro-targets.json";
 const char MESON_INTRO_TESTS[] = "intro-tests.json";
+
+const char MESON_TOOL_MANAGER[] = "MesonProjectManager.Tools";
+
+const char MESON_BUILD_STEP_ID[] = "MesonProjectManager.BuildStep";
+const char MESON_BUILD_CONFIG_ID[] = "MesonProjectManager.BuildConfiguration";
 
 } // namespace Constants
 } // namespace MesonProjectManager

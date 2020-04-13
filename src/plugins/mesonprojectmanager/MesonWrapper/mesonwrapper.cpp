@@ -24,9 +24,9 @@
 ****************************************************************************/
 
 #include "mesonwrapper.h"
-#include <QUuid>
-#include "utils/qtcassert.h"
 #include "utils/algorithm.h"
+#include "utils/qtcassert.h"
+#include <QUuid>
 
 namespace {
 template<typename First>
@@ -49,14 +49,18 @@ QStringList options_cat(const T &... args)
     impl_option_cat(result, args...);
     return result;
 }
-bool run_meson(const QString &meson_exe, const QStringList &options)
+bool run_meson(const QString &meson_exe, const QStringList &options, QIODevice *output = nullptr)
 {
     QProcess process;
     process.start(meson_exe, options);
     if (!process.waitForFinished())
         return false;
+    if (output) {
+        output->write(process.readAllStandardOutput());
+    }
     return process.exitCode() == 0;
 }
+
 } // namespace
 namespace MesonProjectManager {
 namespace Internal {
@@ -81,7 +85,7 @@ MesonWrapper::MesonWrapper(const QString &name,
     , m_exe{path}
     , m_name{name}
 {
-     QTC_ASSERT(m_id.isValid(), m_id = Core::Id::fromString(QUuid::createUuid().toString()));
+    QTC_ASSERT(m_id.isValid(), m_id = Core::Id::fromString(QUuid::createUuid().toString()));
 }
 
 bool MesonWrapper::setup(const Utils::FilePath &sourceDirectory,
@@ -102,6 +106,13 @@ bool MesonWrapper::configure(const Utils::FilePath &sourceDirectory,
     if (!isSetup(buildDirectory))
         return setup(sourceDirectory, buildDirectory, options);
     return run_meson(m_exe.toString(), options_cat("configure", options, buildDirectory.toString()));
+}
+
+bool MesonWrapper::introspect(const Utils::FilePath &sourceDirectory, QIODevice *introFile) const
+{
+    return run_meson(m_exe.toString(),
+                     {"introspect","-a", QString("%1/meson.build").arg(sourceDirectory.toString())},
+                     introFile);
 }
 
 void MesonWrapper::setExe(const Utils::FilePath &newExe)
@@ -125,8 +136,9 @@ void MesonTools::updateItem(const Core::Id &itemId, const QString &name, const U
 
 void MesonTools::removeItem(const Core::Id &id)
 {
-   auto item= Utils::take(m_tools,[&id](const auto& item){return item.id()==id;} );
-   QTC_ASSERT(item,return);
+    auto item = Utils::take(m_tools, [&id](const auto &item) { return item.id() == id; });
+    QTC_ASSERT(item, return );
+    emit mesonToolRemoved(*item);
 }
 
 } // namespace Internal

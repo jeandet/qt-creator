@@ -105,9 +105,12 @@ void MesoneToolTreeItem::update(const QString &name, const Utils::FilePath &exe)
 {
     m_unsavedChanges = true;
     m_name = name;
-    m_executable = exe;
-    self_check();
-    update_tooltip();
+    if(exe!=m_executable)
+    {
+        m_executable = exe;
+        self_check();
+        update_tooltip();
+    }
 }
 
 void MesoneToolTreeItem::self_check()

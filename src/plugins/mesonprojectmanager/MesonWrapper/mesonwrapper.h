@@ -32,7 +32,9 @@
 #include <tuple>
 #include <QFile>
 #include <QFileInfo>
+#include <QObject>
 #include <QProcess>
+#include <QTemporaryFile>
 
 namespace {
 
@@ -121,6 +123,8 @@ public:
                    const Utils::FilePath &buildDirectory,
                    const QStringList &options = {}) const;
 
+    bool introspect(const Utils::FilePath &sourceDirectory, QIODevice* introFile) const;
+
     inline const auto &version() const noexcept { return m_version; };
     inline auto isValid() const noexcept { return m_isValid; };
     inline auto autoDetected() const noexcept { return m_autoDetected; };
@@ -136,8 +140,7 @@ public:
 
     inline static MesonVersion read_version(const Utils::FilePath &mesonPath)
     {
-        if(mesonPath.toFileInfo().isExecutable())
-        {
+        if (mesonPath.toFileInfo().isExecutable()) {
             QProcess process;
             process.start(mesonPath.toString(), {"--version"});
             if (process.waitForFinished()) {
@@ -175,12 +178,17 @@ inline MesonWrapper fromVariantMap(const QVariantMap &data)
                         data[Constants::Settings::AUTO_DETECTED_KEY].toBool());
 }
 
-class MesonTools
+class MesonTools : public QObject
 {
+    Q_OBJECT
 public:
-    MesonTools() = default;
+    MesonTools() { setObjectName(Constants::MESON_TOOL_MANAGER); }
     ~MesonTools() {}
-    inline void addTool(MesonWrapper &&meson) { m_tools.emplace_back(std::move(meson)); }
+    inline void addTool(MesonWrapper &&meson)
+    {
+        m_tools.emplace_back(std::move(meson));
+        emit mesonToolAdded(m_tools.back());
+    }
     inline void setTools(std::vector<MesonWrapper> &&mesonTools)
     {
         std::swap(m_tools, mesonTools);
@@ -204,6 +212,29 @@ public:
 
     void updateItem(const Core::Id &itemId, const QString &name, const Utils::FilePath &exe);
     void removeItem(const Core::Id &id);
+
+    Utils::optional<const MesonWrapper &> autoDetected()
+    {
+        const auto tool = std::find_if(std::cbegin(m_tools),
+                                       std::cend(m_tools),
+                                       [](const MesonWrapper &tool) { return tool.autoDetected(); });
+        if (tool != std::cend(m_tools))
+            return *tool;
+        return Utils::nullopt;
+    }
+
+    Utils::optional<const MesonWrapper &> tool(const Core::Id &id) const
+    {
+        const auto tool = std::find_if(std::cbegin(m_tools),
+                                       std::cend(m_tools),
+                                       [&id](const MesonWrapper &tool) { return tool.id() == id; });
+        if (tool != std::cend(m_tools))
+            return *tool;
+        return Utils::nullopt;
+    }
+
+    Q_SIGNAL void mesonToolAdded(const MesonWrapper &tool);
+    Q_SIGNAL void mesonToolRemoved(const MesonWrapper &tool);
 
 private:
     std::vector<MesonWrapper> m_tools;

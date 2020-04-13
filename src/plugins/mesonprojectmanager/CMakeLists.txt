@@ -19,10 +19,34 @@ add_qtc_plugin(MesonProjectManager
   MesonToolSettings/mesontoolitemsettings.h
   MesonToolSettings/mesontoolitemsettings.ui
   MesonToolSettings/mesontoolitemsettings.cpp
+  MesonToolSettings/mesontoolkitaspect.h
+  MesonToolSettings/mesontoolkitaspect.cpp
+  MesonToolSettings/mesontoolkitaspectwidget.h
+  MesonToolSettings/mesontoolkitaspectwidget.cpp
   MesonWrapper/mesonwrapper.cpp
   MesonWrapper/mesonwrapper.h
   MesonInfoParser/mesoninfoparser.h
   MesonInfoParser/mesoninfoparser.cpp
+  MesonProject/mesonproject.h
+  MesonProject/mesonproject.cpp
+  MesonProject/mesonprojectimporter.h
+  MesonProject/mesonprojectimporter.cpp
+  MesonProject/mesonbuildsystem.h
+  MesonProject/mesonbuildsystem.cpp
+  MesonProject/mesonprojectparser.h
+  MesonProject/mesonprojectparser.cpp
+  MesonProject/mesonbuildconfiguration.h
+  MesonProject/mesonbuildconfiguration.cpp
+  MesonProject/mesonbuildstep.h
+  MesonProject/mesonbuildstep.cpp
+  MesonProject/mesonbuildstepconfigwidget.ui
+  MesonProject/mesonbuildstepconfigwidget.h
+  MesonProject/mesonbuildstepconfigwidget.cpp
+  MesonProject/mesonbuildsettingswidget.ui
+  MesonProject/mesonbuildsettingswidget.h
+  MesonProject/mesonbuildsettingswidget.cpp
+  MesonProject/buidoptionsmodel.h
+  MesonProject/buidoptionsmodel.cpp
 )
 
 if(WITH_TESTS)
