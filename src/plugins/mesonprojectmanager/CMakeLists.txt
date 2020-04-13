@@ -47,6 +47,10 @@ add_qtc_plugin(MesonProjectManager
   MesonProject/mesonbuildsettingswidget.cpp
   MesonProject/buidoptionsmodel.h
   MesonProject/buidoptionsmodel.cpp
+  MesonProject/mesonprocess.h
+  MesonProject/mesonprocess.cpp
+  MesonProject/mesonoutputparser.h
+  MesonProject/mesonoutputparser.cpp
 )
 
 if(WITH_TESTS)

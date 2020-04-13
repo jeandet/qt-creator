@@ -33,14 +33,20 @@
 
 namespace MesonProjectManager {
 namespace Internal {
+class MesonBuildConfiguration;
 class MesonBuildSystem final:public ProjectExplorer::BuildSystem
 {
 public:
     MesonBuildSystem(ProjectExplorer::Target *target, MesonTools* tools);
+    MesonBuildSystem(MesonBuildConfiguration* bc, MesonTools* tools);
 
     void triggerParsing() final;
 
+    inline const BuildOptionsList& buildOptions()const {return m_parser.buildOptions();}
+    inline const TargetsList& targets()const {return m_parser.targets();}
+
 private:
+    void init();
     void parseProject();
     ProjectExplorer::BuildSystem::ParseGuard m_parseGuard;
     MesonProjectParser m_parser;

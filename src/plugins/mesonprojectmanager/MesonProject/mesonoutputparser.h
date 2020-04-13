@@ -23,40 +23,18 @@
 **
 ****************************************************************************/
 #pragma once
-#include "MesonWrapper/mesonwrapper.h"
-#include "MesonInfoParser/mesoninfoparser.h"
-#include "mesonprocess.h"
+#include "projectexplorer/ioutputparser.h"
 #include <QObject>
-#include <QFuture>
-#include <QFutureWatcher>
-#include "utils/fileutils.h"
-#include "projectexplorer/buildsystem.h"
 
 namespace MesonProjectManager {
 namespace Internal {
-class MesonProjectParser: public QObject
+class MesonOutputParser final: public ProjectExplorer::IOutputParser
 {
     Q_OBJECT
-    enum class IntroDataType{file,stdo};
 public:
-    MesonProjectParser(const MesonWrapper& meson);
-    Q_SLOT void configure(const Utils::FilePath& sourcePath, const Utils::FilePath& buildPath, const QStringList& args ,const Utils::Environment& env);
-    Q_SLOT void parse(const Utils::FilePath& sourcePath, const Utils::FilePath& buildPath);
-    Q_SLOT void parse(const Utils::FilePath& sourcePath);
-
-    Q_SIGNAL void parsingCompleted(bool success);
-
-    inline const BuildOptionsList& buildOptions()const {return m_buildOptions;};
-    inline const TargetsList& targets()const {return m_targets;}
-private:
-    void startParser();
-    void getParserResults(MesonInfoParser &parser);
-    BuildOptionsList m_buildOptions;
-    TargetsList m_targets;
-    MesonProcess m_process;
-    MesonWrapper m_meson;
-    IntroDataType m_introType;
-    Utils::FilePath m_buildDir;
+    MesonOutputParser();
+    // TODO  this has to parse meson process output, and post Tasks for each error/warning
 };
+
 } // namespace Internal
 } // namespace MesonProjectManager

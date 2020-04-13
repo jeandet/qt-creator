@@ -33,22 +33,22 @@ Utils::TreeItem *makeBuildOptionTreeItem(BuildOption *buildOption)
     switch (buildOption->type()) {
     case BuildOption::Type::integer:
         return new BuildOptionTreeItem<IntegerBuildOption>(
-            dynamic_cast<IntegerBuildOption *>(buildOption));
+            static_cast<IntegerBuildOption *>(buildOption));
     case BuildOption::Type::string:
         return new BuildOptionTreeItem<StringBuildOption>(
-            dynamic_cast<StringBuildOption *>(buildOption));
+            static_cast<StringBuildOption *>(buildOption));
     case BuildOption::Type::feature:
         return new BuildOptionTreeItem<FeatureBuildOption>(
-            dynamic_cast<FeatureBuildOption *>(buildOption));
+            static_cast<FeatureBuildOption *>(buildOption));
     case BuildOption::Type::combo:
         return new BuildOptionTreeItem<ComboBuildOption>(
-            dynamic_cast<ComboBuildOption *>(buildOption));
+            static_cast<ComboBuildOption *>(buildOption));
     case BuildOption::Type::array:
         return new BuildOptionTreeItem<ArrayBuildOption>(
-            dynamic_cast<ArrayBuildOption *>(buildOption));
+            static_cast<ArrayBuildOption *>(buildOption));
     default:
         return new BuildOptionTreeItem<UnknownBuildOption>(
-            dynamic_cast<UnknownBuildOption *>(buildOption));
+            static_cast<UnknownBuildOption *>(buildOption));
     }
 }
 
@@ -58,8 +58,8 @@ BuidOptionsModel::BuidOptionsModel(QObject *parent)
 
 inline void sortPerSubprojectAndSection(
     const BuildOptionsList &options,
-    QMap<QString, QMap<QString, std::vector<BuildOption *>>> subprojectOptions,
-    QMap<QString, std::vector<BuildOption *>> perSectionOptions)
+    QMap<QString, QMap<QString, std::vector<BuildOption *>>>& subprojectOptions,
+    QMap<QString, std::vector<BuildOption *>>& perSectionOptions)
 {
     std::for_each(std::cbegin(options),
                   std::cend(options),
@@ -74,11 +74,11 @@ inline void sortPerSubprojectAndSection(
                   });
 }
 
-void makeTree(Utils::TreeItem *root, QMap<QString, std::vector<BuildOption *>> perSectioOptions)
+void makeTree(Utils::TreeItem *root,const QMap<QString, std::vector<BuildOption *>>& perSectioOptions)
 {
     std::for_each(perSectioOptions.constKeyValueBegin(),
                   perSectioOptions.constKeyValueEnd(),
-                  [root](const QPair<QString, std::vector<BuildOption *>> kv) {
+                  [root](const std::pair<QString, std::vector<BuildOption *>> kv) {
                       const auto &options = kv.second;
                       auto sectionNode = new Utils::StaticTreeItem(kv.first);
                       std::for_each(std::cbegin(options),
@@ -93,7 +93,12 @@ void makeTree(Utils::TreeItem *root, QMap<QString, std::vector<BuildOption *>> p
 void BuidOptionsModel::setConfiguration(const BuildOptionsList &options)
 {
     clear();
-    m_options = options;
+    m_options = decltype (m_options)();
+    std::for_each(std::cbegin(options),
+                  std::cend(options),
+                  [this](const BuildOptionsList::value_type &option) {
+                      m_options.emplace_back(option->copy());
+                  });
     {
         QMap<QString, QMap<QString, std::vector<BuildOption *>>> subprojectOptions;
         QMap<QString, std::vector<BuildOption *>> perSectionOptions;
@@ -102,7 +107,8 @@ void BuidOptionsModel::setConfiguration(const BuildOptionsList &options)
         makeTree(root, perSectionOptions);
         std::for_each(subprojectOptions.constKeyValueBegin(),
                       subprojectOptions.constKeyValueEnd(),
-                      [root](const QPair<QString, QMap<QString, std::vector<BuildOption *>>> kv) {
+                      [root](
+                          const std::pair<QString, QMap<QString, std::vector<BuildOption *>>> kv) {
                           auto subProject = new Utils::StaticTreeItem{kv.first};
                           makeTree(subProject, kv.second);
                           root->appendChild(subProject);

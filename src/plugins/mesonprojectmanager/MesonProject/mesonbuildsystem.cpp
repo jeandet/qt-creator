@@ -25,23 +25,25 @@
 
 #include "mesonbuildsystem.h"
 #include "MesonToolSettings/mesontoolkitaspect.h"
+#include "mesonbuildconfiguration.h"
 #include "projectexplorer/buildconfiguration.h"
 
 namespace MesonProjectManager {
 namespace Internal {
 MesonBuildSystem::MesonBuildSystem(ProjectExplorer::Target *target, MesonTools *tools)
     : ProjectExplorer::BuildSystem{target}
+    , m_parser{*tools->autoDetected()}
     , m_tools{tools}
 {
-    connect(project(),
-            &ProjectExplorer::Project::projectFileIsDirty,
-            this,
-            &MesonBuildSystem::parseProject);
-    connect(&m_parser, &MesonProjectParser::parsingCompleted, this, [this] {
-        m_parseGuard.markAsSuccess();
-        m_parseGuard = {};
-        emitBuildSystemUpdated();
-    });
+    init();
+}
+
+MesonBuildSystem::MesonBuildSystem(MesonBuildConfiguration *bc, MesonTools *tools)
+    : ProjectExplorer::BuildSystem{bc}
+    , m_parser{*tools->autoDetected()}
+    , m_tools{tools}
+{
+    init();
 }
 
 void MesonBuildSystem::triggerParsing()
@@ -49,12 +51,30 @@ void MesonBuildSystem::triggerParsing()
     parseProject();
 }
 
+void MesonBuildSystem::init()
+{
+    connect(project(),
+            &ProjectExplorer::Project::projectFileIsDirty,
+            this,
+            &MesonBuildSystem::parseProject);
+    connect(&m_parser, &MesonProjectParser::parsingCompleted, this, [this] (bool success){
+        m_parseGuard.markAsSuccess();
+        m_parseGuard = {};
+        emitBuildSystemUpdated();
+    });
+}
+
 void MesonBuildSystem::parseProject()
 {
     m_parseGuard = guardParsingRun();
     const auto &srcDir = projectDirectory();
-    const auto &buildDir = buildConfiguration()->buildDirectory();
-    m_parser.parse(srcDir, buildDir);
+    auto bc = buildConfiguration();
+    if (bc) {
+        const auto &buildDir = bc->buildDirectory();
+        m_parser.parse(srcDir, buildDir);
+    } else {
+        m_parser.parse(srcDir);
+    }
 }
 } // namespace Internal
 } // namespace MesonProjectManager

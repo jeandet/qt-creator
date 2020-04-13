@@ -49,17 +49,6 @@ QStringList options_cat(const T &... args)
     impl_option_cat(result, args...);
     return result;
 }
-bool run_meson(const QString &meson_exe, const QStringList &options, QIODevice *output = nullptr)
-{
-    QProcess process;
-    process.start(meson_exe, options);
-    if (!process.waitForFinished())
-        return false;
-    if (output) {
-        output->write(process.readAllStandardOutput());
-    }
-    return process.exitCode() == 0;
-}
 
 } // namespace
 namespace MesonProjectManager {
@@ -88,31 +77,40 @@ MesonWrapper::MesonWrapper(const QString &name,
     QTC_ASSERT(m_id.isValid(), m_id = Core::Id::fromString(QUuid::createUuid().toString()));
 }
 
-bool MesonWrapper::setup(const Utils::FilePath &sourceDirectory,
+MesonCommand MesonWrapper::setup(const Utils::FilePath &sourceDirectory,
                          const Utils::FilePath &buildDirectory,
                          const QStringList &options) const
 {
-    return run_meson(m_exe.toString(),
+    return {m_exe,buildDirectory, options_cat("setup",
+                                 options,
+                                 sourceDirectory.toString(),
+                                 buildDirectory.toString())};
+    /*run_meson(m_exe.toString(),
                      options_cat("setup",
                                  options,
                                  sourceDirectory.toString(),
-                                 buildDirectory.toString()));
+                                 buildDirectory.toString()));*/
 }
 
-bool MesonWrapper::configure(const Utils::FilePath &sourceDirectory,
+MesonCommand MesonWrapper::configure(const Utils::FilePath &sourceDirectory,
                              const Utils::FilePath &buildDirectory,
                              const QStringList &options) const
 {
-    if (!isSetup(buildDirectory))
+    /*if (!isSetup(buildDirectory))
         return setup(sourceDirectory, buildDirectory, options);
     return run_meson(m_exe.toString(), options_cat("configure", options, buildDirectory.toString()));
+    */
+    if (!isSetup(buildDirectory))
+    return setup(sourceDirectory,buildDirectory,options);
+    return {m_exe, buildDirectory,options_cat("configure", options, buildDirectory.toString())};
 }
 
-bool MesonWrapper::introspect(const Utils::FilePath &sourceDirectory, QIODevice *introFile) const
+MesonCommand MesonWrapper::introspect(const Utils::FilePath &sourceDirectory) const
 {
-    return run_meson(m_exe.toString(),
+    /*return run_meson(m_exe.toString(),
                      {"introspect","-a", QString("%1/meson.build").arg(sourceDirectory.toString())},
-                     introFile);
+                     introFile);*/
+    return {m_exe, sourceDirectory,{"introspect","-a", QString("%1/meson.build").arg(sourceDirectory.toString())} };
 }
 
 void MesonWrapper::setExe(const Utils::FilePath &newExe)

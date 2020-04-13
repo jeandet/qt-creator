@@ -50,8 +50,8 @@ private slots:
         QFETCH(QString, src_dir);
         QTemporaryDir build_dir{"test-meson"};
         const auto meson = MesonWrapper("name", *findMeson());
-        QVERIFY(meson.setup(Utils::FilePath::fromString(src_dir),
-                            Utils::FilePath::fromString(build_dir.path())));
+        QVERIFY(run_meson(meson.setup(Utils::FilePath::fromString(src_dir),
+                                      Utils::FilePath::fromString(build_dir.path()))));
         QVERIFY(
             Utils::FilePath::fromString(build_dir.path() + "/meson-info/meson-info.json").exists());
         QVERIFY(isSetup(Utils::FilePath::fromString(build_dir.path())));
@@ -71,10 +71,10 @@ private slots:
         QFETCH(QString, src_dir);
         QTemporaryDir build_dir{"test-meson"};
         const auto meson = MesonWrapper("name", *findMeson());
-        QVERIFY(meson.setup(Utils::FilePath::fromString(src_dir),
-                            Utils::FilePath::fromString(build_dir.path())));
-        QVERIFY(meson.configure(Utils::FilePath::fromString(src_dir),
-                                Utils::FilePath::fromString(build_dir.path())));
+        QVERIFY(run_meson(meson.setup(Utils::FilePath::fromString(src_dir),
+                                      Utils::FilePath::fromString(build_dir.path()))));
+        QVERIFY(run_meson(meson.configure(Utils::FilePath::fromString(src_dir),
+                                          Utils::FilePath::fromString(build_dir.path()))));
     }
 
     void cleanupTestCase() {}

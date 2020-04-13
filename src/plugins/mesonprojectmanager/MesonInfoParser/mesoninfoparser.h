@@ -43,6 +43,7 @@ struct BuildOption
     virtual QString value() const = 0;
     virtual void setValue(const QString &) = 0;
     virtual Type type() const =0;
+    virtual BuildOption* copy()const =0;
     BuildOption(const QString &name, const QString &section, const QString &description)
         : name{name.contains(":") ? name.split(":").last() : name}
         , section{section}
@@ -57,6 +58,7 @@ struct IntegerBuildOption  : BuildOption
     QString value() const override{ return QString::number(m_currentValue); }
     void setValue(const QString &value) override{ m_currentValue = value.toInt(); }
     Type type() const override {return Type::integer;}
+    BuildOption* copy()const override {return new IntegerBuildOption{*this};}
     IntegerBuildOption(const QString &name,
                        const QString &section,
                        const QString &description,
@@ -74,6 +76,7 @@ struct StringBuildOption  : BuildOption
     QString value() const override{ return m_currentValue; }
     void setValue(const QString &value) override { m_currentValue = value; }
     Type type() const override {return Type::string;}
+    BuildOption* copy()const override {return new StringBuildOption{*this};}
     StringBuildOption(const QString &name,
                       const QString &section,
                       const QString &description,
@@ -111,6 +114,7 @@ struct FeatureBuildOption : BuildOption
             m_currentValue = state_t::Auto;
     }
     Type type() const override {return Type::feature;}
+    BuildOption* copy()const override {return new FeatureBuildOption{*this};}
     FeatureBuildOption(const QString &name,
                        const QString &section,
                        const QString &description,
@@ -134,6 +138,7 @@ struct ComboBuildOption  : BuildOption
             m_currentValue = value;
     }
     Type type() const override {return Type::combo;}
+    BuildOption* copy()const override {return new ComboBuildOption{*this};}
     ComboBuildOption(const QString &name,
                      const QString &section,
                      const QString &description,
@@ -153,6 +158,7 @@ struct ArrayBuildOption  : BuildOption
     QString value() const override{ return m_currentValue.join(":"); }
     void setValue(const QString &value) override{ m_currentValue = value.split(":"); }
     Type type() const override {return Type::array;}
+    BuildOption* copy()const override {return new ArrayBuildOption{*this};}
     ArrayBuildOption(const QString &name,
                      const QString &section,
                      const QString &description,
@@ -181,6 +187,7 @@ struct BooleanBuildOption  : BuildOption
             m_currentValue = false;
     }
     Type type() const override {return Type::boolean;}
+    BuildOption* copy()const override {return new BooleanBuildOption{*this};}
     BooleanBuildOption(const QString &name,
                        const QString &section,
                        const QString &description,
@@ -199,6 +206,7 @@ struct UnknownBuildOption  : BuildOption
     QString value() const override { return "Unknown option"; }
     void setValue(const QString &) override{}
     Type type() const override {return Type::unknown;}
+    BuildOption* copy()const override {return new UnknownBuildOption{*this};}
     UnknownBuildOption(const QString &name, const QString &section, const QString &description)
         : BuildOption(name, section, description)
     {}

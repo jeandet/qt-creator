@@ -22,41 +22,12 @@
 ** be met: https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ****************************************************************************/
-#pragma once
-#include "MesonWrapper/mesonwrapper.h"
-#include "MesonInfoParser/mesoninfoparser.h"
-#include "mesonprocess.h"
-#include <QObject>
-#include <QFuture>
-#include <QFutureWatcher>
-#include "utils/fileutils.h"
-#include "projectexplorer/buildsystem.h"
-
+#include "mesonoutputparser.h"
 namespace MesonProjectManager {
 namespace Internal {
-class MesonProjectParser: public QObject
+MesonOutputParser::MesonOutputParser()
 {
-    Q_OBJECT
-    enum class IntroDataType{file,stdo};
-public:
-    MesonProjectParser(const MesonWrapper& meson);
-    Q_SLOT void configure(const Utils::FilePath& sourcePath, const Utils::FilePath& buildPath, const QStringList& args ,const Utils::Environment& env);
-    Q_SLOT void parse(const Utils::FilePath& sourcePath, const Utils::FilePath& buildPath);
-    Q_SLOT void parse(const Utils::FilePath& sourcePath);
 
-    Q_SIGNAL void parsingCompleted(bool success);
-
-    inline const BuildOptionsList& buildOptions()const {return m_buildOptions;};
-    inline const TargetsList& targets()const {return m_targets;}
-private:
-    void startParser();
-    void getParserResults(MesonInfoParser &parser);
-    BuildOptionsList m_buildOptions;
-    TargetsList m_targets;
-    MesonProcess m_process;
-    MesonWrapper m_meson;
-    IntroDataType m_introType;
-    Utils::FilePath m_buildDir;
-};
+}
 } // namespace Internal
 } // namespace MesonProjectManager

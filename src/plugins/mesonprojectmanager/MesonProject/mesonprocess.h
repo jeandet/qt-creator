@@ -23,40 +23,49 @@
 **
 ****************************************************************************/
 #pragma once
-#include "MesonWrapper/mesonwrapper.h"
-#include "MesonInfoParser/mesoninfoparser.h"
-#include "mesonprocess.h"
 #include <QObject>
-#include <QFuture>
-#include <QFutureWatcher>
-#include "utils/fileutils.h"
-#include "projectexplorer/buildsystem.h"
+#include <QProcess>
+#include <QFutureInterface>
+#include <QTimer>
+#include <QElapsedTimer>
+#include <QBuffer>
+#include <QByteArray>
+#include <memory>
+#include "MesonWrapper/mesonwrapper.h"
+#include "utils/qtcprocess.h"
+#include "projectexplorer/ioutputparser.h"
 
 namespace MesonProjectManager {
 namespace Internal {
-class MesonProjectParser: public QObject
+class MesonProcess final: public QObject
 {
     Q_OBJECT
-    enum class IntroDataType{file,stdo};
 public:
-    MesonProjectParser(const MesonWrapper& meson);
-    Q_SLOT void configure(const Utils::FilePath& sourcePath, const Utils::FilePath& buildPath, const QStringList& args ,const Utils::Environment& env);
-    Q_SLOT void parse(const Utils::FilePath& sourcePath, const Utils::FilePath& buildPath);
-    Q_SLOT void parse(const Utils::FilePath& sourcePath);
+    MesonProcess();
+    void run(const MesonCommand& command, const Utils::Environment env);
 
-    Q_SIGNAL void parsingCompleted(bool success);
+    QProcess::ProcessState state() const;
 
-    inline const BuildOptionsList& buildOptions()const {return m_buildOptions;};
-    inline const TargetsList& targets()const {return m_targets;}
+    // Update progress information:
+    void reportCanceled();
+    void reportFinished();
+    void setProgressValue(int p);
+
+    const QByteArray& stdo()const {return m_stdo;}
+signals:
+    void started();
+    void finished(int exitCode, QProcess::ExitStatus exitStatus);
+    void readyReadStandardOutput(const QByteArray& data);
 private:
-    void startParser();
-    void getParserResults(MesonInfoParser &parser);
-    BuildOptionsList m_buildOptions;
-    TargetsList m_targets;
-    MesonProcess m_process;
-    MesonWrapper m_meson;
-    IntroDataType m_introType;
-    Utils::FilePath m_buildDir;
+    void handleProcessFinished(int code, QProcess::ExitStatus status);
+    void checkForCancelled();
+    Utils::QtcProcess m_process;
+    ProjectExplorer::IOutputParser m_parser;
+    QFutureInterface<void> m_future;
+    bool m_processWasCanceled = false;
+    QTimer m_cancelTimer;
+    QElapsedTimer m_elapsed;
+    QByteArray m_stdo;
 };
 } // namespace Internal
 } // namespace MesonProjectManager

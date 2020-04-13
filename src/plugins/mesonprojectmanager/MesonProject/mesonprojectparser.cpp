@@ -23,15 +23,68 @@
 **
 ****************************************************************************/
 #include "mesonprojectparser.h"
+#include "MesonInfoParser/mesoninfoparser.h"
+#include <QTextStream>
 
 namespace MesonProjectManager {
 namespace Internal {
-MesonProjectParser::MesonProjectParser() {}
-
-void MesonProjectParser::parse(const Utils::FilePath &sourcePath,
-                               const Utils::FilePath &buildPath)
+MesonProjectParser::MesonProjectParser(const MesonWrapper &meson)
+    : m_meson{meson}
 {
+    connect(&m_process,
+            &MesonProcess::finished,
+            [this](int exitCode, QProcess::ExitStatus exitStatus) {
+                if (exitCode == 0 && exitStatus == QProcess::NormalExit)
+                    startParser();
+            });
+}
 
+void MesonProjectParser::configure(const Utils::FilePath &sourcePath,
+                                   const Utils::FilePath &buildPath,
+                                   const QStringList &args,
+                                   const Utils::Environment &env)
+{
+    m_introType = IntroDataType::file;
+    m_buildDir = buildPath;
+    m_process.run(m_meson.configure(sourcePath, buildPath, args), env);
+}
+
+void MesonProjectParser::parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath)
+{
+    if (!isSetup(buildPath)) {
+        parse(sourcePath);
+    } else {
+        startParser();
+    }
+}
+
+void MesonProjectParser::parse(const Utils::FilePath &sourcePath)
+{
+    m_introType = IntroDataType::stdo;
+    m_process.run(m_meson.introspect(sourcePath), Utils::Environment{});
+}
+void MesonProjectParser::startParser()
+{
+    if(m_introType==IntroDataType::file)
+    {
+        MesonInfoParser parser(m_buildDir.toString());
+        getParserResults(parser);
+    }
+    else
+    {
+        QBuffer info;
+        info.open(QIODevice::ReadWrite|QIODevice::Text);
+        info.write(m_process.stdo());
+        MesonInfoParser parser(&info);
+        getParserResults(parser);
+    }
+    emit parsingCompleted(true);
+}
+
+void MesonProjectParser::getParserResults(MesonInfoParser &parser)
+{
+    m_targets = parser.targets();
+    m_buildOptions = parser.buildOptions();
 }
 } // namespace Internal
 } // namespace MesonProjectManager

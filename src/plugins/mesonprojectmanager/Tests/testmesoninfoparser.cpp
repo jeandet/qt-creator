@@ -26,8 +26,8 @@ static const QList<projectData> projectList{
     { \
         QTemporaryDir _build_dir{"test-meson"}; \
         const auto _meson = MesonWrapper("name", *findMeson()); \
-        _meson.setup(Utils::FilePath::fromString(_source_dir), \
-                     Utils::FilePath::fromString(_build_dir.path())); \
+        run_meson(_meson.setup(Utils::FilePath::fromString(_source_dir), \
+                     Utils::FilePath::fromString(_build_dir.path()))); \
         QVERIFY(isSetup(Utils::FilePath::fromString(_build_dir.path()))); \
         __VA_ARGS__ \
     }
@@ -37,7 +37,7 @@ static const QList<projectData> projectList{
         QTemporaryFile _intro_file; \
         _intro_file.open(); \
         const auto _meson = MesonWrapper("name", *findMeson()); \
-        _meson.introspect(Utils::FilePath::fromString(_source_dir), &_intro_file); \
+        run_meson(_meson.introspect(Utils::FilePath::fromString(_source_dir)), &_intro_file); \
         __VA_ARGS__ \
     }
 

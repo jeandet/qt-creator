@@ -91,6 +91,7 @@ inline ProjectExplorer::BuildConfiguration::BuildType buildType(MesonBuildType t
 
 class MesonBuildConfiguration final : public ProjectExplorer::BuildConfiguration
 {
+    Q_OBJECT
 public:
     MesonBuildConfiguration(ProjectExplorer::Target *target, Core::Id id);
 
@@ -98,6 +99,7 @@ public:
                                          const ProjectExplorer::Kit *k,
                                          const QString &bcName,
                                          ProjectExplorer::BuildConfiguration::BuildType buildType);
+
 private:
     ProjectExplorer::NamedWidget *createConfigWidget() final;
 

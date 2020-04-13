@@ -36,6 +36,18 @@
 #include <QProcess>
 #include <QTemporaryFile>
 
+
+
+namespace MesonProjectManager {
+namespace Internal {
+struct MesonCommand
+{
+    Utils::FilePath exe;
+    Utils::FilePath workDir;
+    QStringList arguments;
+};
+
+
 namespace {
 
 template<typename File_t>
@@ -51,8 +63,18 @@ bool containsFiles(const QString &path, const File_t &file, const T &... files)
 }
 } // namespace
 
-namespace MesonProjectManager {
-namespace Internal {
+inline bool run_meson(const MesonCommand& command, QIODevice *output = nullptr)
+{
+    QProcess process;
+    process.setWorkingDirectory(command.workDir.toString());
+    process.start(command.exe.toString(), command.arguments);
+    if (!process.waitForFinished())
+        return false;
+    if (output) {
+        output->write(process.readAllStandardOutput());
+    }
+    return process.exitCode() == 0;
+}
 
 inline Utils::optional<Utils::FilePath> findMeson()
 {
@@ -116,14 +138,14 @@ public:
     MesonWrapper &operator=(const MesonWrapper &other) = default;
     MesonWrapper &operator=(MesonWrapper &&other) = default;
 
-    bool setup(const Utils::FilePath &sourceDirectory,
+    MesonCommand setup(const Utils::FilePath &sourceDirectory,
                const Utils::FilePath &buildDirectory,
                const QStringList &options = {}) const;
-    bool configure(const Utils::FilePath &sourceDirectory,
+    MesonCommand configure(const Utils::FilePath &sourceDirectory,
                    const Utils::FilePath &buildDirectory,
                    const QStringList &options = {}) const;
 
-    bool introspect(const Utils::FilePath &sourceDirectory, QIODevice* introFile) const;
+    MesonCommand introspect(const Utils::FilePath &sourceDirectory) const;
 
     inline const auto &version() const noexcept { return m_version; };
     inline auto isValid() const noexcept { return m_isValid; };

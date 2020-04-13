@@ -22,19 +22,20 @@
 ** be met: https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ****************************************************************************/
-#include "utils/detailswidget.h"
 #include "projectexplorer/buildaspects.h"
 #include "projectexplorer/projectconfiguration.h"
+#include "utils/detailswidget.h"
 
-#include "mesonbuildsettingswidget.h"
-#include "ui_mesonbuildsettingswidget.h"
 #include "mesonbuildconfiguration.h"
+#include "mesonbuildsettingswidget.h"
+#include "mesonbuildsystem.h"
+#include "ui_mesonbuildsettingswidget.h"
 
 namespace MesonProjectManager {
 namespace Internal {
-MesonBuildSettingsWidget::MesonBuildSettingsWidget(MesonBuildConfiguration *buildCfg) :
-    ProjectExplorer::NamedWidget{tr("Meson")},
-    ui{new Ui::MesonBuildSettingsWidget}
+MesonBuildSettingsWidget::MesonBuildSettingsWidget(MesonBuildConfiguration *buildCfg)
+    : ProjectExplorer::NamedWidget{tr("Meson")}
+    , ui{new Ui::MesonBuildSettingsWidget}
 {
     ui->setupUi(this);
     ui->container->setState(Utils::DetailsWidget::NoSummary);
@@ -43,8 +44,15 @@ MesonBuildSettingsWidget::MesonBuildSettingsWidget(MesonBuildConfiguration *buil
     auto buildDirAspect = buildCfg->buildDirectoryAspect();
     buildDirAspect->addToLayout(buildDirWBuilder);
     ui->optionsFilterLineEdit->setFiltering(true);
-    ui->optionsTreeView->sortByColumn(0,Qt::AscendingOrder);
+    ui->optionsTreeView->sortByColumn(0, Qt::AscendingOrder);
     ui->optionsTreeView->setModel(&m_optionsModel);
+
+    MesonBuildSystem *bs = static_cast<MesonBuildSystem *>(buildCfg->buildSystem());
+    connect(bs, &MesonBuildSystem::parsingFinished, [this, bs](bool success) {
+        if (success)
+            m_optionsModel.setConfiguration(bs->buildOptions());
+    });
+    bs->triggerParsing();
 }
 
 MesonBuildSettingsWidget::~MesonBuildSettingsWidget()

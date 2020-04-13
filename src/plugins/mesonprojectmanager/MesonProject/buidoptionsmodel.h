@@ -42,13 +42,14 @@ private:
 };
 
 template<typename option_type>
-class BuildOptionTreeItem final : public Utils::TreeItem, private option_type
+class BuildOptionTreeItem final : public Utils::TreeItem
 {
     option_type* m_option;
 public:
     BuildOptionTreeItem(option_type *option)
-        : m_option{option}
-    {}
+    {
+        m_option=option;
+    }
     QVariant data(int column, int role) const final
     {
         // TODO
