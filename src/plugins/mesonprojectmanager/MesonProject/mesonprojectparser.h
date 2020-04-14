@@ -57,6 +57,7 @@ private:
     MesonWrapper m_meson;
     IntroDataType m_introType;
     Utils::FilePath m_buildDir;
+    bool m_configuring;
 };
 } // namespace Internal
 } // namespace MesonProjectManager

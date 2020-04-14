@@ -81,25 +81,16 @@ MesonCommand MesonWrapper::setup(const Utils::FilePath &sourceDirectory,
                          const Utils::FilePath &buildDirectory,
                          const QStringList &options) const
 {
-    return {m_exe,buildDirectory, options_cat("setup",
+    return {m_exe,sourceDirectory, options_cat("setup",
                                  options,
                                  sourceDirectory.toString(),
                                  buildDirectory.toString())};
-    /*run_meson(m_exe.toString(),
-                     options_cat("setup",
-                                 options,
-                                 sourceDirectory.toString(),
-                                 buildDirectory.toString()));*/
 }
 
 MesonCommand MesonWrapper::configure(const Utils::FilePath &sourceDirectory,
                              const Utils::FilePath &buildDirectory,
                              const QStringList &options) const
 {
-    /*if (!isSetup(buildDirectory))
-        return setup(sourceDirectory, buildDirectory, options);
-    return run_meson(m_exe.toString(), options_cat("configure", options, buildDirectory.toString()));
-    */
     if (!isSetup(buildDirectory))
     return setup(sourceDirectory,buildDirectory,options);
     return {m_exe, buildDirectory,options_cat("configure", options, buildDirectory.toString())};
@@ -107,9 +98,6 @@ MesonCommand MesonWrapper::configure(const Utils::FilePath &sourceDirectory,
 
 MesonCommand MesonWrapper::introspect(const Utils::FilePath &sourceDirectory) const
 {
-    /*return run_meson(m_exe.toString(),
-                     {"introspect","-a", QString("%1/meson.build").arg(sourceDirectory.toString())},
-                     introFile);*/
     return {m_exe, sourceDirectory,{"introspect","-a", QString("%1/meson.build").arg(sourceDirectory.toString())} };
 }
 

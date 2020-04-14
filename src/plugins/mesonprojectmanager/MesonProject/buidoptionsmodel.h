@@ -24,12 +24,64 @@
 ****************************************************************************/
 #pragma once
 #include "MesonInfoParser/mesoninfoparser.h"
+#include <utils/qtcassert.h>
 #include <utils/treemodel.h>
 #include <QAbstractTableModel>
+#include <QFont>
+#include <QItemEditorFactory>
 #include <QObject>
+#include <QStyledItemDelegate>
 
 namespace MesonProjectManager {
 namespace Internal {
+
+class CancellableOption
+{
+    std::unique_ptr<BuildOption> m_savedValue;
+    std::unique_ptr<BuildOption> m_currentValue;
+    bool m_changed = false;
+
+public:
+    CancellableOption(BuildOption *option)
+        : m_savedValue{option->copy()}
+        , m_currentValue{option->copy()}
+    {}
+    inline bool hasChanged() { return m_changed; }
+    inline void apply()
+    {
+        if(m_changed)
+        {
+            m_savedValue = std::unique_ptr<BuildOption>(m_currentValue->copy());
+            m_changed = false;
+        }
+    }
+    inline void cancel()
+    {
+        if(m_changed)
+        {
+            m_currentValue = std::unique_ptr<BuildOption>(m_savedValue->copy());
+            m_changed = false;
+        }
+    }
+
+    inline const QString& name()const{return m_currentValue->name;}
+    inline const QString& section()const{return m_currentValue->section;}
+    inline const QString& description()const {return m_currentValue->description;}
+    inline const Utils::optional<QString>& subproject() const{return m_currentValue->subproject;};
+    inline QVariant value() { return m_currentValue->value(); }
+    inline QString valueStr() { return m_currentValue->valueStr(); };
+    inline QString savedValueStr() { return m_savedValue->valueStr(); };
+    inline void setValue(const QVariant &v)
+    {
+        if(v.toString()!=valueStr())
+        {
+            m_currentValue->setValue(v);
+            m_changed = v.toString()!=m_savedValue->valueStr();
+        }
+    }
+    inline BuildOption::Type type() { return m_currentValue->type(); }
+};
+using CancellableOptionsList = std::vector<std::unique_ptr<CancellableOption>>;
 class BuidOptionsModel final : public Utils::TreeModel<>
 {
     Q_OBJECT
@@ -37,37 +89,83 @@ public:
     explicit BuidOptionsModel(QObject *parent = nullptr);
 
     void setConfiguration(const BuildOptionsList &options);
+
 private:
-    BuildOptionsList m_options;
+    CancellableOptionsList m_options;
 };
 
-template<typename option_type>
+
 class BuildOptionTreeItem final : public Utils::TreeItem
 {
-    option_type* m_option;
+    CancellableOption *m_option;
+
 public:
-    BuildOptionTreeItem(option_type *option)
-    {
-        m_option=option;
-    }
+    BuildOptionTreeItem(CancellableOption *option) { m_option = option; }
     QVariant data(int column, int role) const final
     {
-        // TODO
+        QTC_ASSERT(column >= 0 && column < 2, return {});
+        QTC_ASSERT(m_option, return {});
+        if (column == 0) {
+            switch (role) {
+            case Qt::DisplayRole:
+                return m_option->name();
+            case Qt::ToolTipRole:
+                return toolTip();
+            case Qt::FontRole:
+                QFont font;
+                font.setBold(m_option->hasChanged());
+                return font;
+            }
+        }
+        if (column == 1) {
+            switch (role) {
+            case Qt::DisplayRole:
+                return m_option->valueStr();
+            case Qt::EditRole:
+                return m_option->value();
+            case Qt::ToolTipRole:
+                if(m_option->hasChanged())
+                    return QString("%1<br>Initial value was <b>%2</b>").arg(toolTip()).arg(m_option->savedValueStr());
+                else
+                    return toolTip();
+            case Qt::FontRole:
+                QFont font;
+                font.setBold(m_option->hasChanged());
+                return font;
+            }
+        }
         return {};
     };
     bool setData(int column, const QVariant &data, int role) final
     {
-        // TODO
-        return false;
+        Q_UNUSED(role);
+        QTC_ASSERT(column == 1, return false);
+        m_option->setValue(data);
+        return true;
     };
     Qt::ItemFlags flags(int column) const final
     {
-        // TODO
+        QTC_ASSERT(column >= 0 && column < 2, return Qt::NoItemFlags);
+        if (column == 0)
+            return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+        if (column == 1)
+            return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
         return Qt::NoItemFlags;
     }
+    BuildOption::Type type() const { return m_option->type(); }
+    QString toolTip() const { return m_option->description(); }
+};
 
-    QString toolTip() const { return m_option->description; }
-    QString currentValue() const { return m_option->value(); }
+class BuildOptionDelegate final : public QStyledItemDelegate
+{
+    Q_OBJECT
+    static QWidget *makeWidget(QWidget *parent, const QVariant &data);
+
+public:
+    BuildOptionDelegate(QObject *parent = nullptr);
+    QWidget *createEditor(QWidget *parent,
+                          const QStyleOptionViewItem &option,
+                          const QModelIndex &index) const override;
 };
 
 } // namespace Internal

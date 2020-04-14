@@ -30,12 +30,15 @@ namespace MesonProjectManager {
 namespace Internal {
 MesonProjectParser::MesonProjectParser(const MesonWrapper &meson)
     : m_meson{meson}
+    ,m_configuring{false}
 {
     connect(&m_process,
             &MesonProcess::finished,
             [this](int exitCode, QProcess::ExitStatus exitStatus) {
                 if (exitCode == 0 && exitStatus == QProcess::NormalExit)
+                {
                     startParser();
+                }
             });
 }
 
@@ -61,7 +64,7 @@ void MesonProjectParser::parse(const Utils::FilePath &sourcePath, const Utils::F
 void MesonProjectParser::parse(const Utils::FilePath &sourcePath)
 {
     m_introType = IntroDataType::stdo;
-    m_process.run(m_meson.introspect(sourcePath), Utils::Environment{});
+    m_process.run(m_meson.introspect(sourcePath), Utils::Environment{},true);
 }
 void MesonProjectParser::startParser()
 {

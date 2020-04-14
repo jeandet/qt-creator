@@ -48,7 +48,7 @@
         <number>0</number>
        </property>
        <property name="bottomMargin">
-        <number>9</number>
+        <number>0</number>
        </property>
        <item>
         <widget class="QWidget" name="buildDirWidget" native="true"/>
@@ -84,6 +84,13 @@
        </item>
       </layout>
      </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="configureButton">
+     <property name="text">
+      <string>Configure</string>
+     </property>
     </widget>
    </item>
   </layout>

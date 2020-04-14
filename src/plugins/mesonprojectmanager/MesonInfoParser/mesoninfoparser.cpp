@@ -103,33 +103,33 @@ public:
             return std::make_unique<StringBuildOption>(option["name"].toString(),
                                                        option["section"].toString(),
                                                        option["description"].toString(),
-                                                       option["value"].toString());
+                                                       option["value"]);
         if (type == "boolean")
             return std::make_unique<BooleanBuildOption>(option["name"].toString(),
                                                         option["section"].toString(),
                                                         option["description"].toString(),
-                                                        option["value"].toString());
+                                                        option["value"]);
         if (type == "combo")
             return std::make_unique<ComboBuildOption>(option["name"].toString(),
                                                       option["section"].toString(),
                                                       option["description"].toString(),
                                                       option["choices"].toVariant().toStringList(),
-                                                      option["value"].toString());
+                                                      option["value"]);
         if (type == "integer")
             return std::make_unique<IntegerBuildOption>(option["name"].toString(),
                                                         option["section"].toString(),
                                                         option["description"].toString(),
-                                                        option["value"].toInt());
+                                                        option["value"]);
         if (type == "array")
             return std::make_unique<ArrayBuildOption>(option["name"].toString(),
                                                       option["section"].toString(),
                                                       option["description"].toString(),
-                                                      option["value"].toVariant().toStringList());
+                                                      option["value"]);
         if (type == "feature")
             return std::make_unique<FeatureBuildOption>(option["name"].toString(),
                                                         option["section"].toString(),
                                                         option["description"].toString(),
-                                                        option["value"].toString());
+                                                        option["value"]);
         return std::make_unique<UnknownBuildOption>(option["name"].toString(),
                                                     option["section"].toString(),
                                                     option["description"].toString());

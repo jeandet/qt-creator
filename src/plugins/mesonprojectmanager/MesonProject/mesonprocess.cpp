@@ -35,36 +35,29 @@ MesonProcess::MesonProcess()
 {
     connect(&m_cancelTimer, &QTimer::timeout, this, &MesonProcess::checkForCancelled);
     m_cancelTimer.setInterval(500);
-    connect(&m_process,
-            QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this,
-            &MesonProcess::handleProcessFinished);
 }
 
-void MesonProcess::run(const MesonCommand &command, const Utils::Environment env)
+void MesonProcess::run(const MesonCommand &command, const Utils::Environment env, bool captureStdo)
 {
     m_stdo.clear();
     m_processWasCanceled = false;
     m_future = decltype(m_future){};
-    m_cancelTimer.start();
-    m_process.setWorkingDirectory(command.workDir.toString());
-    m_process.setEnvironment(env);
-    Utils::CommandLine commandLine(command.exe, command.arguments);
+    setupProcess(command, env, captureStdo);
     ProjectExplorer::TaskHub::clearTasks(ProjectExplorer::Constants::TASK_CATEGORY_BUILDSYSTEM);
     m_future.setProgressRange(0, 1);
     Core::ProgressManager::addTimedTask(m_future,
                                         tr("Configuring \"%1\"").arg("TODO Set project Name"),
                                         "Meson.Configure",
                                         10);
-    m_process.setCommand(commandLine);
     emit started();
     m_elapsed.start();
-    m_process.start();
+    m_process->start();
+    m_cancelTimer.start(500);
 }
 
 QProcess::ProcessState MesonProcess::state() const
 {
-    return m_process.state();
+    return m_process->state();
 }
 
 void MesonProcess::reportCanceled()
@@ -87,15 +80,15 @@ void MesonProcess::handleProcessFinished(int code, QProcess::ExitStatus status)
     // TODO process output
     m_cancelTimer.stop();
     if (status == QProcess::NormalExit) {
-        m_stdo = m_process.readAllStandardOutput();
+        m_stdo = m_process->readAllStandardOutput();
         m_future.setProgressValue(1);
         m_future.reportFinished();
     } else {
         m_future.reportCanceled();
     }
-    emit finished(code, status);
     const QString elapsedTime = Utils::formatElapsedTime(m_elapsed.elapsed());
     Core::MessageManager::write(elapsedTime);
+    emit finished(code, status);
 }
 
 void MesonProcess::checkForCancelled()
@@ -103,8 +96,51 @@ void MesonProcess::checkForCancelled()
     if (m_future.isCanceled()) {
         m_cancelTimer.stop();
         m_processWasCanceled = true;
-        m_process.close();
+        m_process->close();
     }
+}
+
+void MesonProcess::setupProcess(const MesonCommand &command,
+                                const Utils::Environment env,
+                                bool captureStdo)
+{
+    if (m_process)
+        disconnect(m_process.get());
+    m_process = std::make_unique<Utils::QtcProcess>();
+    connect(m_process.get(),
+            QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            this,
+            &MesonProcess::handleProcessFinished);
+
+    if (!captureStdo)
+        connect(m_process.get(),
+                &QProcess::readyReadStandardOutput,
+                this,
+                &MesonProcess::processStandardOutput);
+
+    connect(m_process.get(),
+            &QProcess::readyReadStandardError,
+            this,
+            &MesonProcess::processStandardError);
+
+    m_process->setWorkingDirectory(command.workDir.toString());
+    m_process->setEnvironment(env);
+    Utils::CommandLine commandLine(command.exe, command.arguments);
+    m_process->setCommand(commandLine);
+}
+
+void MesonProcess::processStandardOutput()
+{
+    QTC_ASSERT(m_process, return );
+
+    Core::MessageManager::write(QString::fromLatin1(m_process->readAllStandardOutput()));
+}
+
+void MesonProcess::processStandardError()
+{
+    QTC_ASSERT(m_process, return );
+
+    Core::MessageManager::write(QString::fromLatin1(m_process->readAllStandardError()));
 }
 } // namespace Internal
 } // namespace MesonProjectManager

@@ -45,6 +45,8 @@ public:
     inline const BuildOptionsList& buildOptions()const {return m_parser.buildOptions();}
     inline const TargetsList& targets()const {return m_parser.targets();}
 
+    void configure(const Utils::FilePath &buildDir, const QStringList& arguments);
+
 private:
     void init();
     void parseProject();

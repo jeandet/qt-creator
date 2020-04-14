@@ -24,8 +24,11 @@
 ****************************************************************************/
 #pragma once
 #include <QWidget>
+#include <QTimer>
 #include <projectexplorer/namedwidget.h>
 #include "buidoptionsmodel.h"
+#include "utils/categorysortfiltermodel.h"
+#include "utils/progressindicator.h"
 
 namespace Ui {
 class MesonBuildSettingsWidget;
@@ -45,6 +48,9 @@ public:
 private:
     Ui::MesonBuildSettingsWidget *ui;
     BuidOptionsModel m_optionsModel;
+    Utils::CategorySortFilterModel m_optionsFilter;
+    Utils::ProgressIndicator m_progressIndicator;
+    QTimer m_showProgressTimer;
 };
 
 } // namespace Internal
