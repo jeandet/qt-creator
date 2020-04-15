@@ -51,6 +51,11 @@ add_qtc_plugin(MesonProjectManager
   MesonProject/mesonprocess.cpp
   MesonProject/mesonoutputparser.h
   MesonProject/mesonoutputparser.cpp
+  MesonProject/ProjectTree/projecttree.h
+  MesonProject/ProjectTree/projecttree.cpp
+  MesonProject/ProjectTree/mesonprojectnodes.h
+  MesonProject/ProjectTree/mesonprojectnodes.cpp
+  ressources.qrc
 )
 
 if(WITH_TESTS)

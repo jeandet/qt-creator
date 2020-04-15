@@ -22,38 +22,44 @@
 ** be met: https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ****************************************************************************/
-#pragma once
-#include "mesonprojectparser.h"
-#include "MesonWrapper/mesonwrapper.h"
 
-#include <projectexplorer/buildsystem.h>
-#include <projectexplorer/target.h>
-#include <cpptools/cppprojectupdater.h>
-#include <utils/filesystemwatcher.h>
-
+#include "mesonprojectnodes.h"
 namespace MesonProjectManager {
 namespace Internal {
-class MesonBuildConfiguration;
-class MesonBuildSystem final:public ProjectExplorer::BuildSystem
+
+
+MesonProjectNode::MesonProjectNode(const Utils::FilePath &directory)
+    :ProjectExplorer::ProjectNode{directory}
 {
-public:
-    MesonBuildSystem(ProjectExplorer::Target *target, MesonTools* tools);
-    MesonBuildSystem(MesonBuildConfiguration* bc, MesonTools* tools);
+    static const auto MesonIcon = QIcon(":/mesonproject/icons/meson_logo.png");
+    setPriority(Node::DefaultProjectPriority + 1000);
+    setIcon(MesonIcon);
+    setListInProject(false);
+}
 
-    void triggerParsing() final;
 
-    inline const BuildOptionsList& buildOptions()const {return m_parser.buildOptions();}
-    inline const TargetsList& targets()const {return m_parser.targets();}
+MesonFileNode::MesonFileNode(const Utils::FilePath &file)
+    :ProjectExplorer::ProjectNode{file}
+{
+    static const auto MesonFolderIcon = Core::FileIconProvider::directoryIcon(":/mesonproject/icons/meson_logo.png");
+    setIcon(MesonFolderIcon);
+    setListInProject(true);
+}
 
-    void configure(const Utils::FilePath &buildDir, const QStringList& arguments);
+MesonTargetNode::MesonTargetNode(const Utils::FilePath &directory, const QString &name)
+    :ProjectExplorer::ProjectNode{directory}
+    ,m_name{name}
+{
+    setPriority(Node::DefaultProjectPriority + 900);
+    setIcon(QIcon(":/projectexplorer/images/build.png"));
+    setListInProject(false);
+    setProductType(ProjectExplorer::ProductType::Other);
+}
 
-private:
-    void init();
-    void parseProject();
-    ProjectExplorer::BuildSystem::ParseGuard m_parseGuard;
-    MesonProjectParser m_parser;
-    MesonTools* m_tools;
-    CppTools::CppProjectUpdater m_cppCodeModelUpdater;
-};
+void MesonTargetNode::build()
+{
+    // TODO
+}
+
 } // namespace Internal
 } // namespace MesonProjectManager

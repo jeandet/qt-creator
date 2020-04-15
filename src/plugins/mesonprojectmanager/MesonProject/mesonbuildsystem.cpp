@@ -53,11 +53,11 @@ void MesonBuildSystem::triggerParsing()
 
 void MesonBuildSystem::configure(const Utils::FilePath &buildDir, const QStringList &arguments)
 {
-    if(m_parseGuard.guardsProject())
+    if (m_parseGuard.guardsProject())
         return;
     m_parseGuard = guardParsingRun();
     const auto &srcDir = projectDirectory();
-    m_parser.configure(srcDir,buildDir,arguments,Utils::Environment{});
+    m_parser.configure(srcDir, buildDir, arguments, Utils::Environment{});
 }
 
 void MesonBuildSystem::init()
@@ -66,16 +66,18 @@ void MesonBuildSystem::init()
             &ProjectExplorer::Project::projectFileIsDirty,
             this,
             &MesonBuildSystem::parseProject);
-    connect(&m_parser, &MesonProjectParser::parsingCompleted, this, [this] (bool success){
+    connect(&m_parser, &MesonProjectParser::parsingCompleted, this, [this](bool success) {
         m_parseGuard.markAsSuccess();
         m_parseGuard = {};
+        setRootProjectNode(m_parser.takeProjectNode());
+        //m_cppCodeModelUpdater.update({p, kitInfo, cmakeBuildConfiguration()->environment(), rpps});
         emitBuildSystemUpdated();
     });
 }
 
 void MesonBuildSystem::parseProject()
 {
-    if(m_parseGuard.guardsProject())
+    if (m_parseGuard.guardsProject())
         return;
     m_parseGuard = guardParsingRun();
     const auto &srcDir = projectDirectory();

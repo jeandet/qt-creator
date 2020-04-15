@@ -23,40 +23,61 @@
 **
 ****************************************************************************/
 #pragma once
-#include "MesonWrapper/mesonwrapper.h"
 #include "MesonInfoParser/mesoninfoparser.h"
+#include "MesonWrapper/mesonwrapper.h"
+#include "ProjectTree/mesonprojectnodes.h"
 #include "mesonprocess.h"
-#include <QObject>
+#include <projectexplorer/buildsystem.h>
+#include <projectexplorer/rawprojectpart.h>
+#include <utils/fileutils.h>
 #include <QFuture>
 #include <QFutureWatcher>
-#include "utils/fileutils.h"
-#include "projectexplorer/buildsystem.h"
+#include <QObject>
 
 namespace MesonProjectManager {
 namespace Internal {
-class MesonProjectParser: public QObject
+class MesonProjectParser : public QObject
 {
     Q_OBJECT
-    enum class IntroDataType{file,stdo};
+    enum class IntroDataType { file, stdo };
+    struct ParserData
+    {
+        TargetsList targets;
+        BuildOptionsList buildOptions;
+        ProjectExplorer::RawProjectParts projectParts;
+        std::unique_ptr<MesonProjectNode> rootNode;
+    };
+
 public:
-    MesonProjectParser(const MesonWrapper& meson);
-    Q_SLOT void configure(const Utils::FilePath& sourcePath, const Utils::FilePath& buildPath, const QStringList& args ,const Utils::Environment& env);
-    Q_SLOT void parse(const Utils::FilePath& sourcePath, const Utils::FilePath& buildPath);
-    Q_SLOT void parse(const Utils::FilePath& sourcePath);
+    MesonProjectParser(const MesonWrapper &meson);
+    Q_SLOT void configure(const Utils::FilePath &sourcePath,
+                          const Utils::FilePath &buildPath,
+                          const QStringList &args,
+                          const Utils::Environment &env);
+    Q_SLOT void parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath);
+    Q_SLOT void parse(const Utils::FilePath &sourcePath);
 
     Q_SIGNAL void parsingCompleted(bool success);
 
-    inline const BuildOptionsList& buildOptions()const {return m_buildOptions;};
-    inline const TargetsList& targets()const {return m_targets;}
+    std::unique_ptr<MesonProjectNode> takeProjectNode() { return std::move(m_rootNode); }
+
+    inline const BuildOptionsList &buildOptions() const { return m_buildOptions; };
+    inline const TargetsList &targets() const { return m_targets; }
+
 private:
     void startParser();
-    void getParserResults(MesonInfoParser &parser);
-    BuildOptionsList m_buildOptions;
+    static ParserData *extractParserResults(const Utils::FilePath &srcDir, MesonInfoParser &parser);
+    static ProjectExplorer::RawProjectParts buildProjectParts(const TargetsList& targets);
+    BuildOptionsList m_buildOptions; // <- Project build settings
     TargetsList m_targets;
+    ProjectExplorer::RawProjectParts m_projectParts; // <- code model data
+    std::unique_ptr<MesonProjectNode> m_rootNode;    // <- project tree root node
     MesonProcess m_process;
     MesonWrapper m_meson;
     IntroDataType m_introType;
     Utils::FilePath m_buildDir;
+    Utils::FilePath m_srcDir;
+    QFuture<ParserData *> m_parserResult;
     bool m_configuring;
 };
 } // namespace Internal

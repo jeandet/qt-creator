@@ -23,37 +23,36 @@
 **
 ****************************************************************************/
 #pragma once
-#include "mesonprojectparser.h"
-#include "MesonWrapper/mesonwrapper.h"
-
-#include <projectexplorer/buildsystem.h>
-#include <projectexplorer/target.h>
-#include <cpptools/cppprojectupdater.h>
-#include <utils/filesystemwatcher.h>
+#include <coreplugin/fileiconprovider.h>
+#include <projectexplorer/projectnodes.h>
+#include <utils/fileutils.h>
 
 namespace MesonProjectManager {
 namespace Internal {
-class MesonBuildConfiguration;
-class MesonBuildSystem final:public ProjectExplorer::BuildSystem
+class MesonProjectNode : public ProjectExplorer::ProjectNode
 {
 public:
-    MesonBuildSystem(ProjectExplorer::Target *target, MesonTools* tools);
-    MesonBuildSystem(MesonBuildConfiguration* bc, MesonTools* tools);
+    MesonProjectNode(const Utils::FilePath &directory);
+};
 
-    void triggerParsing() final;
-
-    inline const BuildOptionsList& buildOptions()const {return m_parser.buildOptions();}
-    inline const TargetsList& targets()const {return m_parser.targets();}
-
-    void configure(const Utils::FilePath &buildDir, const QStringList& arguments);
-
+class MesonTargetNode : public ProjectExplorer::ProjectNode
+{
+public:
+    MesonTargetNode(const Utils::FilePath &directory, const QString& name);
+    void build() override;
 private:
-    void init();
-    void parseProject();
-    ProjectExplorer::BuildSystem::ParseGuard m_parseGuard;
-    MesonProjectParser m_parser;
-    MesonTools* m_tools;
-    CppTools::CppProjectUpdater m_cppCodeModelUpdater;
+    QString m_name;
+};
+
+class MesonFileNode : public ProjectExplorer::ProjectNode
+{
+public:
+    MesonFileNode(const Utils::FilePath &file);
+    bool showInSimpleTree() const final { return false; }
+    Utils::optional<Utils::FilePath> visibleAfterAddFileAction() const override
+    {
+        return filePath().pathAppended("meson.build");
+    }
 };
 } // namespace Internal
 } // namespace MesonProjectManager

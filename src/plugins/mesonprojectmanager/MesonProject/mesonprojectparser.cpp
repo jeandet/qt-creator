@@ -24,19 +24,22 @@
 ****************************************************************************/
 #include "mesonprojectparser.h"
 #include "MesonInfoParser/mesoninfoparser.h"
+#include "ProjectTree/mesonprojectnodes.h"
+#include "ProjectTree/projecttree.h"
+#include <projectexplorer/projectexplorer.h>
+#include <utils/runextensions.h>
 #include <QTextStream>
 
 namespace MesonProjectManager {
 namespace Internal {
 MesonProjectParser::MesonProjectParser(const MesonWrapper &meson)
     : m_meson{meson}
-    ,m_configuring{false}
+    , m_configuring{false}
 {
     connect(&m_process,
             &MesonProcess::finished,
             [this](int exitCode, QProcess::ExitStatus exitStatus) {
-                if (exitCode == 0 && exitStatus == QProcess::NormalExit)
-                {
+                if (exitCode == 0 && exitStatus == QProcess::NormalExit) {
                     startParser();
                 }
             });
@@ -54,6 +57,7 @@ void MesonProjectParser::configure(const Utils::FilePath &sourcePath,
 
 void MesonProjectParser::parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath)
 {
+    m_srcDir = sourcePath;
     if (!isSetup(buildPath)) {
         parse(sourcePath);
     } else {
@@ -63,31 +67,54 @@ void MesonProjectParser::parse(const Utils::FilePath &sourcePath, const Utils::F
 
 void MesonProjectParser::parse(const Utils::FilePath &sourcePath)
 {
+    m_srcDir = sourcePath;
     m_introType = IntroDataType::stdo;
-    m_process.run(m_meson.introspect(sourcePath), Utils::Environment{},true);
+    m_process.run(m_meson.introspect(sourcePath), Utils::Environment{}, true);
 }
 void MesonProjectParser::startParser()
 {
-    if(m_introType==IntroDataType::file)
-    {
-        MesonInfoParser parser(m_buildDir.toString());
-        getParserResults(parser);
-    }
-    else
-    {
-        QBuffer info;
-        info.open(QIODevice::ReadWrite|QIODevice::Text);
-        info.write(m_process.stdo());
-        MesonInfoParser parser(&info);
-        getParserResults(parser);
-    }
-    emit parsingCompleted(true);
+    m_parserResult = Utils::runAsync(ProjectExplorer::ProjectExplorerPlugin::sharedThreadPool(),
+                                     [process = &m_process,
+                                      introType = m_introType,
+                                      buildDir = m_buildDir.toString(),
+                                      srcDir = m_srcDir]() {
+                                         if (introType == IntroDataType::file) {
+                                             MesonInfoParser parser(buildDir);
+                                             return extractParserResults(srcDir, parser);
+                                         } else {
+                                             MesonInfoParser parser(process->stdo());
+                                             return extractParserResults(srcDir, parser);
+                                         }
+                                     });
+
+    Utils::onFinished(m_parserResult, this, [this](const QFuture<ParserData *> &data) {
+        auto parserData = data.result();
+        m_targets = std::move(parserData->targets);
+        m_buildOptions = std::move(parserData->buildOptions);
+        m_projectParts = std::move(parserData->projectParts);
+        m_rootNode = std::move(parserData->rootNode);
+        delete data;
+        emit parsingCompleted(true);
+    });
 }
 
-void MesonProjectParser::getParserResults(MesonInfoParser &parser)
+MesonProjectParser::ParserData *MesonProjectParser::extractParserResults(
+    const Utils::FilePath &srcDir, MesonInfoParser &parser)
 {
-    m_targets = parser.targets();
-    m_buildOptions = parser.buildOptions();
+    auto targets = parser.targets();
+    auto buildOptions = parser.buildOptions();
+    auto projectParts = buildProjectParts(targets);
+    auto rootNode = ProjectTree::buildTree(srcDir, targets);
+    return new ParserData{std::move(targets),
+                          std::move(buildOptions),
+                          std::move(projectParts),
+                          std::move(rootNode)};
+}
+
+ProjectExplorer::RawProjectParts MesonProjectParser::buildProjectParts(const TargetsList &targets)
+{
+    ProjectExplorer::RawProjectParts parts;
+    return parts;
 }
 } // namespace Internal
 } // namespace MesonProjectManager

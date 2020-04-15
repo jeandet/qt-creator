@@ -23,37 +23,17 @@
 **
 ****************************************************************************/
 #pragma once
-#include "mesonprojectparser.h"
-#include "MesonWrapper/mesonwrapper.h"
-
-#include <projectexplorer/buildsystem.h>
-#include <projectexplorer/target.h>
-#include <cpptools/cppprojectupdater.h>
-#include <utils/filesystemwatcher.h>
-
+#include "mesonprojectnodes.h"
+#include "MesonInfoParser/mesoninfoparser.h"
+#include <utils/fileutils.h>
 namespace MesonProjectManager {
 namespace Internal {
-class MesonBuildConfiguration;
-class MesonBuildSystem final:public ProjectExplorer::BuildSystem
+class ProjectTree
 {
 public:
-    MesonBuildSystem(ProjectExplorer::Target *target, MesonTools* tools);
-    MesonBuildSystem(MesonBuildConfiguration* bc, MesonTools* tools);
-
-    void triggerParsing() final;
-
-    inline const BuildOptionsList& buildOptions()const {return m_parser.buildOptions();}
-    inline const TargetsList& targets()const {return m_parser.targets();}
-
-    void configure(const Utils::FilePath &buildDir, const QStringList& arguments);
-
-private:
-    void init();
-    void parseProject();
-    ProjectExplorer::BuildSystem::ParseGuard m_parseGuard;
-    MesonProjectParser m_parser;
-    MesonTools* m_tools;
-    CppTools::CppProjectUpdater m_cppCodeModelUpdater;
+    ProjectTree();
+    static std::unique_ptr<MesonProjectNode> buildTree(const Utils::FilePath& srcDir, const TargetsList& targets);
 };
+
 } // namespace Internal
-} // namespace MesonProjectManager
+} // nam

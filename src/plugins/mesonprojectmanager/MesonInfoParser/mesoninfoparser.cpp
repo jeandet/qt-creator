@@ -182,6 +182,11 @@ MesonInfoParser::MesonInfoParser(QIODevice *introFile)
     }
 }
 
+MesonInfoParser::MesonInfoParser(const QByteArray &data)
+{
+    d_ptr = new MesonInfoParserPrivate(QJsonDocument::fromJson(data));
+}
+
 MesonInfoParser::~MesonInfoParser()
 {
     delete d_ptr;

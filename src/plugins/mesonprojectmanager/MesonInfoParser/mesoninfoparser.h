@@ -321,6 +321,7 @@ class MesonInfoParser
 public:
     MesonInfoParser(const QString &buildDir);
     MesonInfoParser(QIODevice *introFile);
+    MesonInfoParser(const QByteArray& data);
     ~MesonInfoParser();
     TargetsList targets();
     BuildOptionsList buildOptions();
