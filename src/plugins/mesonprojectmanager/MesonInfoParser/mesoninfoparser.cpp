@@ -42,7 +42,7 @@ public:
     static inline Target::Source extract_source(const QJsonValue &source)
     {
         const auto srcObj = source.toObject();
-        return {srcObj["langage"].toString(),
+        return {srcObj["language"].toString(),
                 srcObj["compiler"].toVariant().toStringList(),
                 srcObj["parameters"].toVariant().toStringList(),
                 srcObj["sources"].toVariant().toStringList(),

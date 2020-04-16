@@ -249,7 +249,7 @@ struct Target
     };
     struct Source
     {
-        const QString langage;
+        const QString language;
         const QStringList compiler;
         const QStringList parameters;
         const QStringList sources;
@@ -259,7 +259,7 @@ struct Target
                QStringList &&parameters,
                QStringList &&sources,
                QStringList &&generatedSources)
-            : langage{std::move(langage)}
+            : language{std::move(langage)}
             , compiler{std::move(compiler)}
             , parameters{std::move(parameters)}
             , sources{std::move(sources)}

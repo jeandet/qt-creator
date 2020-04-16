@@ -82,6 +82,18 @@ CompilerArgs splitArgs(const QStringList &args)
     return splited;
 }
 
+QStringList toAbsolutePath(const Utils::FilePath& refPath, QStringList& pathList)
+{
+    QStringList allAbs;
+    std::transform(std::cbegin(pathList),std::cend(pathList),std::back_inserter(allAbs),[refPath](const QString& path)
+                   {
+                       if(path.startsWith("/"))
+                           return path;
+                       return refPath.pathAppended(path).toString();
+                   });
+    return allAbs;
+}
+
 MesonProjectParser::MesonProjectParser(const Core::Id& meson)
     : m_meson{meson}
     , m_configuring{false}
@@ -169,19 +181,21 @@ ProjectExplorer::RawProjectParts MesonProjectParser::buildProjectParts(
     ProjectExplorer::RawProjectParts parts;
     std::for_each(std::cbegin(m_targets),
                   std::cend(m_targets),
-                  [&parts, &cxxToolChain, &cToolChain](const Target &target) {
+                  [&parts, &cxxToolChain, &cToolChain, this](const Target &target) {
                       std::for_each(
                           std::cbegin(target.sources),
                           std::cend(target.sources),
-                          [&parts, &cxxToolChain, &cToolChain](const Target::Source &sourceList) {
+                          [&target,&parts, &cxxToolChain, &cToolChain, this](const Target::Source &sourceList) {
                               ProjectExplorer::RawProjectPart part;
-                              part.setFiles(sourceList.sources);
+                              part.setDisplayName(target.name);
+                              part.setBuildSystemTarget(target.name);
+                              part.setFiles(sourceList.sources + sourceList.generatedSources);
                               auto flags = splitArgs(sourceList.parameters);
                               part.setMacros(flags.macros);
-                              part.setIncludePaths(flags.includePaths);
-                              if (sourceList.langage == "cpp")
+                              part.setIncludePaths(toAbsolutePath(this->m_buildDir,flags.includePaths));
+                              if (sourceList.language == "cpp")
                                   part.setFlagsForCxx({cxxToolChain, flags.args});
-                              else if (sourceList.langage == "c")
+                              else if (sourceList.language == "c")
                                   part.setFlagsForC({cToolChain, flags.args});
                               parts.push_back(part);
                           });
