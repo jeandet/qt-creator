@@ -64,6 +64,7 @@ public:
         : m_tools{new MesonTools}
         , m_settingsPage{m_tools}
         , m_kitAspect{m_tools}
+        ,m_buildConfigurationFactory{}
     {
         m_tools->setTools(m_settings.loadMesonTools(ICore::dialogParent()));
         connect(ICore::instance(),

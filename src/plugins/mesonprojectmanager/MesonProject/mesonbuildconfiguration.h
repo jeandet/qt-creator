@@ -88,6 +88,8 @@ inline ProjectExplorer::BuildConfiguration::BuildType buildType(MesonBuildType t
     }
 }
 
+class MesonBuildSystem;
+class MesonTools;
 
 class MesonBuildConfiguration final : public ProjectExplorer::BuildConfiguration
 {
@@ -100,8 +102,11 @@ public:
                                          const QString &bcName,
                                          ProjectExplorer::BuildConfiguration::BuildType buildType);
 
+     ProjectExplorer::BuildSystem *buildSystem() const final;
+
 private:
     ProjectExplorer::NamedWidget *createConfigWidget() final;
+    MesonBuildSystem* m_buildSystem;
 
 };
 

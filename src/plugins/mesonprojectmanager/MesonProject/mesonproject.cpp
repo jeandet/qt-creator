@@ -44,7 +44,7 @@ MesonProject::MesonProject(const Utils::FilePath &path)
     setCanBuildProducts();
     setKnowsAllBuildExecutables(false);
     setHasMakeInstallEquivalent(true);
-    setBuildSystemCreator([this](ProjectExplorer::Target *t) { return new MesonBuildSystem(t, m_tools); });
+    //setBuildSystemCreator([this](ProjectExplorer::Target *t) { return new MesonBuildSystem(t, m_tools); });
 }
 
 ProjectExplorer::Tasks MesonProject::projectIssues(const ProjectExplorer::Kit *k) const

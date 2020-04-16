@@ -27,13 +27,63 @@
 #include "ProjectTree/mesonprojectnodes.h"
 #include "ProjectTree/projecttree.h"
 #include <projectexplorer/projectexplorer.h>
+#include <utils/optional.h>
 #include <utils/runextensions.h>
+#include <QStringList>
 #include <QTextStream>
 
 namespace MesonProjectManager {
 namespace Internal {
-MesonProjectParser::MesonProjectParser(const MesonWrapper &meson)
-    : m_meson{meson}
+
+struct CompilerArgs
+{
+    QStringList args;
+    QStringList includePaths;
+    ProjectExplorer::Macros macros;
+};
+
+
+
+inline Utils::optional<QString> extractValueIfMatches(const QString &arg, const QStringList& candidates)
+{
+    for(const auto& flag:candidates)
+    {
+        if(arg.startsWith(flag))
+            return arg.mid(flag.length());
+    }
+    return Utils::nullopt;
+}
+
+inline Utils::optional<QString> extractInclude(const QString &arg)
+{
+    return extractValueIfMatches(arg,{"-I","/I", "-isystem", "-imsvc", "/imsvc"});
+}
+inline Utils::optional<QString> extractMacro(const QString &arg)
+{
+    return extractValueIfMatches(arg,{"-D","/D", "-U", "/U"});
+}
+
+CompilerArgs splitArgs(const QStringList &args)
+{
+    CompilerArgs splited;
+    std::for_each(std::cbegin(args), std::cend(args), [&splited](const QString &arg) {
+        auto inc = extractInclude(arg);
+        if (inc) {
+            splited.includePaths << *inc;
+        } else {
+            auto macro = extractMacro(arg);
+            if (macro) {
+                splited.macros << ProjectExplorer::Macro(macro->toLatin1());
+            } else {
+                splited.args << arg;
+            }
+        }
+    });
+    return splited;
+}
+
+MesonProjectParser::MesonProjectParser(std::unique_ptr<MesonWrapper> meson)
+    : m_meson{std::move(meson)}
     , m_configuring{false}
 {
     connect(&m_process,
@@ -45,6 +95,11 @@ MesonProjectParser::MesonProjectParser(const MesonWrapper &meson)
             });
 }
 
+void MesonProjectParser::setMesonTool(std::unique_ptr<MesonWrapper> meson)
+{
+    m_meson = std::move(meson);
+}
+
 void MesonProjectParser::configure(const Utils::FilePath &sourcePath,
                                    const Utils::FilePath &buildPath,
                                    const QStringList &args,
@@ -52,7 +107,7 @@ void MesonProjectParser::configure(const Utils::FilePath &sourcePath,
 {
     m_introType = IntroDataType::file;
     m_buildDir = buildPath;
-    m_process.run(m_meson.configure(sourcePath, buildPath, args), env);
+    m_process.run(m_meson->configure(sourcePath, buildPath, args), env);
 }
 
 void MesonProjectParser::parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath)
@@ -69,7 +124,7 @@ void MesonProjectParser::parse(const Utils::FilePath &sourcePath)
 {
     m_srcDir = sourcePath;
     m_introType = IntroDataType::stdo;
-    m_process.run(m_meson.introspect(sourcePath), Utils::Environment{}, true);
+    m_process.run(m_meson->introspect(sourcePath), Utils::Environment{}, true);
 }
 void MesonProjectParser::startParser()
 {
@@ -91,7 +146,6 @@ void MesonProjectParser::startParser()
         auto parserData = data.result();
         m_targets = std::move(parserData->targets);
         m_buildOptions = std::move(parserData->buildOptions);
-        m_projectParts = std::move(parserData->projectParts);
         m_rootNode = std::move(parserData->rootNode);
         delete data;
         emit parsingCompleted(true);
@@ -103,17 +157,33 @@ MesonProjectParser::ParserData *MesonProjectParser::extractParserResults(
 {
     auto targets = parser.targets();
     auto buildOptions = parser.buildOptions();
-    auto projectParts = buildProjectParts(targets);
     auto rootNode = ProjectTree::buildTree(srcDir, targets);
-    return new ParserData{std::move(targets),
-                          std::move(buildOptions),
-                          std::move(projectParts),
-                          std::move(rootNode)};
+    return new ParserData{std::move(targets), std::move(buildOptions), std::move(rootNode)};
 }
 
-ProjectExplorer::RawProjectParts MesonProjectParser::buildProjectParts(const TargetsList &targets)
+ProjectExplorer::RawProjectParts MesonProjectParser::buildProjectParts(
+    const ProjectExplorer::ToolChain *cxxToolChain, const ProjectExplorer::ToolChain *cToolChain)
 {
     ProjectExplorer::RawProjectParts parts;
+    std::for_each(std::cbegin(m_targets),
+                  std::cend(m_targets),
+                  [&parts, &cxxToolChain, &cToolChain](const Target &target) {
+                      std::for_each(
+                          std::cbegin(target.sources),
+                          std::cend(target.sources),
+                          [&parts, &cxxToolChain, &cToolChain](const Target::Source &sourceList) {
+                              ProjectExplorer::RawProjectPart part;
+                              part.setFiles(sourceList.sources);
+                              auto flags = splitArgs(sourceList.parameters);
+                              part.setMacros(flags.macros);
+                              part.setIncludePaths(flags.includePaths);
+                              if (sourceList.langage == "cpp")
+                                  part.setFlagsForCxx({cxxToolChain, flags.args});
+                              else if (sourceList.langage == "c")
+                                  part.setFlagsForC({cToolChain, flags.args});
+                              parts.push_back(part);
+                          });
+                  });
     return parts;
 }
 } // namespace Internal

@@ -23,8 +23,8 @@
 **
 ****************************************************************************/
 #pragma once
-#include "MesonInfoParser/mesoninfoparser.h"
-#include "MesonWrapper/mesonwrapper.h"
+#include <MesonInfoParser/mesoninfoparser.h>
+#include <MesonWrapper/mesonwrapper.h>
 #include "ProjectTree/mesonprojectnodes.h"
 #include "mesonprocess.h"
 #include <projectexplorer/buildsystem.h>
@@ -44,12 +44,12 @@ class MesonProjectParser : public QObject
     {
         TargetsList targets;
         BuildOptionsList buildOptions;
-        ProjectExplorer::RawProjectParts projectParts;
         std::unique_ptr<MesonProjectNode> rootNode;
     };
 
 public:
-    MesonProjectParser(const MesonWrapper &meson);
+    MesonProjectParser(std::unique_ptr<MesonWrapper> meson);
+    void setMesonTool(std::unique_ptr<MesonWrapper> meson);
     Q_SLOT void configure(const Utils::FilePath &sourcePath,
                           const Utils::FilePath &buildPath,
                           const QStringList &args,
@@ -63,22 +63,23 @@ public:
 
     inline const BuildOptionsList &buildOptions() const { return m_buildOptions; };
     inline const TargetsList &targets() const { return m_targets; }
+    ProjectExplorer::RawProjectParts buildProjectParts(const ProjectExplorer::ToolChain* cxxToolChain, const ProjectExplorer::ToolChain* cToolChain);
 
 private:
     void startParser();
     static ParserData *extractParserResults(const Utils::FilePath &srcDir, MesonInfoParser &parser);
-    static ProjectExplorer::RawProjectParts buildProjectParts(const TargetsList& targets);
-    BuildOptionsList m_buildOptions; // <- Project build settings
-    TargetsList m_targets;
-    ProjectExplorer::RawProjectParts m_projectParts; // <- code model data
-    std::unique_ptr<MesonProjectNode> m_rootNode;    // <- project tree root node
+
     MesonProcess m_process;
-    MesonWrapper m_meson;
-    IntroDataType m_introType;
+
+    std::unique_ptr<MesonWrapper> m_meson;
     Utils::FilePath m_buildDir;
     Utils::FilePath m_srcDir;
     QFuture<ParserData *> m_parserResult;
     bool m_configuring;
+    IntroDataType m_introType;
+    BuildOptionsList m_buildOptions; // <- Project build settings
+    TargetsList m_targets;
+    std::unique_ptr<MesonProjectNode> m_rootNode;    // <- project tree root node
 };
 } // namespace Internal
 } // namespace MesonProjectManager

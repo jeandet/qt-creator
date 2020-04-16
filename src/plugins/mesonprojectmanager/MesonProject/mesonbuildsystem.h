@@ -37,8 +37,8 @@ class MesonBuildConfiguration;
 class MesonBuildSystem final:public ProjectExplorer::BuildSystem
 {
 public:
-    MesonBuildSystem(ProjectExplorer::Target *target, MesonTools* tools);
-    MesonBuildSystem(MesonBuildConfiguration* bc, MesonTools* tools);
+    //MesonBuildSystem(ProjectExplorer::Target *target, MesonTools* tools);
+    MesonBuildSystem(MesonBuildConfiguration* bc);
 
     void triggerParsing() final;
 

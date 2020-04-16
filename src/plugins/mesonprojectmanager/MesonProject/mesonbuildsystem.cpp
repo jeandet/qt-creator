@@ -24,25 +24,25 @@
 ****************************************************************************/
 
 #include "mesonbuildsystem.h"
-#include "MesonToolSettings/mesontoolkitaspect.h"
 #include "mesonbuildconfiguration.h"
-#include "projectexplorer/buildconfiguration.h"
+#include <MesonToolSettings/mesontoolkitaspect.h>
+#include <pluginmanager.h>
+#include <projectexplorer/buildconfiguration.h>
+#include <qtsupport/qtcppkitinfo.h>
+#include <qtsupport/qtkitinformation.h>
 
 namespace MesonProjectManager {
 namespace Internal {
-MesonBuildSystem::MesonBuildSystem(ProjectExplorer::Target *target, MesonTools *tools)
-    : ProjectExplorer::BuildSystem{target}
-    , m_parser{*tools->autoDetected()}
-    , m_tools{tools}
-{
-    init();
-}
 
-MesonBuildSystem::MesonBuildSystem(MesonBuildConfiguration *bc, MesonTools *tools)
+MesonBuildSystem::MesonBuildSystem(MesonBuildConfiguration *bc)
     : ProjectExplorer::BuildSystem{bc}
-    , m_parser{*tools->autoDetected()}
-    , m_tools{tools}
+    , m_parser{std::make_unique<MesonWrapper>( //TODO fix this hack
+          *static_cast<MesonTools *>(
+              ExtensionSystem::PluginManager::getObjectByName(Constants::MESON_TOOL_MANAGER))
+              ->autoDetected())}
 {
+    m_tools = static_cast<MesonTools *>(
+        ExtensionSystem::PluginManager::getObjectByName(Constants::MESON_TOOL_MANAGER));
     init();
 }
 
@@ -69,9 +69,18 @@ void MesonBuildSystem::init()
     connect(&m_parser, &MesonProjectParser::parsingCompleted, this, [this](bool success) {
         m_parseGuard.markAsSuccess();
         m_parseGuard = {};
-        setRootProjectNode(m_parser.takeProjectNode());
-        //m_cppCodeModelUpdater.update({p, kitInfo, cmakeBuildConfiguration()->environment(), rpps});
-        emitBuildSystemUpdated();
+        if (success) {
+            setRootProjectNode(m_parser.takeProjectNode());
+            if (kit() && buildConfiguration()) {
+                ProjectExplorer::KitInfo kitInfo{kit()};
+                m_cppCodeModelUpdater.update(
+                    {project(),
+                     QtSupport::CppKitInfo(kit()),
+                     buildConfiguration()->environment(),
+                     m_parser.buildProjectParts(kitInfo.cxxToolChain, kitInfo.cToolChain)});
+            }
+            emitBuildSystemUpdated();
+        }
     });
 }
 

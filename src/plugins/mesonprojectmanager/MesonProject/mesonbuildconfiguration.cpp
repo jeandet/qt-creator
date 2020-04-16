@@ -23,18 +23,20 @@
 **
 ****************************************************************************/
 
-#include "projectexplorer/buildinfo.h"
-#include "projectexplorer/project.h"
-#include "projectexplorer/projectexplorer.h"
-#include "projectexplorer/kit.h"
-#include "projectexplorer/projectmacroexpander.h"
-#include "utils/fileutils.h"
+#include <projectexplorer/buildinfo.h>
+#include <projectexplorer/project.h>
+#include <projectexplorer/projectexplorer.h>
+#include <projectexplorer/kit.h>
+#include <projectexplorer/projectmacroexpander.h>
+#include <utils/fileutils.h>
 
 #include <QDir>
 
 #include "mesonbuildconfiguration.h"
 #include "mesonbuildsettingswidget.h"
 #include "mesonpluginconstants.h"
+#include "mesonbuildsystem.h"
+#include <MesonWrapper/mesonwrapper.h>
 
 namespace MesonProjectManager {
 namespace Internal {
@@ -52,6 +54,7 @@ MesonBuildConfiguration::MesonBuildConfiguration(ProjectExplorer::Target *target
                                                    info.buildType));
         }
     });
+    m_buildSystem = new MesonBuildSystem{this};
 }
 
 Utils::FilePath MesonBuildConfiguration::shadowBuildDirectory(
@@ -74,6 +77,11 @@ Utils::FilePath MesonBuildConfiguration::shadowBuildDirectory(
         ProjectExplorer::ProjectExplorerPlugin::buildDirectoryTemplate());
     buildPath.replace(" ", "-");
     return Utils::FilePath::fromUserInput(projectDir.absoluteFilePath(buildPath));
+}
+
+ProjectExplorer::BuildSystem *MesonBuildConfiguration::buildSystem() const
+{
+    return m_buildSystem;
 }
 
 ProjectExplorer::NamedWidget *MesonBuildConfiguration::createConfigWidget()
