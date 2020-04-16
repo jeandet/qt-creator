@@ -45,7 +45,7 @@ class MesonToolSettingsWidget final : public Core::IOptionsPageWidget
     void apply() final;
 
 public:
-    explicit MesonToolSettingsWidget(const std::shared_ptr<MesonTools> &tools);
+    explicit MesonToolSettingsWidget();
     ~MesonToolSettingsWidget();
 
 private:

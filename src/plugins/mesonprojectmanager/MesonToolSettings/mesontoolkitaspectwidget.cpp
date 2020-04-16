@@ -6,13 +6,12 @@
 
 namespace MesonProjectManager {
 namespace Internal {
-MesonToolKitAspectWidget::MesonToolKitAspectWidget(std::shared_ptr<MesonTools> tools,
+MesonToolKitAspectWidget::MesonToolKitAspectWidget(
                                                    ProjectExplorer::Kit *kit,
                                                    const ProjectExplorer::KitAspect *ki)
     : ProjectExplorer::KitAspectWidget(kit, ki)
     , m_toolsComboBox{new QComboBox}
     , m_manageButton(new QPushButton(KitAspectWidget::msgManage()))
-    , m_tools{tools}
 {
     m_toolsComboBox->setSizePolicy(QSizePolicy::Ignored,
                                    m_toolsComboBox->sizePolicy().verticalPolicy());
@@ -25,11 +24,11 @@ MesonToolKitAspectWidget::MesonToolKitAspectWidget(std::shared_ptr<MesonTools> t
         Core::ICore::showOptionsDialog(Constants::MESON_SETTINGSPAGE_ID, buttonWidget());
     });
 
-    connect(m_tools.get(),
+    connect(MesonTools::instance(),
             &MesonTools::mesonToolAdded,
             this,
             &MesonToolKitAspectWidget::addMesonTool);
-    connect(m_tools.get(),
+    connect(MesonTools::instance(),
             &MesonTools::mesonToolRemoved,
             this,
             &MesonToolKitAspectWidget::removeMesonTool);
@@ -76,8 +75,8 @@ int MesonToolKitAspectWidget::indexOf(const Core::Id &id)
 
 void MesonToolKitAspectWidget::loadTools()
 {
-    std::for_each(std::cbegin(m_tools->tools()),
-                  std::cend(m_tools->tools()),
+    std::for_each(std::cbegin(MesonTools::tools()),
+                  std::cend(MesonTools::tools()),
                   [this](const MesonWrapper &tool) { addMesonTool(tool); });
     refresh();
     m_toolsComboBox->setEnabled(m_toolsComboBox->count());
@@ -85,7 +84,7 @@ void MesonToolKitAspectWidget::loadTools()
 
 void MesonToolKitAspectWidget::setToDefault()
 {
-    const auto autoDetected = m_tools->autoDetected();
+    const auto autoDetected = MesonTools::autoDetected();
     if (autoDetected) {
         const auto index = indexOf(autoDetected->id());
         m_toolsComboBox->setCurrentIndex(index);

@@ -32,8 +32,7 @@ namespace Internal {
 
 static const char TOOL_ID[] = "MesonProjectManager.MesonKitInformation";
 
-MesonToolKitAspect::MesonToolKitAspect(std::shared_ptr<MesonTools> tools)
-    : m_tools{tools}
+MesonToolKitAspect::MesonToolKitAspect()
 {
     setObjectName(QLatin1String("MesonKitAspect"));
     setId(TOOL_ID);
@@ -57,7 +56,7 @@ void MesonToolKitAspect::setup(ProjectExplorer::Kit *k)
 {
     const auto tool = mesonTool(k);
     if (!tool) {
-        const auto autoDetected = m_tools->autoDetected();
+        const auto autoDetected = MesonTools::autoDetected();
         if (autoDetected)
             setMesonTool(k, autoDetected->id());
     }
@@ -80,7 +79,7 @@ ProjectExplorer::KitAspect::ItemList MesonToolKitAspect::toUserOutput(
 ProjectExplorer::KitAspectWidget *MesonToolKitAspect::createConfigWidget(ProjectExplorer::Kit *k) const
 {
     QTC_ASSERT(k, return nullptr);
-    return new MesonToolKitAspectWidget{m_tools, k, this};
+    return new MesonToolKitAspectWidget{k, this};
 }
 
 void MesonToolKitAspect::setMesonTool(ProjectExplorer::Kit *kit, Core::Id id)

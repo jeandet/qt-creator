@@ -34,7 +34,7 @@ class MesonTools;
 class MesonSettingsPage final : public Core::IOptionsPage
 {
 public:
-    MesonSettingsPage(const std::shared_ptr<MesonTools>& tools);
+    MesonSettingsPage();
 };
 
 } // namespace Internal

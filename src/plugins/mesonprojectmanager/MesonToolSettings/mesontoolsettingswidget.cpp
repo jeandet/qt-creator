@@ -30,10 +30,9 @@
 
 namespace MesonProjectManager {
 namespace Internal {
-MesonToolSettingsWidget::MesonToolSettingsWidget(const std::shared_ptr<MesonTools> &tools)
+MesonToolSettingsWidget::MesonToolSettingsWidget()
     : Core::IOptionsPageWidget()
     , ui(new Ui::MesonToolSettingsWidget)
-    , m_model{tools}
 {
     ui->setupUi(this);
     ui->mesonDetails->setState(Utils::DetailsWidget::NoSummary);

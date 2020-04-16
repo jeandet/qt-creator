@@ -39,7 +39,7 @@ class MesonToolModel final: public Utils::TreeModel<Utils::TreeItem, Utils::Tree
 {
     Q_DECLARE_TR_FUNCTIONS(MesonProjectManager::Internal::MesonSettingsPage)
 public:
-    MesonToolModel(const std::shared_ptr<MesonTools>& tools);
+    MesonToolModel();
     MesoneToolTreeItem *mesoneToolTreeItem(const QModelIndex &index) const;
     Q_SLOT void updateItem(const Core::Id& itemId,const QString& name, const Utils::FilePath& exe);
     void addMesonTool();
@@ -51,7 +51,6 @@ private:
     QString uniqueName(const QString& baseName);
     Utils::TreeItem* autoDetectedGroup() const;
     Utils::TreeItem* manualGroup() const;
-    std::shared_ptr<MesonTools> m_tools;
     QQueue<Core::Id> m_itemsToRemove;
 };
 } // namespace Internal

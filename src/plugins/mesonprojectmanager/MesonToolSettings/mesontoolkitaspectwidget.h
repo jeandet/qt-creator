@@ -38,8 +38,7 @@ class MesonToolKitAspectWidget final : public ProjectExplorer::KitAspectWidget
 {
     Q_DECLARE_TR_FUNCTIONS(MesonProjectManager::Internal::MesonToolKitAspect)
 public:
-    MesonToolKitAspectWidget(std::shared_ptr<MesonTools> tools,
-                             ProjectExplorer::Kit *kit,
+    MesonToolKitAspectWidget(ProjectExplorer::Kit *kit,
                              const ProjectExplorer::KitAspect *ki);
     ~MesonToolKitAspectWidget();
 private:
@@ -66,7 +65,6 @@ private:
 
     QComboBox* m_toolsComboBox;
     QPushButton* m_manageButton;
-    std::shared_ptr<MesonTools> m_tools;
 };
 } // namespace Internal
 } // namespace MesonProjectManager

@@ -203,19 +203,21 @@ inline MesonWrapper fromVariantMap(const QVariantMap &data)
 class MesonTools : public QObject
 {
     Q_OBJECT
-public:
     MesonTools() { setObjectName(Constants::MESON_TOOL_MANAGER); }
     ~MesonTools() {}
-    inline void addTool(MesonWrapper &&meson)
+public:
+    static inline void addTool(MesonWrapper &&meson)
     {
-        m_tools.emplace_back(std::move(meson));
-        emit mesonToolAdded(m_tools.back());
+        auto self = instance();
+        self->m_tools.emplace_back(std::move(meson));
+        emit self->mesonToolAdded(self->m_tools.back());
     }
-    inline void setTools(std::vector<MesonWrapper> &&mesonTools)
+    static inline void setTools(std::vector<MesonWrapper> &&mesonTools)
     {
-        std::swap(m_tools, mesonTools);
-        auto hasAutoDetected = std::accumulate(std::cbegin(m_tools),
-                                               std::cend(m_tools),
+        auto self = instance();
+        std::swap(self->m_tools, mesonTools);
+        auto hasAutoDetected = std::accumulate(std::cbegin(self->m_tools),
+                                               std::cend(self->m_tools),
                                                false,
                                                [](bool prev, const MesonWrapper &tool) {
                                                    return prev || tool.autoDetected();
@@ -223,34 +225,36 @@ public:
         if (!hasAutoDetected) {
             auto meson_path = findMeson();
             if (meson_path) {
-                m_tools.emplace_back(QString("System Meson at %1").arg(meson_path->toString()),
+                self->m_tools.emplace_back(QString("System Meson at %1").arg(meson_path->toString()),
                                      *meson_path,
                                      true);
             }
         }
     }
 
-    inline const std::vector<MesonWrapper> &tools() const { return m_tools; }
+    static inline const std::vector<MesonWrapper> &tools() { return instance()->m_tools; }
 
-    void updateItem(const Core::Id &itemId, const QString &name, const Utils::FilePath &exe);
-    void removeItem(const Core::Id &id);
+    static void updateTool(const Core::Id &itemId, const QString &name, const Utils::FilePath &exe);
+    static void removeTool(const Core::Id &id);
 
-    Utils::optional<const MesonWrapper &> autoDetected()
+    static Utils::optional<const MesonWrapper &> autoDetected()
     {
-        const auto tool = std::find_if(std::cbegin(m_tools),
-                                       std::cend(m_tools),
+        auto self = instance();
+        const auto tool = std::find_if(std::cbegin(self->m_tools),
+                                       std::cend(self->m_tools),
                                        [](const MesonWrapper &tool) { return tool.autoDetected(); });
-        if (tool != std::cend(m_tools))
+        if (tool != std::cend(self->m_tools))
             return *tool;
         return Utils::nullopt;
     }
 
-    Utils::optional<const MesonWrapper &> tool(const Core::Id &id) const
+    static Utils::optional<const MesonWrapper &> tool(const Core::Id &id)
     {
-        const auto tool = std::find_if(std::cbegin(m_tools),
-                                       std::cend(m_tools),
+        auto self = instance();
+        const auto tool = std::find_if(std::cbegin(self->m_tools),
+                                       std::cend(self->m_tools),
                                        [&id](const MesonWrapper &tool) { return tool.id() == id; });
-        if (tool != std::cend(m_tools))
+        if (tool != std::cend(self->m_tools))
             return *tool;
         return Utils::nullopt;
     }
@@ -258,6 +262,11 @@ public:
     Q_SIGNAL void mesonToolAdded(const MesonWrapper &tool);
     Q_SIGNAL void mesonToolRemoved(const MesonWrapper &tool);
 
+    static MesonTools* instance()
+    {
+        static MesonTools inst;
+        return &inst;
+    }
 private:
     std::vector<MesonWrapper> m_tools;
 };

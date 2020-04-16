@@ -48,8 +48,8 @@ class MesonProjectParser : public QObject
     };
 
 public:
-    MesonProjectParser(std::unique_ptr<MesonWrapper> meson);
-    void setMesonTool(std::unique_ptr<MesonWrapper> meson);
+    MesonProjectParser(const Core::Id& meson);
+    void setMesonTool(const Core::Id& meson);
     Q_SLOT void configure(const Utils::FilePath &sourcePath,
                           const Utils::FilePath &buildPath,
                           const QStringList &args,
@@ -71,7 +71,7 @@ private:
 
     MesonProcess m_process;
 
-    std::unique_ptr<MesonWrapper> m_meson;
+    Core::Id m_meson;
     Utils::FilePath m_buildDir;
     Utils::FilePath m_srcDir;
     QFuture<ParserData *> m_parserResult;

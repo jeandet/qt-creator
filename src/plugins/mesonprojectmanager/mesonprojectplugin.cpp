@@ -61,26 +61,19 @@ class MesonProjectPluginPrivate : public QObject
     Q_OBJECT
 public:
     MesonProjectPluginPrivate()
-        : m_tools{new MesonTools}
-        , m_settingsPage{m_tools}
-        , m_kitAspect{m_tools}
-        ,m_buildConfigurationFactory{}
     {
-        m_tools->setTools(m_settings.loadMesonTools(ICore::dialogParent()));
+        MesonTools::setTools(m_settings.loadMesonTools(ICore::dialogParent()));
         connect(ICore::instance(),
                 &ICore::saveSettingsRequested,
                 this,
                 &MesonProjectPluginPrivate::saveMesonTools);
-        ExtensionSystem::PluginManager::addObject(m_tools.get());
     }
 
     ~MesonProjectPluginPrivate()
     {
-        ExtensionSystem::PluginManager::removeObject(m_tools.get());
     }
 
 private:
-    std::shared_ptr<MesonTools> m_tools;
     MesonSettingsPage m_settingsPage;
     MesonToolSettingAccessor m_settings;
     MesonToolKitAspect m_kitAspect;
@@ -88,7 +81,7 @@ private:
     MesonBuildConfigurationFactory m_buildConfigurationFactory;
     Q_SLOT void saveMesonTools()
     {
-        m_settings.saveMesonTools(m_tools->tools(), ICore::dialogParent());
+        m_settings.saveMesonTools(MesonTools::tools(), ICore::dialogParent());
     }
 };
 

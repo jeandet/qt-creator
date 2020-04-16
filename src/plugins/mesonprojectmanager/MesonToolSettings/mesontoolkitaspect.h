@@ -35,7 +35,7 @@ namespace Internal {
 class MesonToolKitAspect final: public ProjectExplorer::KitAspect
 {
 public:
-    MesonToolKitAspect(std::shared_ptr<MesonTools> tools);
+    MesonToolKitAspect();
 
     ProjectExplorer::Tasks validate(const ProjectExplorer::Kit *k) const final;
     void setup(ProjectExplorer::Kit *k) final;
@@ -46,12 +46,10 @@ public:
     static void setMesonTool(ProjectExplorer::Kit* kit, Core::Id id );
     static Core::Id mesonToolId(const ProjectExplorer::Kit* kit);
 
-    inline decltype (auto) mesonTool(const ProjectExplorer::Kit* kit) const
+    static inline decltype (auto) mesonTool(const ProjectExplorer::Kit* kit)
     {
-        return m_tools->tool(MesonToolKitAspect::mesonToolId(kit));
+        return MesonTools::tool(MesonToolKitAspect::mesonToolId(kit));
     }
-private:
-    std::shared_ptr<MesonTools> m_tools;
 };
 
 } // namespace Internal

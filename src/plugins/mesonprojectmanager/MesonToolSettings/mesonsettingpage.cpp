@@ -31,12 +31,12 @@
 namespace MesonProjectManager {
 namespace Internal {
 
-MesonSettingsPage::MesonSettingsPage(const std::shared_ptr<MesonTools> &tools)
+MesonSettingsPage::MesonSettingsPage()
 {
     setId(Constants::MESON_SETTINGSPAGE_ID);
     setDisplayName(MesonToolSettingsWidget::tr("Meson"));
     setCategory(ProjectExplorer::Constants::KITS_SETTINGS_CATEGORY);
-    setWidgetCreator([tools]() { return new MesonToolSettingsWidget{tools}; });
+    setWidgetCreator([]() { return new MesonToolSettingsWidget; });
 }
 
 } // namespace Internal

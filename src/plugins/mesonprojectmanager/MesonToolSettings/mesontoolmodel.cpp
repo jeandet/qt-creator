@@ -6,13 +6,12 @@
 namespace MesonProjectManager {
 namespace Internal {
 
-MesonToolModel::MesonToolModel(const std::shared_ptr<MesonTools> &tools)
-    : m_tools{tools}
+MesonToolModel::MesonToolModel()
 {
     setHeader({tr("Name"), tr("Location")});
     rootItem()->appendChild(new Utils::StaticTreeItem(tr("Auto-detected")));
     rootItem()->appendChild(new Utils::StaticTreeItem(tr("Manual")));
-    for (const auto &tool : m_tools->tools()) {
+    for (const auto &tool : MesonTools::tools()) {
         addMesonTool(tool);
     }
 }
@@ -54,15 +53,15 @@ MesoneToolTreeItem * MesonToolModel::cloneMesonTool(MesoneToolTreeItem *item)
 
 void MesonToolModel::apply()
 {
-    forItemsAtLevel<2>([this](MesoneToolTreeItem *item) {
+    forItemsAtLevel<2>([](MesoneToolTreeItem *item) {
         if (item->hasUnsavedChanges())
         {
-            m_tools->updateItem(item->id(), item->name(), item->executable());
+            MesonTools::updateTool(item->id(), item->name(), item->executable());
             item->setSaved();
         }
     });
     while (!m_itemsToRemove.isEmpty()) {
-        m_tools->removeItem(m_itemsToRemove.dequeue());
+        MesonTools::removeTool(m_itemsToRemove.dequeue());
     }
 }
 

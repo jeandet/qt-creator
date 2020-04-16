@@ -37,7 +37,6 @@ class MesonBuildConfiguration;
 class MesonBuildSystem final:public ProjectExplorer::BuildSystem
 {
 public:
-    //MesonBuildSystem(ProjectExplorer::Target *target, MesonTools* tools);
     MesonBuildSystem(MesonBuildConfiguration* bc);
 
     void triggerParsing() final;
@@ -52,7 +51,6 @@ private:
     void parseProject();
     ProjectExplorer::BuildSystem::ParseGuard m_parseGuard;
     MesonProjectParser m_parser;
-    MesonTools* m_tools;
     CppTools::CppProjectUpdater m_cppCodeModelUpdater;
 };
 } // namespace Internal

@@ -82,8 +82,8 @@ CompilerArgs splitArgs(const QStringList &args)
     return splited;
 }
 
-MesonProjectParser::MesonProjectParser(std::unique_ptr<MesonWrapper> meson)
-    : m_meson{std::move(meson)}
+MesonProjectParser::MesonProjectParser(const Core::Id& meson)
+    : m_meson{meson}
     , m_configuring{false}
 {
     connect(&m_process,
@@ -92,12 +92,14 @@ MesonProjectParser::MesonProjectParser(std::unique_ptr<MesonWrapper> meson)
                 if (exitCode == 0 && exitStatus == QProcess::NormalExit) {
                     startParser();
                 }
+                else
+                    emit parsingCompleted(false);
             });
 }
 
-void MesonProjectParser::setMesonTool(std::unique_ptr<MesonWrapper> meson)
+void MesonProjectParser::setMesonTool(const Core::Id &meson)
 {
-    m_meson = std::move(meson);
+    m_meson = meson;
 }
 
 void MesonProjectParser::configure(const Utils::FilePath &sourcePath,
@@ -107,7 +109,7 @@ void MesonProjectParser::configure(const Utils::FilePath &sourcePath,
 {
     m_introType = IntroDataType::file;
     m_buildDir = buildPath;
-    m_process.run(m_meson->configure(sourcePath, buildPath, args), env);
+    m_process.run(MesonTools::tool(m_meson)->configure(sourcePath, buildPath, args), env);
 }
 
 void MesonProjectParser::parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath)
@@ -124,7 +126,7 @@ void MesonProjectParser::parse(const Utils::FilePath &sourcePath)
 {
     m_srcDir = sourcePath;
     m_introType = IntroDataType::stdo;
-    m_process.run(m_meson->introspect(sourcePath), Utils::Environment{}, true);
+    m_process.run(MesonTools::tool(m_meson)->introspect(sourcePath), Utils::Environment{}, true);
 }
 void MesonProjectParser::startParser()
 {

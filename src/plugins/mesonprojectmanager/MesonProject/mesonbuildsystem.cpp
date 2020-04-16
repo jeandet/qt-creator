@@ -36,13 +36,8 @@ namespace Internal {
 
 MesonBuildSystem::MesonBuildSystem(MesonBuildConfiguration *bc)
     : ProjectExplorer::BuildSystem{bc}
-    , m_parser{std::make_unique<MesonWrapper>( //TODO fix this hack
-          *static_cast<MesonTools *>(
-              ExtensionSystem::PluginManager::getObjectByName(Constants::MESON_TOOL_MANAGER))
-              ->autoDetected())}
+    , m_parser{MesonToolKitAspect::mesonToolId(bc->target()->kit())}
 {
-    m_tools = static_cast<MesonTools *>(
-        ExtensionSystem::PluginManager::getObjectByName(Constants::MESON_TOOL_MANAGER));
     init();
 }
 
