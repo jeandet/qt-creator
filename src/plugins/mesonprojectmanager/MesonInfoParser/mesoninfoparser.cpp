@@ -66,7 +66,7 @@ public:
                  targetObj["name"].toString(),
                  targetObj["id"].toString(),
                  targetObj["defined_in"].toString(),
-                 targetObj["filename"].toString(),
+                 targetObj["filename"].toVariant().toStringList(),
                  targetObj["subproject"].toString(),
                  extract_sources(targetObj["target_sources"].toArray())};
         return t;

@@ -63,12 +63,15 @@ public:
 
     inline const BuildOptionsList &buildOptions() const { return m_buildOptions; };
     inline const TargetsList &targets() const { return m_targets; }
+    inline const QStringList &targetsNames() const { return m_targetsNames; }
+    QList<ProjectExplorer::BuildTargetInfo> appsTargets()const;
+
     ProjectExplorer::RawProjectParts buildProjectParts(const ProjectExplorer::ToolChain* cxxToolChain, const ProjectExplorer::ToolChain* cToolChain);
 
 private:
     void startParser();
     static ParserData *extractParserResults(const Utils::FilePath &srcDir, MesonInfoParser &parser);
-
+    static void addMissingTargets(QStringList& targetList);
     MesonProcess m_process;
 
     Core::Id m_meson;
@@ -79,6 +82,7 @@ private:
     IntroDataType m_introType;
     BuildOptionsList m_buildOptions; // <- Project build settings
     TargetsList m_targets;
+    QStringList m_targetsNames;
     std::unique_ptr<MesonProjectNode> m_rootNode;    // <- project tree root node
 };
 } // namespace Internal

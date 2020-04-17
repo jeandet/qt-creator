@@ -42,6 +42,12 @@ public:
     ~MesonBuildStepConfigWidget();
 
 private:
+    void updateDetails();
+    void updateTargetList();
+    inline MesonBuildStep *mesonBuildStep()
+    {
+        return static_cast<MesonBuildStep *>(step());
+    }
     Ui::MesonBuildStepConfigWidget *ui;
     QListWidget* m_buildTargetsList;
 };

@@ -23,42 +23,25 @@
 **
 ****************************************************************************/
 #pragma once
-
-#include <projectexplorer/buildstep.h>
-#include <projectexplorer/abstractprocessstep.h>
-#include <utils/qtcprocess.h>
-#include <QObject>
+#include <projectexplorer/runconfiguration.h>
+#include <projectexplorer/desktoprunconfiguration.h>
+#include <projectexplorer/target.h>
 
 namespace MesonProjectManager {
 namespace Internal {
-class MesonBuildStep final : public ProjectExplorer::AbstractProcessStep
+class MesonRunConfiguration final: public ProjectExplorer::RunConfiguration
 {
-    Q_OBJECT
 public:
-    MesonBuildStep(ProjectExplorer::BuildStepList *bsl, Core::Id id);
-    ProjectExplorer::BuildStepConfigWidget *createConfigWidget() final;
-    Utils::CommandLine command();
-    QStringList projectTargets();
-    void setBuildTarget(const QString& targetName);
-    void setCommandArgs(const QString& args);
-    const QString& targetName()const{return m_targetName;}
-    Q_SIGNAL void targetListChanged();
-    QVariantMap toMap() const override;
-    bool fromMap(const QVariantMap &map) override;
+    MesonRunConfiguration(ProjectExplorer::Target *target, Core::Id id);
 private:
-    void update(bool parsingSuccessful);
-    bool init() override;
-    void doRun() override;
-    QString defaultBuildTarget() const;
-    QString m_commandArgs;
-    QString m_targetName;
+    void updateTargetInformation();
 };
 
-class MesonBuildStepFactory final: public ProjectExplorer::BuildStepFactory
+class MesonRunConfigurationFactory final: public ProjectExplorer::RunConfigurationFactory
 {
 public:
-    MesonBuildStepFactory();
+    MesonRunConfigurationFactory();
 };
 
 } // namespace Internal
-} // nam
+} // namespace MesonProjectManager

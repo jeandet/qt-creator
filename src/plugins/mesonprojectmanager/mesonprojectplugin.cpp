@@ -27,23 +27,24 @@
 #include "MesonProject/mesonproject.h"
 #include "MesonProject/mesonbuildstep.h"
 #include "MesonProject/mesonbuildconfiguration.h"
+#include "MesonProject/mesonrunconfiguration.h"
 #include "MesonToolSettings/mesonsettingpage.h"
 #include "MesonToolSettings/mesontoolkitaspect.h"
 #include "MesonToolSettings/mesontoolsettingaccessor.h"
 #include "MesonWrapper/mesonwrapper.h"
 
-#include "coreplugin/actionmanager/actioncontainer.h"
-#include "coreplugin/actionmanager/actionmanager.h"
-#include "coreplugin/fileiconprovider.h"
-#include "coreplugin/icore.h"
+#include <coreplugin/actionmanager/actioncontainer.h>
+#include <coreplugin/actionmanager/actionmanager.h>
+#include <coreplugin/fileiconprovider.h>
+#include <coreplugin/icore.h>
 
-#include "projectexplorer/kitmanager.h"
-#include "projectexplorer/projectmanager.h"
-#include "projectexplorer/projecttree.h"
-#include "projectexplorer/runcontrol.h"
-#include "projectexplorer/target.h"
+#include <projectexplorer/kitmanager.h>
+#include <projectexplorer/projectmanager.h>
+#include <projectexplorer/projecttree.h>
+#include <projectexplorer/runcontrol.h>
+#include <projectexplorer/target.h>
 
-#include "pluginmanager.h"
+#include <extensionsystem/pluginmanager.h>
 
 #include <memory>
 #include <utils/parameteraction.h>
@@ -79,6 +80,7 @@ private:
     MesonToolKitAspect m_kitAspect;
     MesonBuildStepFactory m_buildStepFactory;
     MesonBuildConfigurationFactory m_buildConfigurationFactory;
+    MesonRunConfigurationFactory m_runConfigurationFactory;
     Q_SLOT void saveMesonTools()
     {
         m_settings.saveMesonTools(MesonTools::tools(), ICore::dialogParent());

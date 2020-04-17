@@ -22,26 +22,87 @@
 ** be met: https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ****************************************************************************/
-#include "coreplugin/find/itemviewfind.h"
 #include "mesonbuildstepconfigwidget.h"
 #include "ui_mesonbuildstepconfigwidget.h"
+#include <mesonpluginconstants.h>
+#include <coreplugin/find/itemviewfind.h>
+#include <projectexplorer/processparameters.h>
+#include <projectexplorer/buildstep.h>
+#include <QCheckBox>
+#include <QRadioButton>
 namespace MesonProjectManager {
 namespace Internal {
-MesonBuildStepConfigWidget::MesonBuildStepConfigWidget(MesonBuildStep *step) :
-    ProjectExplorer::BuildStepConfigWidget{step},
-    ui(new Ui::MesonBuildStepConfigWidget),
-    m_buildTargetsList{new QListWidget }
+MesonBuildStepConfigWidget::MesonBuildStepConfigWidget(MesonBuildStep *step)
+    : ProjectExplorer::BuildStepConfigWidget{step}
+    , ui(new Ui::MesonBuildStepConfigWidget)
+    , m_buildTargetsList{new QListWidget}
 {
     setDisplayName(tr("Build", "MesonProjectManager::MesonBuildStepConfigWidget display name."));
     ui->setupUi(this);
     m_buildTargetsList->setFrameStyle(QFrame::NoFrame);
     m_buildTargetsList->setMinimumHeight(200);
-    ui->frame->layout()->addWidget(Core::ItemViewFind::createSearchableWrapper(m_buildTargetsList, Core::ItemViewFind::LightColored));
+    ui->frame->layout()->addWidget(
+        Core::ItemViewFind::createSearchableWrapper(m_buildTargetsList,
+                                                    Core::ItemViewFind::LightColored));
+    updateDetails();
+    updateTargetList();
+    connect(step,
+            &MesonBuildStep::targetListChanged,
+            this,
+            &MesonBuildStepConfigWidget::updateTargetList);
+    connect(ui->m_toolArguments,&QLineEdit::textEdited,this,[this](const QString& text)
+            {
+                auto mesonBuildStep = static_cast<MesonBuildStep *>(this->step());
+                mesonBuildStep->setCommandArgs(text);
+                updateDetails();
+            });
+    connect(m_buildTargetsList, &QListWidget::itemChanged,this,[this](QListWidgetItem *item)
+            {
+                if(item->checkState()==Qt::Checked)
+                {
+                    mesonBuildStep()->setBuildTarget(item->data(Qt::UserRole).toString());
+                    updateDetails();
+                }
+            });
 }
 
 MesonBuildStepConfigWidget::~MesonBuildStepConfigWidget()
 {
     delete ui;
 }
+
+void MesonBuildStepConfigWidget::updateDetails()
+{
+    auto mesonBuildStep = static_cast<MesonBuildStep *>(step());
+    ProjectExplorer::ProcessParameters param;
+    param.setMacroExpander(mesonBuildStep->macroExpander());
+    param.setEnvironment(mesonBuildStep->buildEnvironment());
+    param.setWorkingDirectory(mesonBuildStep->buildDirectory());
+    param.setCommandLine(mesonBuildStep->command());
+    setSummaryText(param.summary(displayName()));
+}
+
+void MesonBuildStepConfigWidget::updateTargetList()
+{
+    m_buildTargetsList->clear();
+    std::for_each(std::cbegin(mesonBuildStep()->projectTargets()),
+                  std::cend(mesonBuildStep()->projectTargets()),
+                  [this](const QString &target)
+                  {
+                      auto item = new QListWidgetItem(m_buildTargetsList);
+                      auto button = new QRadioButton(target);
+                      connect(button, &QRadioButton::toggled, this, [this, target](bool toggled) {
+                          if (toggled) {
+                              mesonBuildStep()->setBuildTarget(target);
+                              updateDetails();
+                          }
+                      });
+                      button->setChecked(mesonBuildStep()->targetName()==target);
+                      m_buildTargetsList->setItemWidget(item, button);
+                      item->setData(Qt::UserRole, target);
+    });
+}
+
+
 } // namespace Internal
 } // namespace MesonProjectManager

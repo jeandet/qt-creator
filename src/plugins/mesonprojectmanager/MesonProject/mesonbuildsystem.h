@@ -46,6 +46,10 @@ public:
 
     void configure(const Utils::FilePath &buildDir, const QStringList& arguments);
 
+    const QStringList& targetList()const
+    {
+        return m_parser.targetsNames();
+    }
 private:
     void init();
     void parseProject();

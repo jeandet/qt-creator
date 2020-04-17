@@ -28,11 +28,11 @@
 namespace MesonProjectManager {
 namespace Constants {
 
-const char MIMETYPE[]  = "text/x-meson";
+const char MIMETYPE[] = "text/x-meson";
 namespace Project {
-    const char MIMETYPE[]  = "text/x-meson-project";
-    const char ID[] = "MesonProjectManager.MesonProject";
-}
+const char MIMETYPE[] = "text/x-meson-project";
+const char ID[] = "MesonProjectManager.MesonProject";
+} // namespace Project
 
 // Settings page
 const char MESON_SETTINGSPAGE_ID[] = "Z.Meson";
@@ -60,6 +60,15 @@ const char MESON_INTRO_TESTS[] = "intro-tests.json";
 const char MESON_TOOL_MANAGER[] = "MesonProjectManager.Tools";
 
 const char MESON_BUILD_STEP_ID[] = "MesonProjectManager.BuildStep";
+namespace Targets {
+const char all[] = "all";
+const char clean[] = "clean";
+const char install[] = "install";
+const char tests[] = "test";
+const char benchmark[] = "benchmark";
+const char clang_format[] = "clang-format";
+const char scan_build[] = "scan-build";
+} // namespace Targets
 const char MESON_BUILD_CONFIG_ID[] = "MesonProjectManager.BuildConfiguration";
 
 } // namespace Constants

@@ -62,8 +62,6 @@ void MesonBuildSystem::init()
             this,
             &MesonBuildSystem::parseProject);
     connect(&m_parser, &MesonProjectParser::parsingCompleted, this, [this](bool success) {
-        m_parseGuard.markAsSuccess();
-        m_parseGuard = {};
         if (success) {
             setRootProjectNode(m_parser.takeProjectNode());
             if (kit() && buildConfiguration()) {
@@ -74,6 +72,9 @@ void MesonBuildSystem::init()
                      buildConfiguration()->environment(),
                      m_parser.buildProjectParts(kitInfo.cxxToolChain, kitInfo.cToolChain)});
             }
+            setApplicationTargets(m_parser.appsTargets());
+            m_parseGuard.markAsSuccess();
+            m_parseGuard = {};
             emitBuildSystemUpdated();
         }
     });

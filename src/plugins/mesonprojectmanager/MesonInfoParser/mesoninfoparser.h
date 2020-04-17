@@ -271,9 +271,26 @@ struct Target
     const QString name;
     const QString id;
     const QString definedIn;
-    const QString fileName;
+    const QStringList fileName;
     const Utils::optional<QString> subproject;
     const SourcesList sources;
+
+    static inline QString fullName(const Target& target)
+    {
+        // TODO, this is bad, should be fixed on Meson side
+        if(target.fileName.first().startsWith("/"))
+        {
+            auto fname = target.fileName.first().split('/');
+            auto definedIn = target.definedIn.split('/');
+            definedIn.pop_back();
+            int i=std::min(definedIn.length(),fname.length())-1;
+            for(;i>=0 && fname[i]==definedIn[i];--i);
+            return fname.mid(i+1).join("/");
+        }
+        else {
+            return target.fileName.first();
+        }
+    }
 
     static Type toType(const QString &typeStr)
     {
@@ -298,7 +315,7 @@ struct Target
            QString &&name,
            QString &&id,
            QString &&definedIn,
-           QString &&fileName,
+           QStringList &&fileName,
            QString &&subproject,
            SourcesList &&sources)
         : type{toType(type)}
