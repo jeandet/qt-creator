@@ -43,6 +43,7 @@
 #include <projectexplorer/projecttree.h>
 #include <projectexplorer/runcontrol.h>
 #include <projectexplorer/target.h>
+#include <projectexplorer/runcontrol.h>
 
 #include <extensionsystem/pluginmanager.h>
 
@@ -81,6 +82,11 @@ private:
     MesonBuildStepFactory m_buildStepFactory;
     MesonBuildConfigurationFactory m_buildConfigurationFactory;
     MesonRunConfigurationFactory m_runConfigurationFactory;
+    ProjectExplorer::RunWorkerFactory m_mesonRunWorkerFactory {
+        ProjectExplorer::RunWorkerFactory::make<ProjectExplorer::SimpleTargetRunner>(),
+        {ProjectExplorer::Constants::NORMAL_RUN_MODE},
+        {m_runConfigurationFactory.id()}
+    };
     Q_SLOT void saveMesonTools()
     {
         m_settings.saveMesonTools(MesonTools::tools(), ICore::dialogParent());

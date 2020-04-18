@@ -149,10 +149,11 @@ QList<ProjectExplorer::BuildTargetInfo> MesonProjectParser::appsTargets() const
         {
             ProjectExplorer::BuildTargetInfo bti;
             bti.displayName = target.name;
+            bti.buildKey = Target::fullName(target);
+            bti.displayNameUniquifier =bti.buildKey;
             bti.targetFilePath = Utils::FilePath::fromString(target.fileName.first());
             //bti.projectFilePath = ct.sourceDirectory.stringAppended("/");
             bti.workingDirectory = Utils::FilePath::fromString(target.fileName.first()).absolutePath();
-            bti.buildKey = Target::fullName(target);
             bti.usesTerminal = true;
             apps.append(bti);
         }

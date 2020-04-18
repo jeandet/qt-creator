@@ -75,7 +75,6 @@ void MesonRunConfiguration::updateTargetInformation()
         return;
 
     ProjectExplorer::BuildTargetInfo bti = buildTargetInfo();
-
     auto terminalAspect = aspect<ProjectExplorer::TerminalAspect>();
     terminalAspect->setUseTerminalHint(bti.usesTerminal);
     aspect<ProjectExplorer::ExecutableAspect>()->setExecutable(bti.targetFilePath);
