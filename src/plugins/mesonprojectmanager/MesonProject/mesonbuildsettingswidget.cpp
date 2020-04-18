@@ -93,6 +93,11 @@ MesonBuildSettingsWidget::MesonBuildSettingsWidget(MesonBuildConfiguration *buil
         }
     });
 
+    connect(&m_optionsModel,&BuidOptionsModel::dataChanged,this, [bs,this]()
+            {
+                bs->setMesonConfigArgs(this->m_optionsModel.changesAsMesonArgs());
+            });
+
     connect(&m_optionsFilter, &QAbstractItemModel::modelReset, this, [this]() {
         ui->optionsTreeView->expandAll();
         ui->optionsTreeView->resizeColumnToContents(0);
@@ -109,7 +114,7 @@ MesonBuildSettingsWidget::MesonBuildSettingsWidget(MesonBuildConfiguration *buil
         ui->optionsTreeView->setEnabled(false);
         ui->configureButton->setEnabled(false);
         m_showProgressTimer.start();
-        bs->configure(buildCfg->buildDirectory(), {});
+        bs->configure(buildCfg->buildDirectory());
     });
     bs->triggerParsing();
 }

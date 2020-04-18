@@ -44,7 +44,7 @@ public:
     inline const BuildOptionsList& buildOptions()const {return m_parser.buildOptions();}
     inline const TargetsList& targets()const {return m_parser.targets();}
 
-    void configure(const Utils::FilePath &buildDir, const QStringList& arguments);
+    void configure(const Utils::FilePath &buildDir);
 
     MesonBuildConfiguration* mesonBuildConfiguration();
 
@@ -52,12 +52,16 @@ public:
     {
         return m_parser.targetsNames();
     }
+
+    void setMesonConfigArgs(const QStringList& args){m_pendingConfigArgs=args;}
+
 private:
     void init();
     void parseProject();
     ProjectExplorer::BuildSystem::ParseGuard m_parseGuard;
     MesonProjectParser m_parser;
     CppTools::CppProjectUpdater m_cppCodeModelUpdater;
+    QStringList m_pendingConfigArgs;
 };
 } // namespace Internal
 } // namespace MesonProjectManager

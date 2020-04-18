@@ -44,7 +44,7 @@ BuidOptionsModel::BuidOptionsModel(QObject *parent)
     setHeader({tr("Key"), tr("Value")});
 }
 
-inline void sortPerSubprojectAndSection(
+inline void groupPerSubprojectAndSection(
     const CancellableOptionsList &options,
     QMap<QString, QMap<QString, std::vector<CancellableOption *>>> &subprojectOptions,
     QMap<QString, std::vector<CancellableOption *>> &perSectionOptions)
@@ -91,7 +91,7 @@ void BuidOptionsModel::setConfiguration(const BuildOptionsList &options)
     {
         QMap<QString, QMap<QString, std::vector<CancellableOption *>>> subprojectOptions;
         QMap<QString, std::vector<CancellableOption *>> perSectionOptions;
-        sortPerSubprojectAndSection(m_options, subprojectOptions, perSectionOptions);
+        groupPerSubprojectAndSection(m_options, subprojectOptions, perSectionOptions);
         auto root = new Utils::TreeItem;
         makeTree(root, perSectionOptions);
         auto subProjects = new Utils::StaticTreeItem{"Subprojects"};
@@ -107,6 +107,21 @@ void BuidOptionsModel::setConfiguration(const BuildOptionsList &options)
         root->appendChild(subProjects);
         setRootItem(root);
     }
+}
+
+QStringList BuidOptionsModel::changesAsMesonArgs()
+{
+    QStringList args;
+    std::for_each(std::cbegin(m_options),
+                  std::cend(m_options),
+                  [&](const std::unique_ptr<CancellableOption> &option)
+                  {
+                      if(option->hasChanged())
+                      {
+                          args.push_back(option->mesonArg());
+                      }
+                  });
+    return args;
 }
 
 QWidget *BuildOptionDelegate::makeWidget(QWidget *parent, const QVariant &data)

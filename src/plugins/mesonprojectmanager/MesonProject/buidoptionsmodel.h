@@ -71,6 +71,7 @@ public:
     inline QVariant value() { return m_currentValue->value(); }
     inline QString valueStr() { return m_currentValue->valueStr(); };
     inline QString savedValueStr() { return m_savedValue->valueStr(); };
+    inline QString mesonArg(){return m_currentValue->mesonArg();}
     inline void setValue(const QVariant &v)
     {
         if(v.toString()!=valueStr())
@@ -89,6 +90,8 @@ public:
     explicit BuidOptionsModel(QObject *parent = nullptr);
 
     void setConfiguration(const BuildOptionsList &options);
+
+    QStringList changesAsMesonArgs();
 
 private:
     CancellableOptionsList m_options;

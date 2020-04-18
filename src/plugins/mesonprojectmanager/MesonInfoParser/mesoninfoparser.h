@@ -86,6 +86,13 @@ struct BuildOption
     virtual void setValue(const QVariant &) = 0;
     virtual Type type() const = 0;
     virtual BuildOption *copy() const = 0;
+    inline QString mesonArg() const
+    {
+        if (subproject)
+            return QString("-D%1:%2=%3").arg(*subproject).arg(name).arg(valueStr());
+        else
+            return QString("-D%1=%2").arg(name).arg(valueStr());
+    }
     BuildOption(const QString &name, const QString &section, const QString &description)
         : name{name.contains(":") ? name.split(":").last() : name}
         , section{section}
@@ -93,7 +100,7 @@ struct BuildOption
         , subproject{name.contains(":") ? Utils::optional<QString>(name.split(":").first())
                                         : Utils::nullopt}
     {}
-};
+}; // namespace Internal
 
 struct IntegerBuildOption final : BuildOption
 {

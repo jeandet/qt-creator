@@ -46,13 +46,13 @@ void MesonBuildSystem::triggerParsing()
     parseProject();
 }
 
-void MesonBuildSystem::configure(const Utils::FilePath &buildDir, const QStringList &arguments)
+void MesonBuildSystem::configure(const Utils::FilePath &buildDir)
 {
     if (m_parseGuard.guardsProject())
         return;
     m_parseGuard = guardParsingRun();
     const auto &srcDir = projectDirectory();
-    m_parser.configure(srcDir, buildDir, arguments);
+    m_parser.configure(srcDir, buildDir, m_pendingConfigArgs);
 }
 
 MesonBuildConfiguration *MesonBuildSystem::mesonBuildConfiguration()
