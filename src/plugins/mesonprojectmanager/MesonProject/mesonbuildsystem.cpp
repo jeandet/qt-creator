@@ -36,7 +36,7 @@ namespace Internal {
 
 MesonBuildSystem::MesonBuildSystem(MesonBuildConfiguration *bc)
     : ProjectExplorer::BuildSystem{bc}
-    , m_parser{MesonToolKitAspect::mesonToolId(bc->target()->kit())}
+    , m_parser{MesonToolKitAspect::mesonToolId(bc->target()->kit()), bc->environment()}
 {
     init();
 }
@@ -52,11 +52,23 @@ void MesonBuildSystem::configure(const Utils::FilePath &buildDir, const QStringL
         return;
     m_parseGuard = guardParsingRun();
     const auto &srcDir = projectDirectory();
-    m_parser.configure(srcDir, buildDir, arguments, Utils::Environment{});
+    m_parser.configure(srcDir, buildDir, arguments);
+}
+
+MesonBuildConfiguration *MesonBuildSystem::mesonBuildConfiguration()
+{
+    return static_cast<MesonBuildConfiguration *>(buildConfiguration());
 }
 
 void MesonBuildSystem::init()
 {
+    connect(mesonBuildConfiguration(),
+            &MesonBuildConfiguration::buildDirectoryChanged,
+            this,
+            [this]() { this->triggerParsing(); });
+    connect(mesonBuildConfiguration(), &MesonBuildConfiguration::environmentChanged, this, [this]() {
+        m_parser.setEnvironment(buildConfiguration()->environment());
+    });
     connect(project(),
             &ProjectExplorer::Project::projectFileIsDirty,
             this,

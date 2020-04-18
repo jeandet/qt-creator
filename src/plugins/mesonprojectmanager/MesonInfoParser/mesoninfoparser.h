@@ -40,7 +40,7 @@ namespace Internal {
 
 struct ComboData
 {
-    QString value() const { return m_choices.at(m_currentIndex!=-1?m_currentIndex:0); }
+    QString value() const { return m_choices.at(m_currentIndex != -1 ? m_currentIndex : 0); }
     void setValue(const QString &value) { m_currentIndex = m_choices.indexOf(value); }
     ComboData(const QStringList &choices, const QString &value)
         : m_choices{choices}
@@ -98,7 +98,7 @@ struct BuildOption
 struct IntegerBuildOption final : BuildOption
 {
     QVariant value() const override { return m_currentValue; }
-    QString valueStr() const override {return QString::number(m_currentValue);}
+    QString valueStr() const override { return QString::number(m_currentValue); }
     void setValue(const QVariant &value) override { m_currentValue = value.toInt(); }
     Type type() const override { return Type::integer; }
     BuildOption *copy() const override { return new IntegerBuildOption{*this}; }
@@ -117,7 +117,7 @@ protected:
 struct StringBuildOption : BuildOption
 {
     QVariant value() const override { return m_currentValue; }
-    QString valueStr() const override {return m_currentValue;}
+    QString valueStr() const override { return m_currentValue; }
     void setValue(const QVariant &value) override { m_currentValue = value.toString(); }
     Type type() const override { return Type::string; }
     BuildOption *copy() const override { return new StringBuildOption{*this}; }
@@ -136,11 +136,8 @@ protected:
 
 struct FeatureBuildOption : BuildOption
 {
-    QVariant value() const override
-    {
-        return QVariant::fromValue(m_currentValue);
-    }
-    QString valueStr() const override {return m_currentValue.value();}
+    QVariant value() const override { return QVariant::fromValue(m_currentValue); }
+    QString valueStr() const override { return m_currentValue.value(); }
     void setValue(const QVariant &value) override { m_currentValue.setValue(value.toString()); }
     Type type() const override { return Type::feature; }
     BuildOption *copy() const override { return new FeatureBuildOption{*this}; }
@@ -160,11 +157,8 @@ protected:
 struct ComboBuildOption : BuildOption
 {
     const QStringList &choices() const { return m_currentValue.choices(); }
-    QVariant value() const override
-    {
-        return QVariant::fromValue(m_currentValue);
-    }
-    QString valueStr() const override {return m_currentValue.value();}
+    QVariant value() const override { return QVariant::fromValue(m_currentValue); }
+    QString valueStr() const override { return m_currentValue.value(); }
     void setValue(const QVariant &value) override { m_currentValue.setValue(value.toString()); }
     Type type() const override { return Type::combo; }
     BuildOption *copy() const override { return new ComboBuildOption{*this}; }
@@ -184,7 +178,7 @@ protected:
 struct ArrayBuildOption : BuildOption
 {
     QVariant value() const override { return m_currentValue; }
-    QString valueStr() const override {return m_currentValue.join(":");}
+    QString valueStr() const override { return m_currentValue.join(":"); }
     void setValue(const QVariant &value) override { m_currentValue = value.toStringList(); }
     Type type() const override { return Type::array; }
     BuildOption *copy() const override { return new ArrayBuildOption{*this}; }
@@ -204,7 +198,10 @@ protected:
 struct BooleanBuildOption : BuildOption
 {
     QVariant value() const override { return m_currentValue; }
-    QString valueStr() const override {return m_currentValue?QString{"true"}:QString{"false"};}
+    QString valueStr() const override
+    {
+        return m_currentValue ? QString{"true"} : QString{"false"};
+    }
     void setValue(const QVariant &value) override { m_currentValue = value.toBool(); }
     Type type() const override { return Type::boolean; }
     BuildOption *copy() const override { return new BooleanBuildOption{*this}; }
@@ -225,7 +222,7 @@ protected:
 struct UnknownBuildOption : BuildOption
 {
     QVariant value() const override { return "Unknown option"; }
-    QString valueStr() const override {return "Unknown option";}
+    QString valueStr() const override { return "Unknown option"; }
     void setValue(const QVariant &) override {}
     Type type() const override { return Type::unknown; }
     BuildOption *copy() const override { return new UnknownBuildOption{*this}; }
@@ -247,18 +244,18 @@ struct Target
         jar,
         unknown
     };
-    struct Source
+    struct SourceGroup
     {
         const QString language;
         const QStringList compiler;
         const QStringList parameters;
         const QStringList sources;
         const QStringList generatedSources;
-        Source(QString &&langage,
-               QStringList &&compiler,
-               QStringList &&parameters,
-               QStringList &&sources,
-               QStringList &&generatedSources)
+        SourceGroup(QString &&langage,
+                    QStringList &&compiler,
+                    QStringList &&parameters,
+                    QStringList &&sources,
+                    QStringList &&generatedSources)
             : language{std::move(langage)}
             , compiler{std::move(compiler)}
             , parameters{std::move(parameters)}
@@ -266,28 +263,27 @@ struct Target
             , generatedSources{std::move(generatedSources)}
         {}
     };
-    using SourcesList = std::vector<Source>;
+    using SourceGroupList = std::vector<SourceGroup>;
     const Type type;
     const QString name;
     const QString id;
     const QString definedIn;
     const QStringList fileName;
     const Utils::optional<QString> subproject;
-    const SourcesList sources;
+    const SourceGroupList sources;
 
-    static inline QString fullName(const Target& target)
+    static inline QString fullName(const Target &target)
     {
         // TODO, this is bad, should be fixed on Meson side
-        if(target.fileName.first().startsWith("/"))
-        {
+        if (target.fileName.first().startsWith("/")) {
             auto fname = target.fileName.first().split('/');
             auto definedIn = target.definedIn.split('/');
             definedIn.pop_back();
-            int i=std::min(definedIn.length(),fname.length())-1;
-            for(;i>=0 && fname[i]==definedIn[i];--i);
-            return fname.mid(i+1).join("/");
-        }
-        else {
+            int i = std::min(definedIn.length(), fname.length()) - 1;
+            for (; i >= 0 && fname[i] == definedIn[i]; --i)
+                ;
+            return fname.mid(i + 1).join("/");
+        } else {
             return target.fileName.first();
         }
     }
@@ -317,7 +313,7 @@ struct Target
            QString &&definedIn,
            QStringList &&fileName,
            QString &&subproject,
-           SourcesList &&sources)
+           SourceGroupList &&sources)
         : type{toType(type)}
         , name{std::move(name)}
         , id{std::move(id)}
@@ -332,13 +328,23 @@ struct Target
 using BuildOptionsList = std::vector<std::unique_ptr<BuildOption>>;
 using TargetsList = std::vector<Target>;
 
+template<class function>
+void for_each_source_group(const TargetsList &targets, const function &f)
+{
+    std::for_each(std::cbegin(targets), std::cend(targets), [&](const Target &target) {
+        std::for_each(std::cbegin(target.sources),
+                      std::cend(target.sources),
+                      [&](const Target::SourceGroup &group) { f(target, group); });
+    });
+}
+
 class MesonInfoParserPrivate;
 class MesonInfoParser
 {
 public:
     MesonInfoParser(const QString &buildDir);
     MesonInfoParser(QIODevice *introFile);
-    MesonInfoParser(const QByteArray& data);
+    MesonInfoParser(const QByteArray &data);
     ~MesonInfoParser();
     TargetsList targets();
     BuildOptionsList buildOptions();

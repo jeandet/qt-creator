@@ -89,7 +89,7 @@ inline Utils::optional<Utils::FilePath> findMeson()
 inline bool isSetup(const Utils::FilePath &buildPath)
 {
     using namespace Utils;
-    return containsFiles(QString("%1/%2").arg(buildPath.toString()).arg(Constants::MESON_INFO_DIR),
+    return containsFiles(buildPath.pathAppended(Constants::MESON_INFO_DIR).toString(),
                          Constants::MESON_INTRO_TESTS,
                          Constants::MESON_INTRO_TARGETS,
                          Constants::MESON_INTRO_INSTALLED,

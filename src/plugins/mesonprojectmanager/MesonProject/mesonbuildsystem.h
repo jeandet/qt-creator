@@ -46,6 +46,8 @@ public:
 
     void configure(const Utils::FilePath &buildDir, const QStringList& arguments);
 
+    MesonBuildConfiguration* mesonBuildConfiguration();
+
     const QStringList& targetList()const
     {
         return m_parser.targetsNames();

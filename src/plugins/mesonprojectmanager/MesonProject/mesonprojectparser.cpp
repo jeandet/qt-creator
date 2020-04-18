@@ -94,8 +94,9 @@ QStringList toAbsolutePath(const Utils::FilePath &refPath, QStringList &pathList
     return allAbs;
 }
 
-MesonProjectParser::MesonProjectParser(const Core::Id &meson)
-    : m_meson{meson}
+MesonProjectParser::MesonProjectParser(const Core::Id &meson, Utils::Environment env)
+    : m_env{env}
+    , m_meson{meson}
     , m_configuring{false}
 {
     connect(&m_process,
@@ -115,20 +116,21 @@ void MesonProjectParser::setMesonTool(const Core::Id &meson)
 
 void MesonProjectParser::configure(const Utils::FilePath &sourcePath,
                                    const Utils::FilePath &buildPath,
-                                   const QStringList &args,
-                                   const Utils::Environment &env)
+                                   const QStringList &args)
 {
     m_introType = IntroDataType::file;
     m_buildDir = buildPath;
-    m_process.run(MesonTools::tool(m_meson)->configure(sourcePath, buildPath, args), env);
+    m_process.run(MesonTools::tool(m_meson)->configure(sourcePath, buildPath, args), m_env);
 }
 
 void MesonProjectParser::parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath)
 {
     m_srcDir = sourcePath;
+    m_buildDir = buildPath;
     if (!isSetup(buildPath)) {
         parse(sourcePath);
     } else {
+        m_introType = IntroDataType::file;
         startParser();
     }
 }
@@ -137,23 +139,21 @@ void MesonProjectParser::parse(const Utils::FilePath &sourcePath)
 {
     m_srcDir = sourcePath;
     m_introType = IntroDataType::stdo;
-    m_process.run(MesonTools::tool(m_meson)->introspect(sourcePath), Utils::Environment{}, true);
+    m_process.run(MesonTools::tool(m_meson)->introspect(sourcePath), m_env, true);
 }
 
 QList<ProjectExplorer::BuildTargetInfo> MesonProjectParser::appsTargets() const
 {
     QList<ProjectExplorer::BuildTargetInfo> apps;
-    std::for_each(std::cbegin(m_targets),std::cend(m_targets),[&apps](const Target& target)
-    {
-        if(target.type==Target::Type::executable)
-        {
+    std::for_each(std::cbegin(m_targets), std::cend(m_targets), [&apps](const Target &target) {
+        if (target.type == Target::Type::executable) {
             ProjectExplorer::BuildTargetInfo bti;
             bti.displayName = target.name;
             bti.buildKey = Target::fullName(target);
-            bti.displayNameUniquifier =bti.buildKey;
+            bti.displayNameUniquifier = bti.buildKey;
             bti.targetFilePath = Utils::FilePath::fromString(target.fileName.first());
-            //bti.projectFilePath = ct.sourceDirectory.stringAppended("/");
-            bti.workingDirectory = Utils::FilePath::fromString(target.fileName.first()).absolutePath();
+            bti.workingDirectory = Utils::FilePath::fromString(target.fileName.first())
+                                       .absolutePath();
             bti.usesTerminal = true;
             apps.append(bti);
         }
@@ -164,11 +164,11 @@ void MesonProjectParser::startParser()
 {
     m_parserResult = Utils::runAsync(ProjectExplorer::ProjectExplorerPlugin::sharedThreadPool(),
                                      [process = &m_process,
-                                     introType = m_introType,
-                                     buildDir = m_buildDir.toString(),
-                                     srcDir = m_srcDir]() {
-        if (introType == IntroDataType::file) {
-            MesonInfoParser parser(buildDir);
+                                      introType = m_introType,
+                                      buildDir = m_buildDir.toString(),
+                                      srcDir = m_srcDir]() {
+                                         if (introType == IntroDataType::file) {
+                                             MesonInfoParser parser(buildDir);
                                              return extractParserResults(srcDir, parser);
                                          } else {
                                              MesonInfoParser parser(process->stdo());
@@ -176,21 +176,7 @@ void MesonProjectParser::startParser()
                                          }
                                      });
 
-    Utils::onFinished(m_parserResult, this, [this](const QFuture<ParserData *> &data) {
-        auto parserData = data.result();
-        m_targets = std::move(parserData->targets);
-        m_buildOptions = std::move(parserData->buildOptions);
-        m_rootNode = std::move(parserData->rootNode);
-        m_targetsNames.clear();
-        std::transform(std::cbegin(m_targets),
-                       std::cend(m_targets),
-                       std::back_inserter(m_targetsNames),
-                       Target::fullName);
-        addMissingTargets(m_targetsNames);
-        m_targetsNames.sort();
-        delete data;
-        emit parsingCompleted(true);
-    });
+    Utils::onFinished(m_parserResult, this, &MesonProjectParser::update);
 }
 
 MesonProjectParser::ParserData *MesonProjectParser::extractParserResults(
@@ -205,44 +191,62 @@ MesonProjectParser::ParserData *MesonProjectParser::extractParserResults(
 void MesonProjectParser::addMissingTargets(QStringList &targetList)
 {
     // Not all targets are listed in introspection data
-    for (const auto target : QStringList{Constants::Targets::all,
-                                         Constants::Targets::clean,
-                                         Constants::Targets::install,
-                                         Constants::Targets::benchmark,
-                                         Constants::Targets::scan_build}) {
+    for (const auto target : additionalTargets()) {
         if (!targetList.contains(target)) {
             targetList.append(target);
         }
     }
 }
 
+void MesonProjectParser::update(const QFuture<MesonProjectParser::ParserData *> &data)
+{
+    auto parserData = data.result();
+    m_targets = std::move(parserData->targets);
+    m_buildOptions = std::move(parserData->buildOptions);
+    m_rootNode = std::move(parserData->rootNode);
+    m_targetsNames.clear();
+    std::transform(std::cbegin(m_targets),
+                   std::cend(m_targets),
+                   std::back_inserter(m_targetsNames),
+                   Target::fullName);
+    addMissingTargets(m_targetsNames);
+    m_targetsNames.sort();
+    delete data;
+    emit parsingCompleted(true);
+}
+
+ProjectExplorer::RawProjectPart MesonProjectParser::buildRawPart(
+    const Target &target,
+    const Target::SourceGroup &sources,
+    const ProjectExplorer::ToolChain *cxxToolChain,
+    const ProjectExplorer::ToolChain *cToolChain)
+{
+    ProjectExplorer::RawProjectPart part;
+    part.setDisplayName(target.name);
+    part.setBuildSystemTarget(target.name);
+    part.setFiles(sources.sources + sources.generatedSources);
+    auto flags = splitArgs(sources.parameters);
+    part.setMacros(flags.macros);
+    part.setIncludePaths(toAbsolutePath(this->m_buildDir, flags.includePaths));
+    if (sources.language == "cpp")
+        part.setFlagsForCxx({cxxToolChain, flags.args});
+    else if (sources.language == "c")
+        part.setFlagsForC({cToolChain, flags.args});
+    return part;
+}
+
 ProjectExplorer::RawProjectParts MesonProjectParser::buildProjectParts(
     const ProjectExplorer::ToolChain *cxxToolChain, const ProjectExplorer::ToolChain *cToolChain)
 {
     ProjectExplorer::RawProjectParts parts;
-    std::for_each(std::cbegin(m_targets),
-                  std::cend(m_targets),
-                  [&parts, &cxxToolChain, &cToolChain, this](const Target &target) {
-                      std::for_each(std::cbegin(target.sources),
-                                    std::cend(target.sources),
-                                    [&target, &parts, &cxxToolChain, &cToolChain, this](
-                                        const Target::Source &sourceList) {
-                                        ProjectExplorer::RawProjectPart part;
-                                        part.setDisplayName(target.name);
-                                        part.setBuildSystemTarget(target.name);
-                                        part.setFiles(sourceList.sources
-                                                      + sourceList.generatedSources);
-                                        auto flags = splitArgs(sourceList.parameters);
-                                        part.setMacros(flags.macros);
-                                        part.setIncludePaths(
-                                            toAbsolutePath(this->m_buildDir, flags.includePaths));
-                                        if (sourceList.language == "cpp")
-                                            part.setFlagsForCxx({cxxToolChain, flags.args});
-                                        else if (sourceList.language == "c")
-                                            part.setFlagsForC({cToolChain, flags.args});
-                                        parts.push_back(part);
-                                    });
-                  });
+    for_each_source_group(m_targets,
+                          [&parts,
+                           &cxxToolChain,
+                           &cToolChain,
+                           this](const Target &target, const Target::SourceGroup &sourceList) {
+                              parts.push_back(
+                                  buildRawPart(target, sourceList, cxxToolChain, cToolChain));
+                          });
     return parts;
 }
 } // namespace Internal

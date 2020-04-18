@@ -39,7 +39,7 @@ public:
         : AbstractParser{js.object()["targets"]}
     {}
 
-    static inline Target::Source extract_source(const QJsonValue &source)
+    static inline Target::SourceGroup extract_source(const QJsonValue &source)
     {
         const auto srcObj = source.toObject();
         return {srcObj["language"].toString(),
@@ -49,9 +49,9 @@ public:
                 srcObj["generated_sources"].toVariant().toStringList()};
     }
 
-    static inline Target::SourcesList extract_sources(const QJsonArray &sources)
+    static inline Target::SourceGroupList extract_sources(const QJsonArray &sources)
     {
-        Target::SourcesList res;
+        Target::SourceGroupList res;
         std::transform(std::cbegin(sources),
                        std::cend(sources),
                        std::back_inserter(res),

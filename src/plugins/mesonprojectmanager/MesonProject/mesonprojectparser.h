@@ -23,13 +23,14 @@
 **
 ****************************************************************************/
 #pragma once
-#include <MesonInfoParser/mesoninfoparser.h>
-#include <MesonWrapper/mesonwrapper.h>
 #include "ProjectTree/mesonprojectnodes.h"
 #include "mesonprocess.h"
+#include <MesonInfoParser/mesoninfoparser.h>
+#include <MesonWrapper/mesonwrapper.h>
 #include <projectexplorer/buildsystem.h>
 #include <projectexplorer/rawprojectpart.h>
 #include <utils/fileutils.h>
+#include <utils/environment.h>
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QObject>
@@ -48,12 +49,11 @@ class MesonProjectParser : public QObject
     };
 
 public:
-    MesonProjectParser(const Core::Id& meson);
-    void setMesonTool(const Core::Id& meson);
+    MesonProjectParser(const Core::Id &meson, Utils::Environment env);
+    void setMesonTool(const Core::Id &meson);
     Q_SLOT void configure(const Utils::FilePath &sourcePath,
                           const Utils::FilePath &buildPath,
-                          const QStringList &args,
-                          const Utils::Environment &env);
+                          const QStringList &args);
     Q_SLOT void parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath);
     Q_SLOT void parse(const Utils::FilePath &sourcePath);
 
@@ -64,16 +64,33 @@ public:
     inline const BuildOptionsList &buildOptions() const { return m_buildOptions; };
     inline const TargetsList &targets() const { return m_targets; }
     inline const QStringList &targetsNames() const { return m_targetsNames; }
-    QList<ProjectExplorer::BuildTargetInfo> appsTargets()const;
 
-    ProjectExplorer::RawProjectParts buildProjectParts(const ProjectExplorer::ToolChain* cxxToolChain, const ProjectExplorer::ToolChain* cToolChain);
+    static inline QStringList additionalTargets()
+    {
+        return QStringList{Constants::Targets::all,
+                           Constants::Targets::clean,
+                           Constants::Targets::install,
+                           Constants::Targets::benchmark,
+                           Constants::Targets::scan_build};
+    }
+
+    QList<ProjectExplorer::BuildTargetInfo> appsTargets() const;
+
+    ProjectExplorer::RawProjectParts buildProjectParts(
+        const ProjectExplorer::ToolChain *cxxToolChain,
+        const ProjectExplorer::ToolChain *cToolChain);
+
+    inline void setEnvironment(const Utils::Environment& environment){m_env = environment;}
 
 private:
     void startParser();
     static ParserData *extractParserResults(const Utils::FilePath &srcDir, MesonInfoParser &parser);
-    static void addMissingTargets(QStringList& targetList);
+    static void addMissingTargets(QStringList &targetList);
+    void update(const QFuture<ParserData *> &data);
+    ProjectExplorer::RawProjectPart buildRawPart(const Target &target, const Target::SourceGroup &sources, const ProjectExplorer::ToolChain *cxxToolChain, const ProjectExplorer::ToolChain *cToolChain);
     MesonProcess m_process;
 
+    Utils::Environment m_env;
     Core::Id m_meson;
     Utils::FilePath m_buildDir;
     Utils::FilePath m_srcDir;
@@ -83,7 +100,7 @@ private:
     BuildOptionsList m_buildOptions; // <- Project build settings
     TargetsList m_targets;
     QStringList m_targetsNames;
-    std::unique_ptr<MesonProjectNode> m_rootNode;    // <- project tree root node
+    std::unique_ptr<MesonProjectNode> m_rootNode; // <- project tree root node
 };
 } // namespace Internal
 } // namespace MesonProjectManager
