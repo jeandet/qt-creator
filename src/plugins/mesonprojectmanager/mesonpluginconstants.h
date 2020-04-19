@@ -56,6 +56,8 @@ const char MESON_INTRO_INSTALLED[] = "intro-installed.json";
 const char MESON_INTRO_PROJECTINFO[] = "intro-projectinfo.json";
 const char MESON_INTRO_TARGETS[] = "intro-targets.json";
 const char MESON_INTRO_TESTS[] = "intro-tests.json";
+const char MESON_INFO[] = "meson-info.json";
+
 
 const char MESON_TOOL_MANAGER[] = "MesonProjectManager.Tools";
 

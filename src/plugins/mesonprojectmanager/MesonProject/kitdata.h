@@ -23,42 +23,18 @@
 **
 ****************************************************************************/
 #pragma once
-
-#include <projectexplorer/buildstep.h>
-#include <projectexplorer/abstractprocessstep.h>
-#include <utils/qtcprocess.h>
-#include <QObject>
-
+#include <QString>
 namespace MesonProjectManager {
 namespace Internal {
-class MesonBuildStep final : public ProjectExplorer::AbstractProcessStep
+struct KitData
 {
-    Q_OBJECT
-public:
-    MesonBuildStep(ProjectExplorer::BuildStepList *bsl, Core::Id id);
-    ProjectExplorer::BuildStepConfigWidget *createConfigWidget() final;
-    Utils::CommandLine command();
-    QStringList projectTargets();
-    void setBuildTarget(const QString& targetName);
-    void setCommandArgs(const QString& args);
-    const QString& targetName()const{return m_targetName;}
-    Q_SIGNAL void targetListChanged();
-    QVariantMap toMap() const override;
-    bool fromMap(const QVariantMap &map) override;
-private:
-    void update(bool parsingSuccessful);
-    bool init() override;
-    void doRun() override;
-    QString defaultBuildTarget() const;
-    QString m_commandArgs;
-    QString m_targetName;
-};
-
-class MesonBuildStepFactory final: public ProjectExplorer::BuildStepFactory
-{
-public:
-    MesonBuildStepFactory();
+    QString cCompilerPath;
+    QString cxxCompilerPath;
+    QString cmakePath;
+    QString qmakePath;
+    QString qtVersion;
 };
 
 } // namespace Internal
 } // namespace MesonProjectManager
+

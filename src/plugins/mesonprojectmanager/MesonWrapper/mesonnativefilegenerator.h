@@ -23,42 +23,16 @@
 **
 ****************************************************************************/
 #pragma once
-
-#include <projectexplorer/buildstep.h>
-#include <projectexplorer/abstractprocessstep.h>
-#include <utils/qtcprocess.h>
-#include <QObject>
-
+#include <QIODevice>
+#include <projectexplorer/kit.h>
+#include <MesonProject/kitdata.h>
 namespace MesonProjectManager {
 namespace Internal {
-class MesonBuildStep final : public ProjectExplorer::AbstractProcessStep
+class MesonNativeFileGenerator
 {
-    Q_OBJECT
+    MesonNativeFileGenerator();
 public:
-    MesonBuildStep(ProjectExplorer::BuildStepList *bsl, Core::Id id);
-    ProjectExplorer::BuildStepConfigWidget *createConfigWidget() final;
-    Utils::CommandLine command();
-    QStringList projectTargets();
-    void setBuildTarget(const QString& targetName);
-    void setCommandArgs(const QString& args);
-    const QString& targetName()const{return m_targetName;}
-    Q_SIGNAL void targetListChanged();
-    QVariantMap toMap() const override;
-    bool fromMap(const QVariantMap &map) override;
-private:
-    void update(bool parsingSuccessful);
-    bool init() override;
-    void doRun() override;
-    QString defaultBuildTarget() const;
-    QString m_commandArgs;
-    QString m_targetName;
+    static void makeNativeFile(QIODevice* nativeFile, const KitData& kitData);
 };
-
-class MesonBuildStepFactory final: public ProjectExplorer::BuildStepFactory
-{
-public:
-    MesonBuildStepFactory();
-};
-
 } // namespace Internal
 } // namespace MesonProjectManager

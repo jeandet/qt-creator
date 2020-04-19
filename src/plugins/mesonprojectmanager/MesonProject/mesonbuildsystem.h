@@ -24,12 +24,14 @@
 ****************************************************************************/
 #pragma once
 #include "mesonprojectparser.h"
-#include "MesonWrapper/mesonwrapper.h"
+#include <MesonWrapper/mesonwrapper.h>
+#include "kitdata.h"
 
 #include <projectexplorer/buildsystem.h>
 #include <projectexplorer/target.h>
 #include <cpptools/cppprojectupdater.h>
 #include <utils/filesystemwatcher.h>
+#include <QTemporaryFile>
 
 namespace MesonProjectManager {
 namespace Internal {
@@ -45,6 +47,7 @@ public:
     inline const TargetsList& targets()const {return m_parser.targets();}
 
     void configure(const Utils::FilePath &buildDir);
+    void setup(const Utils::FilePath &buildDir);
 
     MesonBuildConfiguration* mesonBuildConfiguration();
 
@@ -58,10 +61,14 @@ public:
 private:
     void init();
     void parseProject();
+    void updateNativeFile();
+    void updateKit(ProjectExplorer::Kit* kit);
     ProjectExplorer::BuildSystem::ParseGuard m_parseGuard;
     MesonProjectParser m_parser;
     CppTools::CppProjectUpdater m_cppCodeModelUpdater;
     QStringList m_pendingConfigArgs;
+    std::unique_ptr<QTemporaryFile> m_nativeFile;
+    KitData m_kitData;
 };
 } // namespace Internal
 } // namespace MesonProjectManager

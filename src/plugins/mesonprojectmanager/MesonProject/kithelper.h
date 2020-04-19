@@ -22,43 +22,63 @@
 ** be met: https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ****************************************************************************/
+#include <projectexplorer/kit.h>
+#include <utils/qtcassert.h>
+#include <utils/macroexpander.h>
+#include <QString>
+#include "kitdata.h"
 #pragma once
-
-#include <projectexplorer/buildstep.h>
-#include <projectexplorer/abstractprocessstep.h>
-#include <utils/qtcprocess.h>
-#include <QObject>
-
 namespace MesonProjectManager {
 namespace Internal {
-class MesonBuildStep final : public ProjectExplorer::AbstractProcessStep
+namespace KitHelper {
+namespace  {
+QString expand(ProjectExplorer::Kit* kit, const QString& macro)
 {
-    Q_OBJECT
-public:
-    MesonBuildStep(ProjectExplorer::BuildStepList *bsl, Core::Id id);
-    ProjectExplorer::BuildStepConfigWidget *createConfigWidget() final;
-    Utils::CommandLine command();
-    QStringList projectTargets();
-    void setBuildTarget(const QString& targetName);
-    void setCommandArgs(const QString& args);
-    const QString& targetName()const{return m_targetName;}
-    Q_SIGNAL void targetListChanged();
-    QVariantMap toMap() const override;
-    bool fromMap(const QVariantMap &map) override;
-private:
-    void update(bool parsingSuccessful);
-    bool init() override;
-    void doRun() override;
-    QString defaultBuildTarget() const;
-    QString m_commandArgs;
-    QString m_targetName;
-};
+    return  kit->macroExpander()->expand(macro);
+}
+}
 
-class MesonBuildStepFactory final: public ProjectExplorer::BuildStepFactory
+inline QString cCompilerPath(ProjectExplorer::Kit* kit)
 {
-public:
-    MesonBuildStepFactory();
-};
+        QTC_ASSERT(kit, return "");
+    return expand(kit, "%{Compiler:Executable:C}");
+}
+
+inline QString cxxCompilerPath(ProjectExplorer::Kit* kit)
+{
+        QTC_ASSERT(kit, return "");
+    return expand(kit, "%{Compiler:Executable:Cxx}");
+}
+
+inline QString qmakePath(ProjectExplorer::Kit* kit)
+{
+    return expand(kit, "%{Qt:qmakeExecutable}");
+}
+
+inline QString cmakePath(ProjectExplorer::Kit* kit)
+{
+    return expand(kit, "%{CMake:Executable:FilePath}");
+}
+
+inline QString qtVersion(ProjectExplorer::Kit* kit)
+{
+        QTC_ASSERT(kit, return "");
+    return expand(kit, "%{Qt:Version}");
+}
+
+inline KitData kitData(ProjectExplorer::Kit* kit)
+{
+    QTC_ASSERT(kit, return {});
+    KitData data;
+    data.cCompilerPath = cCompilerPath(kit);
+    data.cxxCompilerPath = cxxCompilerPath(kit);
+    data.cmakePath = cmakePath(kit);
+    data.qmakePath = qmakePath(kit);
+    data.qtVersion = qtVersion(kit);
+    return data;
+}
+
+}
 
 } // namespace Internal
 } // namespace MesonProjectManager

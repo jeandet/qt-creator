@@ -1,3 +1,4 @@
+
 #include "mesoninfoparser.h"
 #include "../mesonpluginconstants.h"
 #include <QFile>
@@ -9,6 +10,37 @@
 namespace MesonProjectManager {
 namespace Internal {
 
+template<typename T>
+T load(QJsonDocument &&doc);
+
+template<>
+QJsonArray load<QJsonArray>(QJsonDocument &&doc)
+{
+    return doc.array();
+}
+
+template<>
+QJsonObject load<QJsonObject>(QJsonDocument &&doc)
+{
+    return doc.object();
+}
+
+template<typename T>
+T load(const QJsonValueRef &ref);
+
+template<>
+QJsonArray load<QJsonArray>(const QJsonValueRef &ref)
+{
+    return ref.toArray();
+}
+
+template<>
+QJsonObject load<QJsonObject>(const QJsonValueRef &ref)
+{
+    return ref.toObject();
+}
+
+template<typename root_type>
 class AbstractParser
 {
 public:
@@ -18,14 +50,14 @@ public:
         js.open(QIODevice::ReadOnly | QIODevice::Text);
         if (js.isOpen()) {
             auto data = js.readAll();
-            m_json = QJsonDocument::fromJson(data).array();
+            m_json = load<root_type>(QJsonDocument::fromJson(data));
         }
     }
-    AbstractParser(const QJsonValueRef &js) { m_json = js.toArray(); }
-    QJsonArray m_json;
+    AbstractParser(const QJsonValueRef &js) { m_json = load<root_type>(js); }
+    root_type m_json;
 };
 
-class TargetParser final : AbstractParser
+class TargetParser final : AbstractParser<QJsonArray>
 {
 public:
     TargetParser(const QString &buildDir)
@@ -83,7 +115,7 @@ public:
     }
 };
 
-class BuildOptionsParser final : AbstractParser
+class BuildOptionsParser final : AbstractParser<QJsonArray>
 {
 public:
     BuildOptionsParser(const QString &buildDir)
@@ -147,6 +179,30 @@ public:
     }
 };
 
+class InfoParser final : AbstractParser<QJsonObject>
+{
+public:
+    InfoParser(const QString &buildDir)
+        : AbstractParser(jsonFile(buildDir))
+    {}
+    static inline QString jsonFile(const QString &buildDir)
+    {
+        return QString("%1/%2/%3")
+            .arg(buildDir)
+            .arg(Constants::MESON_INFO_DIR)
+            .arg(Constants::MESON_INFO);
+    }
+    MesonInfo info()
+    {
+        MesonInfo info;
+        auto version = m_json["meson_version"].toObject();
+        info.mesonVersion = MesonVersion{version["major"].toInt(),
+                                         version["minor"].toInt(),
+                                         version["patch"].toInt()};
+        return info;
+    }
+};
+
 class MesonInfoParserPrivate
 {
 public:
@@ -160,6 +216,16 @@ public:
     {}
     inline auto targets() { return m_targets.targetList(); }
     inline auto buildOptions() { return m_buildOptions.buildOptions(); }
+
+    static inline Utils::optional<MesonInfo> mesonInfo(const QString &buildDir)
+    {
+        if(QFile::exists(InfoParser::jsonFile(buildDir)))
+        {
+            InfoParser mesonInfo{buildDir};
+            return mesonInfo.info();
+        }
+        return Utils::nullopt;
+    }
 
 private:
     TargetParser m_targets;
@@ -200,6 +266,11 @@ TargetsList MesonInfoParser::targets()
 BuildOptionsList MesonInfoParser::buildOptions()
 {
     return d_ptr->buildOptions();
+}
+
+Utils::optional<MesonInfo> MesonInfoParser::mesonInfo(const QString &buildDir)
+{
+    return MesonInfoParserPrivate::mesonInfo(buildDir);
 }
 } // namespace Internal
 } // namespace MesonProjectManager

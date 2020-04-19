@@ -23,9 +23,9 @@
 **
 ****************************************************************************/
 #pragma once
-
-#include "utils/fileutils.h"
-#include "utils/optional.h"
+#include <MesonWrapper/mesonwrapper.h>
+#include <utils/fileutils.h>
+#include <utils/optional.h>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
@@ -345,6 +345,11 @@ void for_each_source_group(const TargetsList &targets, const function &f)
     });
 }
 
+struct MesonInfo
+{
+    MesonVersion mesonVersion;
+};
+
 class MesonInfoParserPrivate;
 class MesonInfoParser
 {
@@ -355,7 +360,7 @@ public:
     ~MesonInfoParser();
     TargetsList targets();
     BuildOptionsList buildOptions();
-
+    static Utils::optional<MesonInfo> mesonInfo(const QString &buildDir);
 private:
     MesonInfoParserPrivate *d_ptr;
 };

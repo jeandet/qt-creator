@@ -123,6 +123,18 @@ void MesonProjectParser::configure(const Utils::FilePath &sourcePath,
     m_process.run(MesonTools::tool(m_meson)->configure(sourcePath, buildPath, args), m_env);
 }
 
+void MesonProjectParser::setup(const Utils::FilePath &sourcePath,
+                               const Utils::FilePath &buildPath,
+                               const QStringList &args)
+{
+    m_introType = IntroDataType::file;
+    m_buildDir = buildPath;
+    auto cmdArgs = args;
+    if (isSetup(buildPath))
+        cmdArgs << "--wipe";
+    m_process.run(MesonTools::tool(m_meson)->setup(sourcePath, buildPath, cmdArgs), m_env);
+}
+
 void MesonProjectParser::parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath)
 {
     m_srcDir = sourcePath;
@@ -248,6 +260,33 @@ ProjectExplorer::RawProjectParts MesonProjectParser::buildProjectParts(
                                   buildRawPart(target, sourceList, cxxToolChain, cToolChain));
                           });
     return parts;
+}
+
+bool sourceGroupMatchesKit(const KitData &kit, const Target::SourceGroup &group)
+{
+    if (group.language == "c")
+        return kit.cCompilerPath == group.compiler[0];
+    if (group.language == "cpp")
+        return kit.cxxCompilerPath == group.compiler[0];
+    return true;
+}
+
+bool MesonProjectParser::matchesKit(const KitData &kit)
+{
+    bool matches = true;
+    for_each_source_group(m_targets,
+                          [&matches, &kit](const Target &target,
+                                           const Target::SourceGroup &sourceGroup) {
+                              matches = matches && sourceGroupMatchesKit(kit, sourceGroup);
+                          });
+    return matches;
+}
+
+bool MesonProjectParser::usesSameMesonVersion(const Utils::FilePath &buildPath)
+{
+    auto info = MesonInfoParser::mesonInfo(buildPath.toString());
+    auto meson = MesonTools::tool(m_meson);
+    return info && meson && info->mesonVersion == meson->version();
 }
 } // namespace Internal
 } // namespace MesonProjectManager

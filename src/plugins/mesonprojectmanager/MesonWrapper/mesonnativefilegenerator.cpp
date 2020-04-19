@@ -22,43 +22,38 @@
 ** be met: https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ****************************************************************************/
-#pragma once
-
-#include <projectexplorer/buildstep.h>
-#include <projectexplorer/abstractprocessstep.h>
-#include <utils/qtcprocess.h>
-#include <QObject>
+#include "mesonnativefilegenerator.h"
+#include <MesonProject/kithelper.h>
+#include <projectexplorer/kitinformation.h>
+#include <projectexplorer/kitmanager.h>
+#include <projectexplorer/projectexplorerconstants.h>
+#include <projectexplorer/toolchain.h>
+#include <utils/macroexpander.h>
+#include <utils/qtcassert.h>
 
 namespace MesonProjectManager {
 namespace Internal {
-class MesonBuildStep final : public ProjectExplorer::AbstractProcessStep
-{
-    Q_OBJECT
-public:
-    MesonBuildStep(ProjectExplorer::BuildStepList *bsl, Core::Id id);
-    ProjectExplorer::BuildStepConfigWidget *createConfigWidget() final;
-    Utils::CommandLine command();
-    QStringList projectTargets();
-    void setBuildTarget(const QString& targetName);
-    void setCommandArgs(const QString& args);
-    const QString& targetName()const{return m_targetName;}
-    Q_SIGNAL void targetListChanged();
-    QVariantMap toMap() const override;
-    bool fromMap(const QVariantMap &map) override;
-private:
-    void update(bool parsingSuccessful);
-    bool init() override;
-    void doRun() override;
-    QString defaultBuildTarget() const;
-    QString m_commandArgs;
-    QString m_targetName;
-};
+MesonNativeFileGenerator::MesonNativeFileGenerator() {}
 
-class MesonBuildStepFactory final: public ProjectExplorer::BuildStepFactory
+inline void addEntrie(QIODevice *nativeFile, const QString &key, const QString &value)
 {
-public:
-    MesonBuildStepFactory();
-};
+    nativeFile->write(QString("%1 = '%2'\n").arg(key).arg(value).toLatin1());
+}
 
+void writeBinariesSection(QIODevice *nativeFile, const KitData &kitData)
+{
+    nativeFile->write("[binaries]\n");
+    addEntrie(nativeFile, "c", kitData.cCompilerPath);
+    addEntrie(nativeFile, "cpp", kitData.cxxCompilerPath);
+    addEntrie(nativeFile, "qmake", kitData.qmakePath);
+    addEntrie(nativeFile, QString{"qmake-qt%1"}.arg(kitData.qtVersion), kitData.qmakePath);
+    addEntrie(nativeFile, "cmake", kitData.cmakePath);
+}
+
+void MesonNativeFileGenerator::makeNativeFile(QIODevice *nativeFile, const KitData &kitData)
+{
+    QTC_ASSERT(nativeFile, return );
+    writeBinariesSection(nativeFile, kitData);
+}
 } // namespace Internal
 } // namespace MesonProjectManager

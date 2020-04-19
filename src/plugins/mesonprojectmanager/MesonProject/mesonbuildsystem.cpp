@@ -25,7 +25,9 @@
 
 #include "mesonbuildsystem.h"
 #include "mesonbuildconfiguration.h"
+#include "kithelper.h"
 #include <MesonToolSettings/mesontoolkitaspect.h>
+#include <MesonWrapper/mesonnativefilegenerator.h>
 #include <pluginmanager.h>
 #include <projectexplorer/buildconfiguration.h>
 #include <qtsupport/qtcppkitinfo.h>
@@ -50,9 +52,21 @@ void MesonBuildSystem::configure(const Utils::FilePath &buildDir)
 {
     if (m_parseGuard.guardsProject())
         return;
+    if(!isSetup(buildDir)|| !m_parser.usesSameMesonVersion(buildDir) ||!m_parser.matchesKit(m_kitData))
+        return setup(buildDir);
     m_parseGuard = guardParsingRun();
-    const auto &srcDir = projectDirectory();
-    m_parser.configure(srcDir, buildDir, m_pendingConfigArgs);
+    m_parser.configure(projectDirectory(), buildDir, m_pendingConfigArgs);
+}
+
+void MesonBuildSystem::setup(const Utils::FilePath &buildDir)
+{
+    if (m_parseGuard.guardsProject())
+        return;
+    m_parseGuard = guardParsingRun();
+    QStringList args = m_pendingConfigArgs;
+    if (m_nativeFile)
+        args << QString("--native-file=%1").arg(m_nativeFile->fileName());
+    m_parser.setup(projectDirectory(), buildDir, args);
 }
 
 MesonBuildConfiguration *MesonBuildSystem::mesonBuildConfiguration()
@@ -62,6 +76,10 @@ MesonBuildConfiguration *MesonBuildSystem::mesonBuildConfiguration()
 
 void MesonBuildSystem::init()
 {
+    updateKit(buildConfiguration()->target()->kit());
+    connect(buildConfiguration()->target(), &ProjectExplorer::Target::kitChanged, this, [this] {
+        updateKit(buildConfiguration()->target()->kit());
+    });
     connect(mesonBuildConfiguration(),
             &MesonBuildConfiguration::buildDirectoryChanged,
             this,
@@ -105,6 +123,21 @@ void MesonBuildSystem::parseProject()
     } else {
         m_parser.parse(srcDir);
     }
+}
+
+void MesonBuildSystem::updateNativeFile()
+{
+    m_nativeFile = std::make_unique<QTemporaryFile>("Meson-Native");
+    m_nativeFile->open();
+    MesonNativeFileGenerator::makeNativeFile(m_nativeFile.get(), m_kitData);
+    m_nativeFile->flush();
+}
+
+void MesonBuildSystem::updateKit(ProjectExplorer::Kit *kit)
+{
+    QTC_ASSERT(kit,return);
+    m_kitData = KitHelper::kitData(kit);
+    updateNativeFile();
 }
 } // namespace Internal
 } // namespace MesonProjectManager

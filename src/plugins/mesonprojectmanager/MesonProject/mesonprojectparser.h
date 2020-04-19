@@ -25,12 +25,14 @@
 #pragma once
 #include "ProjectTree/mesonprojectnodes.h"
 #include "mesonprocess.h"
+#include "kitdata.h"
 #include <MesonInfoParser/mesoninfoparser.h>
 #include <MesonWrapper/mesonwrapper.h>
 #include <projectexplorer/buildsystem.h>
 #include <projectexplorer/rawprojectpart.h>
-#include <utils/fileutils.h>
+#include <projectexplorer/kit.h>
 #include <utils/environment.h>
+#include <utils/fileutils.h>
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QObject>
@@ -54,6 +56,9 @@ public:
     Q_SLOT void configure(const Utils::FilePath &sourcePath,
                           const Utils::FilePath &buildPath,
                           const QStringList &args);
+    Q_SLOT void setup(const Utils::FilePath &sourcePath,
+                      const Utils::FilePath &buildPath,
+                      const QStringList &args);
     Q_SLOT void parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath);
     Q_SLOT void parse(const Utils::FilePath &sourcePath);
 
@@ -80,14 +85,21 @@ public:
         const ProjectExplorer::ToolChain *cxxToolChain,
         const ProjectExplorer::ToolChain *cToolChain);
 
-    inline void setEnvironment(const Utils::Environment& environment){m_env = environment;}
+    inline void setEnvironment(const Utils::Environment &environment) { m_env = environment; }
+
+    bool matchesKit(const KitData& kit);
+
+    bool usesSameMesonVersion(const Utils::FilePath &buildPath);
 
 private:
     void startParser();
     static ParserData *extractParserResults(const Utils::FilePath &srcDir, MesonInfoParser &parser);
     static void addMissingTargets(QStringList &targetList);
     void update(const QFuture<ParserData *> &data);
-    ProjectExplorer::RawProjectPart buildRawPart(const Target &target, const Target::SourceGroup &sources, const ProjectExplorer::ToolChain *cxxToolChain, const ProjectExplorer::ToolChain *cToolChain);
+    ProjectExplorer::RawProjectPart buildRawPart(const Target &target,
+                                                 const Target::SourceGroup &sources,
+                                                 const ProjectExplorer::ToolChain *cxxToolChain,
+                                                 const ProjectExplorer::ToolChain *cToolChain);
     MesonProcess m_process;
 
     Utils::Environment m_env;

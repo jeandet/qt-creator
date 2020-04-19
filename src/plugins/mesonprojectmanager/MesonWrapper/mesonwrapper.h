@@ -36,8 +36,6 @@
 #include <QProcess>
 #include <QTemporaryFile>
 
-
-
 namespace MesonProjectManager {
 namespace Internal {
 struct MesonCommand
@@ -46,7 +44,6 @@ struct MesonCommand
     Utils::FilePath workDir;
     QStringList arguments;
 };
-
 
 namespace {
 
@@ -63,7 +60,7 @@ bool containsFiles(const QString &path, const File_t &file, const T &... files)
 }
 } // namespace
 
-inline bool run_meson(const MesonCommand& command, QIODevice *output = nullptr)
+inline bool run_meson(const MesonCommand &command, QIODevice *output = nullptr)
 {
     QProcess process;
     process.setWorkingDirectory(command.workDir.toString());
@@ -112,6 +109,12 @@ struct MesonVersion
     MesonVersion &operator=(const MesonVersion &) = default;
     MesonVersion &operator=(MesonVersion &&) = default;
 
+    bool operator==(const MesonVersion &other)
+    {
+        return other.isValid && isValid && major == other.major && minor == other.minor
+               && patch == other.patch;
+    }
+
     MesonVersion(int major, int minor, int patch)
         : major{major}
         , minor{minor}
@@ -139,11 +142,11 @@ public:
     MesonWrapper &operator=(MesonWrapper &&other) = default;
 
     MesonCommand setup(const Utils::FilePath &sourceDirectory,
-               const Utils::FilePath &buildDirectory,
-               const QStringList &options = {}) const;
+                       const Utils::FilePath &buildDirectory,
+                       const QStringList &options = {}) const;
     MesonCommand configure(const Utils::FilePath &sourceDirectory,
-                   const Utils::FilePath &buildDirectory,
-                   const QStringList &options = {}) const;
+                           const Utils::FilePath &buildDirectory,
+                           const QStringList &options = {}) const;
 
     MesonCommand introspect(const Utils::FilePath &sourceDirectory) const;
 
@@ -205,6 +208,7 @@ class MesonTools : public QObject
     Q_OBJECT
     MesonTools() { setObjectName(Constants::MESON_TOOL_MANAGER); }
     ~MesonTools() {}
+
 public:
     static inline void addTool(MesonWrapper &&meson)
     {
@@ -226,8 +230,8 @@ public:
             auto meson_path = findMeson();
             if (meson_path) {
                 self->m_tools.emplace_back(QString("System Meson at %1").arg(meson_path->toString()),
-                                     *meson_path,
-                                     true);
+                                           *meson_path,
+                                           true);
             }
         }
     }
@@ -262,11 +266,12 @@ public:
     Q_SIGNAL void mesonToolAdded(const MesonWrapper &tool);
     Q_SIGNAL void mesonToolRemoved(const MesonWrapper &tool);
 
-    static MesonTools* instance()
+    static MesonTools *instance()
     {
         static MesonTools inst;
         return &inst;
     }
+
 private:
     std::vector<MesonWrapper> m_tools;
 };

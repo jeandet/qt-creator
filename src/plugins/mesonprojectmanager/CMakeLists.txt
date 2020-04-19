@@ -25,8 +25,12 @@ add_qtc_plugin(MesonProjectManager
   MesonToolSettings/mesontoolkitaspectwidget.cpp
   MesonWrapper/mesonwrapper.cpp
   MesonWrapper/mesonwrapper.h
+  MesonWrapper/mesonnativefilegenerator.h
+  MesonWrapper/mesonnativefilegenerator.cpp
   MesonInfoParser/mesoninfoparser.h
   MesonInfoParser/mesoninfoparser.cpp
+  MesonProject/kithelper.h
+  MesonProject/kitdata.h
   MesonProject/mesonproject.h
   MesonProject/mesonproject.cpp
   MesonProject/mesonprojectimporter.h
