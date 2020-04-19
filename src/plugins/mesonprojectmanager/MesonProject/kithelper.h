@@ -22,51 +22,51 @@
 ** be met: https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ****************************************************************************/
-#include <projectexplorer/kit.h>
-#include <utils/qtcassert.h>
-#include <utils/macroexpander.h>
-#include <QString>
 #include "kitdata.h"
+#include <projectexplorer/kit.h>
+#include <utils/macroexpander.h>
+#include <utils/qtcassert.h>
+#include <QString>
 #pragma once
 namespace MesonProjectManager {
 namespace Internal {
 namespace KitHelper {
-namespace  {
-QString expand(ProjectExplorer::Kit* kit, const QString& macro)
+namespace details {
+inline QString expand(ProjectExplorer::Kit *kit, const QString &macro)
 {
-    return  kit->macroExpander()->expand(macro);
+    return kit->macroExpander()->expand(macro);
 }
+} // namespace details
+
+inline QString cCompilerPath(ProjectExplorer::Kit *kit)
+{
+    QTC_ASSERT(kit, return "");
+    return details::expand(kit, "%{Compiler:Executable:C}");
 }
 
-inline QString cCompilerPath(ProjectExplorer::Kit* kit)
+inline QString cxxCompilerPath(ProjectExplorer::Kit *kit)
 {
-        QTC_ASSERT(kit, return "");
-    return expand(kit, "%{Compiler:Executable:C}");
+    QTC_ASSERT(kit, return "");
+    return details::expand(kit, "%{Compiler:Executable:Cxx}");
 }
 
-inline QString cxxCompilerPath(ProjectExplorer::Kit* kit)
+inline QString qmakePath(ProjectExplorer::Kit *kit)
 {
-        QTC_ASSERT(kit, return "");
-    return expand(kit, "%{Compiler:Executable:Cxx}");
+    return details::expand(kit, "%{Qt:qmakeExecutable}");
 }
 
-inline QString qmakePath(ProjectExplorer::Kit* kit)
+inline QString cmakePath(ProjectExplorer::Kit *kit)
 {
-    return expand(kit, "%{Qt:qmakeExecutable}");
+    return details::expand(kit, "%{CMake:Executable:FilePath}");
 }
 
-inline QString cmakePath(ProjectExplorer::Kit* kit)
+inline QString qtVersion(ProjectExplorer::Kit *kit)
 {
-    return expand(kit, "%{CMake:Executable:FilePath}");
+    QTC_ASSERT(kit, return "");
+    return details::expand(kit, "%{Qt:Version}");
 }
 
-inline QString qtVersion(ProjectExplorer::Kit* kit)
-{
-        QTC_ASSERT(kit, return "");
-    return expand(kit, "%{Qt:Version}");
-}
-
-inline KitData kitData(ProjectExplorer::Kit* kit)
+inline KitData kitData(ProjectExplorer::Kit *kit)
 {
     QTC_ASSERT(kit, return {});
     KitData data;
@@ -78,7 +78,7 @@ inline KitData kitData(ProjectExplorer::Kit* kit)
     return data;
 }
 
-}
+} // namespace KitHelper
 
 } // namespace Internal
 } // namespace MesonProjectManager

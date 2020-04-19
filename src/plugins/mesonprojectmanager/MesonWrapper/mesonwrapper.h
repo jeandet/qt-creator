@@ -45,7 +45,7 @@ struct MesonCommand
     QStringList arguments;
 };
 
-namespace {
+namespace details{
 
 template<typename File_t>
 bool containsFiles(const QString &path, const File_t &file)
@@ -86,7 +86,7 @@ inline Utils::optional<Utils::FilePath> findMeson()
 inline bool isSetup(const Utils::FilePath &buildPath)
 {
     using namespace Utils;
-    return containsFiles(buildPath.pathAppended(Constants::MESON_INFO_DIR).toString(),
+    return details::containsFiles(buildPath.pathAppended(Constants::MESON_INFO_DIR).toString(),
                          Constants::MESON_INTRO_TESTS,
                          Constants::MESON_INTRO_TARGETS,
                          Constants::MESON_INTRO_INSTALLED,
