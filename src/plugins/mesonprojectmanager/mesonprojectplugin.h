@@ -47,8 +47,6 @@ private:
     bool initialize(const QStringList &arguments, QString *errorMessage) override;
     void extensionsInitialized() override;
 
-    void updateContextActions();
-
     class MesonProjectPluginPrivate *d = nullptr;
 };
 

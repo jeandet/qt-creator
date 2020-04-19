@@ -23,54 +23,25 @@
 **
 ****************************************************************************/
 #pragma once
-#include "mesonprojectparser.h"
-#include <MesonWrapper/mesonwrapper.h>
-#include "kitdata.h"
-
-#include <projectexplorer/buildsystem.h>
-#include <projectexplorer/target.h>
-#include <cpptools/cppprojectupdater.h>
-#include <utils/filesystemwatcher.h>
-#include <QTemporaryFile>
 #include <QObject>
-
+#include <QAction>
+#include <utils/parameteraction.h>
 namespace MesonProjectManager {
 namespace Internal {
-class MesonBuildConfiguration;
-class MesonBuildSystem final:public ProjectExplorer::BuildSystem
+class MesonActionsManager: public QObject
 {
     Q_OBJECT
+    Utils::ParameterAction buildTargetContextAction{
+        tr("Build"),
+        tr("Build \"%1\""),
+        Utils::ParameterAction::AlwaysEnabled /*handled manually*/
+    };
+    QAction configureActionMenu;
+    QAction configureActionContextMenu;
+    void configureCurrentProject();
+    void updateContextActions();
 public:
-    MesonBuildSystem(MesonBuildConfiguration* bc);
-
-    void triggerParsing() final;
-
-    inline const BuildOptionsList& buildOptions()const {return m_parser.buildOptions();}
-    inline const TargetsList& targets()const {return m_parser.targets();}
-
-    void configure();
-    void setup();
-
-    MesonBuildConfiguration* mesonBuildConfiguration();
-
-    const QStringList& targetList()const
-    {
-        return m_parser.targetsNames();
-    }
-
-    void setMesonConfigArgs(const QStringList& args){m_pendingConfigArgs=args;}
-
-private:
-    void init();
-    void parseProject();
-    void updateNativeFile();
-    void updateKit(ProjectExplorer::Kit* kit);
-    ProjectExplorer::BuildSystem::ParseGuard m_parseGuard;
-    MesonProjectParser m_parser;
-    CppTools::CppProjectUpdater m_cppCodeModelUpdater;
-    QStringList m_pendingConfigArgs;
-    std::unique_ptr<QTemporaryFile> m_nativeFile;
-    KitData m_kitData;
+    MesonActionsManager();
 };
 } // namespace Internal
 } // namespace MesonProjectManager

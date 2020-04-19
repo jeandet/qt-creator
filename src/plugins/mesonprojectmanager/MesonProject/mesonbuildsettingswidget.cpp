@@ -117,7 +117,7 @@ MesonBuildSettingsWidget::MesonBuildSettingsWidget(MesonBuildConfiguration *buil
         ui->optionsTreeView->setEnabled(false);
         ui->configureButton->setEnabled(false);
         m_showProgressTimer.start();
-        bs->configure(buildCfg->buildDirectory());
+        bs->configure();
     });
     bs->triggerParsing();
 }

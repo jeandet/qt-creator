@@ -5,6 +5,8 @@ add_qtc_plugin(MesonProjectManager
   SOURCES
   mesonprojectplugin.cpp
   mesonprojectplugin.h
+  MesonActionsManager/mesonactionsmanager.h
+  MesonActionsManager/mesonactionsmanager.cpp
   MesonToolSettings/mesonsettingpage.h
   MesonToolSettings/mesonsettingpage.cpp
   MesonToolSettings/mesontoolsettingswidget.ui

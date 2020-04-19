@@ -48,18 +48,20 @@ void MesonBuildSystem::triggerParsing()
     parseProject();
 }
 
-void MesonBuildSystem::configure(const Utils::FilePath &buildDir)
+void MesonBuildSystem::configure()
 {
+    const Utils::FilePath &buildDir = buildConfiguration()->buildDirectory();
     if (m_parseGuard.guardsProject())
         return;
     if(!isSetup(buildDir)|| !m_parser.usesSameMesonVersion(buildDir) ||!m_parser.matchesKit(m_kitData))
-        return setup(buildDir);
+        return setup();
     m_parseGuard = guardParsingRun();
     m_parser.configure(projectDirectory(), buildDir, m_pendingConfigArgs);
 }
 
-void MesonBuildSystem::setup(const Utils::FilePath &buildDir)
+void MesonBuildSystem::setup()
 {
+    const Utils::FilePath &buildDir = buildConfiguration()->buildDirectory();
     if (m_parseGuard.guardsProject())
         return;
     m_parseGuard = guardParsingRun();
