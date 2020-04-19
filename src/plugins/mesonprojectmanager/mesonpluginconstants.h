@@ -47,6 +47,10 @@ const char NAME_KEY[] = "name";
 const char ID_KEY[] = "uuid";
 } // namespace Settings
 
+namespace Icons {
+    const char MESON[] = ":/mesonproject/icons/meson_logo.png";
+}
+
 const char MESON_INFO_DIR[] = "meson-info";
 const char MESON_INTRO_BENCHMARKS[] = "intro-benchmarks.json";
 const char MESON_INTRO_BUIDOPTIONS[] = "intro-buildoptions.json";
@@ -60,8 +64,8 @@ const char MESON_INFO[] = "meson-info.json";
 
 
 const char MESON_TOOL_MANAGER[] = "MesonProjectManager.Tools";
-
 const char MESON_BUILD_STEP_ID[] = "MesonProjectManager.BuildStep";
+
 namespace Targets {
 const char all[] = "all";
 const char clean[] = "clean";

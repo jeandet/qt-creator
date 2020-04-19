@@ -28,6 +28,7 @@
 #include "MesonProject/mesonbuildstep.h"
 #include "MesonProject/mesonbuildconfiguration.h"
 #include "MesonProject/mesonrunconfiguration.h"
+#include "MesonProject/mesonbuildsystem.h"
 #include "MesonToolSettings/mesonsettingpage.h"
 #include "MesonToolSettings/mesontoolkitaspect.h"
 #include "MesonToolSettings/mesontoolsettingaccessor.h"
@@ -62,6 +63,11 @@ class MesonProjectPluginPrivate : public QObject
 {
     Q_OBJECT
 public:
+    ParameterAction buildTargetContextAction{
+        MesonProjectPlugin::tr("Build"),
+        MesonProjectPlugin:: tr("Build \"%1\""),
+        ParameterAction::AlwaysEnabled/*handled manually*/
+    };
     MesonProjectPluginPrivate()
     {
         MesonTools::setTools(m_settings.loadMesonTools(ICore::dialogParent()));
@@ -103,13 +109,49 @@ bool MesonProjectPlugin::initialize(const QStringList & /*arguments*/, QString *
     Q_UNUSED(errorMessage)
 
     d = new MesonProjectPluginPrivate;
+    const Context projectContext{Constants::Project::ID};
+
     ProjectManager::registerProjectType<MesonProject>(Constants::Project::MIMETYPE);
+    FileIconProvider::registerIconOverlayForFilename(Constants::Icons::MESON,
+                                                     "meson.build");
+    FileIconProvider::registerIconOverlayForFilename(Constants::Icons::MESON,
+                                                     "meson_options.txt");
+
+    Command *command = ActionManager::registerAction(&d->buildTargetContextAction,
+                                                     "CMake.BuildTargetContextMenu", projectContext);
+    command->setAttribute(Command::CA_Hide);
+    command->setAttribute(Command::CA_UpdateText);
+    command->setDescription(d->buildTargetContextAction.text());
+
+    ActionManager::actionContainer(ProjectExplorer::Constants::M_SUBPROJECTCONTEXT)
+        ->addAction(command, ProjectExplorer::Constants::G_PROJECT_BUILD);
+
+    // Wire up context menu updates:
+    connect(ProjectTree::instance(), &ProjectTree::currentNodeChanged,
+            this, &MesonProjectPlugin::updateContextActions);
+
+    connect(&d->buildTargetContextAction, &ParameterAction::triggered, this, [] {
+        if (auto bs = qobject_cast<MesonBuildSystem *>(ProjectTree::currentBuildSystem())) {
+            auto targetNode = dynamic_cast<MesonTargetNode *>(ProjectTree::currentNode());
+            targetNode->build();
+        }
+    });
+
     return true;
 }
 
 void MesonProjectPlugin::extensionsInitialized() {}
 
-void MesonProjectPlugin::updateContextActions() {}
+void MesonProjectPlugin::updateContextActions()
+{
+    auto targetNode = dynamic_cast<const MesonTargetNode *>(ProjectTree::currentNode());
+    const QString targetDisplayName = targetNode ? targetNode->displayName() : QString();
+
+    // Build Target:
+    d->buildTargetContextAction.setParameter(targetDisplayName);
+    d->buildTargetContextAction.setEnabled(targetNode);
+    d->buildTargetContextAction.setVisible(targetNode);
+}
 
 } // namespace Internal
 } // namespace MesonProjectManager

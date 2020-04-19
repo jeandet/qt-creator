@@ -24,9 +24,12 @@
 ****************************************************************************/
 
 #include <projectexplorer/buildinfo.h>
+#include <projectexplorer/buildmanager.h>
+#include <projectexplorer/buildstep.h>
+#include <projectexplorer/buildsteplist.h>
+#include <projectexplorer/kit.h>
 #include <projectexplorer/project.h>
 #include <projectexplorer/projectexplorer.h>
-#include <projectexplorer/kit.h>
 #include <projectexplorer/projectmacroexpander.h>
 #include <utils/fileutils.h>
 
@@ -34,8 +37,9 @@
 
 #include "mesonbuildconfiguration.h"
 #include "mesonbuildsettingswidget.h"
-#include "mesonpluginconstants.h"
+#include "mesonbuildstep.h"
 #include "mesonbuildsystem.h"
+#include "mesonpluginconstants.h"
 #include <MesonWrapper/mesonwrapper.h>
 
 namespace MesonProjectManager {
@@ -45,6 +49,10 @@ MesonBuildConfiguration::MesonBuildConfiguration(ProjectExplorer::Target *target
 {
     appendInitialBuildStep(Constants::MESON_BUILD_STEP_ID);
     appendInitialCleanStep(Constants::MESON_BUILD_STEP_ID);
+    setBuildDirectory(shadowBuildDirectory(project()->projectFilePath(),
+                                           target->kit(),
+                                           displayName(),
+                                           BuildConfiguration::Unknown));
     setInitializer([this, target](const ProjectExplorer::BuildInfo &info) {
         auto k = target->kit();
         if (info.buildDirectory.isEmpty()) {
@@ -84,6 +92,25 @@ ProjectExplorer::BuildSystem *MesonBuildConfiguration::buildSystem() const
     return m_buildSystem;
 }
 
+void MesonBuildConfiguration::build(const QString &target)
+{
+    auto mesonBuildStep = qobject_cast<MesonBuildStep *>(
+        Utils::findOrDefault(buildSteps()->steps(), [](const ProjectExplorer::BuildStep *bs) {
+            return bs->id() == Constants::MESON_BUILD_STEP_ID;
+        }));
+
+    QString originalBuildTarget;
+    if (mesonBuildStep) {
+        originalBuildTarget = mesonBuildStep->targetName();
+        mesonBuildStep->setBuildTarget(target);
+    }
+
+    ProjectExplorer::BuildManager::buildList(buildSteps());
+
+    if (mesonBuildStep)
+        mesonBuildStep->setBuildTarget(originalBuildTarget);
+}
+
 ProjectExplorer::NamedWidget *MesonBuildConfiguration::createConfigWidget()
 {
     return new MesonBuildSettingsWidget{this};
@@ -103,22 +130,29 @@ MesonBuildConfigurationFactory::MesonBuildConfigurationFactory()
     registerBuildConfiguration<MesonBuildConfiguration>(Constants::MESON_BUILD_CONFIG_ID);
     setSupportedProjectType(Constants::Project::ID);
     setSupportedProjectMimeTypeName(Constants::Project::MIMETYPE);
-    setBuildGenerator([](const ProjectExplorer::Kit *k, const Utils::FilePath &projectPath, bool forSetup) {
-        QList<ProjectExplorer::BuildInfo> result;
+    setBuildGenerator(
+        [](const ProjectExplorer::Kit *k, const Utils::FilePath &projectPath, bool forSetup) {
+            QList<ProjectExplorer::BuildInfo> result;
 
-        Utils::FilePath path = forSetup ? ProjectExplorer::Project::projectDirectory(projectPath) : projectPath;
-        for(const auto& bType:{MesonBuildType::debug,MesonBuildType::release,MesonBuildType::debugoptimized,MesonBuildType::minsize})
-        {
-            auto bInfo = createBuildInfo(bType);
-            if(forSetup)
-                bInfo.buildDirectory = MesonBuildConfiguration::shadowBuildDirectory(projectPath,k,bInfo.typeName, bInfo.buildType);
-            result <<bInfo;
-        }
-        return result;
-    });
+            Utils::FilePath path = forSetup
+                                       ? ProjectExplorer::Project::projectDirectory(projectPath)
+                                       : projectPath;
+            for (const auto &bType : {MesonBuildType::debug,
+                                      MesonBuildType::release,
+                                      MesonBuildType::debugoptimized,
+                                      MesonBuildType::minsize}) {
+                auto bInfo = createBuildInfo(bType);
+                if (forSetup)
+                    bInfo.buildDirectory
+                        = MesonBuildConfiguration::shadowBuildDirectory(projectPath,
+                                                                        k,
+                                                                        bInfo.typeName,
+                                                                        bInfo.buildType);
+                result << bInfo;
+            }
+            return result;
+        });
 }
-
-
 
 } // namespace Internal
 } // namespace MesonProjectManager

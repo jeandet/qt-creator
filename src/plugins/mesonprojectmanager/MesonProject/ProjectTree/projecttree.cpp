@@ -36,7 +36,7 @@ std::unique_ptr<MesonProjectNode> ProjectTree::buildTree(const Utils::FilePath &
     auto root = std::make_unique<MesonProjectNode>(srcDir);
     std::for_each(std::cbegin(targets),std::cend(targets),[&root](const Target& target)
                   {
-                      auto targetNode = std::make_unique<MesonTargetNode>(Utils::FilePath::fromString(target.definedIn),target.name);
+                      auto targetNode = std::make_unique<MesonTargetNode>(Utils::FilePath::fromString(target.definedIn),Target::fullName(target));
                       targetNode->setDisplayName(target.name);
                       std::for_each(std::cbegin(target.sources),std::cend(target.sources),[&targetNode](const Target::SourceGroup& source)
                                     {

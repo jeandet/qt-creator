@@ -32,12 +32,14 @@
 #include <cpptools/cppprojectupdater.h>
 #include <utils/filesystemwatcher.h>
 #include <QTemporaryFile>
+#include <QObject>
 
 namespace MesonProjectManager {
 namespace Internal {
 class MesonBuildConfiguration;
 class MesonBuildSystem final:public ProjectExplorer::BuildSystem
 {
+    Q_OBJECT
 public:
     MesonBuildSystem(MesonBuildConfiguration* bc);
 

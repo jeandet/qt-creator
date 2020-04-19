@@ -103,6 +103,7 @@ public:
                                          ProjectExplorer::BuildConfiguration::BuildType buildType);
 
      ProjectExplorer::BuildSystem *buildSystem() const final;
+     void build(const QString& target);
 
 private:
     ProjectExplorer::NamedWidget *createConfigWidget() final;

@@ -24,6 +24,11 @@
 ****************************************************************************/
 
 #include "mesonprojectnodes.h"
+#include <mesonpluginconstants.h>
+#include <MesonProject/mesonbuildsystem.h>
+#include <MesonProject/mesonbuildconfiguration.h>
+#include <projectexplorer/project.h>
+#include <projectexplorer/target.h>
 namespace MesonProjectManager {
 namespace Internal {
 
@@ -31,7 +36,7 @@ namespace Internal {
 MesonProjectNode::MesonProjectNode(const Utils::FilePath &directory)
     :ProjectExplorer::ProjectNode{directory}
 {
-    static const auto MesonIcon = QIcon(":/mesonproject/icons/meson_logo.png");
+    static const auto MesonIcon = QIcon(Constants::Icons::MESON);
     setPriority(Node::DefaultProjectPriority + 1000);
     setIcon(MesonIcon);
     setListInProject(false);
@@ -41,7 +46,7 @@ MesonProjectNode::MesonProjectNode(const Utils::FilePath &directory)
 MesonFileNode::MesonFileNode(const Utils::FilePath &file)
     :ProjectExplorer::ProjectNode{file}
 {
-    static const auto MesonFolderIcon = Core::FileIconProvider::directoryIcon(":/mesonproject/icons/meson_logo.png");
+    static const auto MesonFolderIcon = Core::FileIconProvider::directoryIcon(Constants::Icons::MESON);
     setIcon(MesonFolderIcon);
     setListInProject(true);
 }
@@ -58,7 +63,10 @@ MesonTargetNode::MesonTargetNode(const Utils::FilePath &directory, const QString
 
 void MesonTargetNode::build()
 {
-    // TODO
+    ProjectExplorer::Project *p = getProject();
+    ProjectExplorer::Target *t = p ? p->activeTarget() : nullptr;
+    if (t)
+        static_cast<MesonBuildSystem*>(t->buildSystem())->mesonBuildConfiguration()->build(m_name);
 }
 
 } // namespace Internal

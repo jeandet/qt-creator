@@ -76,13 +76,16 @@ MesonBuildSettingsWidget::MesonBuildSettingsWidget(MesonBuildConfiguration *buil
     connect(buildCfg->target(), &ProjectExplorer::Target::parsingFinished, this,[this, bs](bool success) {
         if (success) {
             m_optionsModel.setConfiguration(bs->buildOptions());
-            ui->optionsTreeView->expandAll();
-            ui->optionsTreeView->resizeColumnToContents(0);
-            ui->optionsTreeView->setEnabled(true);
-            ui->configureButton->setEnabled(true);
-            m_showProgressTimer.stop();
-            m_progressIndicator.hide();
         }
+        else {
+            m_optionsModel.clear();
+        }
+        ui->optionsTreeView->expandAll();
+        ui->optionsTreeView->resizeColumnToContents(0);
+        ui->optionsTreeView->setEnabled(true);
+        ui->configureButton->setEnabled(true);
+        m_showProgressTimer.stop();
+        m_progressIndicator.hide();
         });
 
     connect(bs, &MesonBuildSystem::parsingStarted, this,[this]() {

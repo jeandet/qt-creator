@@ -76,6 +76,7 @@ MesonBuildConfiguration *MesonBuildSystem::mesonBuildConfiguration()
 
 void MesonBuildSystem::init()
 {
+    auto dir = buildConfiguration()->buildDirectory();
     updateKit(buildConfiguration()->target()->kit());
     connect(buildConfiguration()->target(), &ProjectExplorer::Target::kitChanged, this, [this] {
         updateKit(buildConfiguration()->target()->kit());
@@ -104,6 +105,10 @@ void MesonBuildSystem::init()
             }
             setApplicationTargets(m_parser.appsTargets());
             m_parseGuard.markAsSuccess();
+            m_parseGuard = {};
+            emitBuildSystemUpdated();
+        }
+        else {
             m_parseGuard = {};
             emitBuildSystemUpdated();
         }
