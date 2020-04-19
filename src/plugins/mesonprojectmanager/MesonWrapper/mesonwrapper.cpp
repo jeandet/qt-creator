@@ -119,6 +119,7 @@ void MesonTools::updateTool(const Core::Id &itemId, const QString &name, const U
         item->setName(name);
     } else {
         self->m_tools.emplace_back(name, exe, itemId);
+        emit self->mesonToolAdded(self->m_tools.back());
     }
 }
 
