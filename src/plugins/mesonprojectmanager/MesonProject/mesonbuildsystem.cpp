@@ -98,10 +98,10 @@ void MesonBuildSystem::parsingCompleted(bool success)
 QStringList MesonBuildSystem::configArgs(bool isSetup)
 {
     if (!isSetup)
-        return m_pendingConfigArgs;
+        return m_pendingConfigArgs+mesonBuildConfiguration()->mesonConfigArgs();
     else
         return QStringList{QString("--native-file=%1").arg(m_nativeFile->fileName())}
-               + m_pendingConfigArgs;
+               + m_pendingConfigArgs+mesonBuildConfiguration()->mesonConfigArgs();
 }
 
 void MesonBuildSystem::configure()

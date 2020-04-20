@@ -54,6 +54,7 @@ MesonBuildConfiguration::MesonBuildConfiguration(ProjectExplorer::Target *target
                                            displayName(),
                                            BuildConfiguration::Unknown));
     setInitializer([this, target](const ProjectExplorer::BuildInfo &info) {
+        m_buildType = mesonBuildType(info.typeName);
         auto k = target->kit();
         if (info.buildDirectory.isEmpty()) {
             setBuildDirectory(shadowBuildDirectory(target->project()->projectFilePath(),
@@ -119,8 +120,8 @@ ProjectExplorer::NamedWidget *MesonBuildConfiguration::createConfigWidget()
 ProjectExplorer::BuildInfo createBuildInfo(MesonBuildType type)
 {
     ProjectExplorer::BuildInfo bInfo;
-    bInfo.typeName = buildTypeName(type);
-    bInfo.displayName = buildTypeDisplayName(type);
+    bInfo.typeName = mesonBuildTypeName(type);
+    bInfo.displayName = mesonBuildTypeDisplayName(type);
     bInfo.buildType = buildType(type);
     return bInfo;
 }

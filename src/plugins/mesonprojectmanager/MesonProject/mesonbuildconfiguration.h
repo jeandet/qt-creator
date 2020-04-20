@@ -34,25 +34,21 @@ namespace Internal {
 
 enum class MesonBuildType { plain, debug, debugoptimized, release, minsize, custom};
 
-inline QString buildTypeName(MesonBuildType type){
-    switch (type)
+const QHash<QString,MesonBuildType> buildTypesByName =
     {
-    case MesonBuildType::plain:
-        return "Plain";
-    case MesonBuildType::debug:
-        return "Debug";
-    case MesonBuildType::debugoptimized:
-        return "DebugWithOptim";
-    case MesonBuildType::release:
-        return "Release";
-    case MesonBuildType::minsize:
-        return "MinSize";
-    default:
-        return "Custom";
-    }
+        {"plain",MesonBuildType::plain},
+        {"debug",MesonBuildType::debug},
+        {"debugoptimized",MesonBuildType::debugoptimized},
+        {"release",MesonBuildType::release},
+        {"minsize",MesonBuildType::minsize},
+        {"custom",MesonBuildType::custom}
+};
+
+inline QString mesonBuildTypeName(MesonBuildType type){
+    return buildTypesByName.key(type,"custom");
 }
 
-inline QString buildTypeDisplayName(MesonBuildType type){
+inline QString mesonBuildTypeDisplayName(MesonBuildType type){
     switch (type)
     {
     case MesonBuildType::plain:
@@ -68,6 +64,11 @@ inline QString buildTypeDisplayName(MesonBuildType type){
     default:
         return "Custom";
     }
+}
+
+inline MesonBuildType mesonBuildType(const QString& typeName)
+{
+    return buildTypesByName.value(typeName,MesonBuildType::custom);
 }
 
 inline ProjectExplorer::BuildConfiguration::BuildType buildType(MesonBuildType type){
@@ -105,7 +106,13 @@ public:
      ProjectExplorer::BuildSystem *buildSystem() const final;
      void build(const QString& target);
 
+     QStringList mesonConfigArgs()
+     {
+         return {QString("-Dbuildtype=%1").arg(mesonBuildTypeName(m_buildType))};
+     }
+
 private:
+    MesonBuildType m_buildType;
     ProjectExplorer::NamedWidget *createConfigWidget() final;
     MesonBuildSystem* m_buildSystem;
 
