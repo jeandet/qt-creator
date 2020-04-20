@@ -57,8 +57,8 @@ MesonTargetNode::MesonTargetNode(const Utils::FilePath &directory, const QString
 {
     setPriority(Node::DefaultProjectPriority + 900);
     setIcon(QIcon(":/projectexplorer/images/build.png"));
-    setListInProject(false);
-    setProductType(ProjectExplorer::ProductType::Other);
+    setListInProject(true);
+    setProductType(ProjectExplorer::ProductType::App);
 }
 
 void MesonTargetNode::build()

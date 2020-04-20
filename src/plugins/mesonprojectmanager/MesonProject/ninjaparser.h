@@ -33,7 +33,7 @@ namespace Internal {
 class NinjaParser final: public ProjectExplorer::IOutputParser
 {
     Q_OBJECT
-    QRegularExpression m_progressRegex{R"(\[(\d+)/(\d+)\])"};
+    QRegularExpression m_progressRegex{R"(^\[(\d+)/(\d+)\])"};
     Utils::optional<int> extractProgress(const QString &line);
 public:
     NinjaParser();

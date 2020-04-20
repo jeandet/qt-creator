@@ -28,7 +28,23 @@ static const TestData sample1{
       |                    ~~~~~~~^~~~
 [2/2] Linking target SimpleCProject)",
     {50,100},
-    2Ul,
+    0Ul,
+    0Ul};
+
+static const TestData sample2{
+    R"([1/10] should skip second this one ->[30/10]
+ [2/10]   <- should skip this one
+[11111]   <- should skip this one
+[a/a]     <- should skip this one
+[1]       <- should skip this one
+[ 1 / 1 ] <- should skip this one
+[10/10    <- should skip this one
+10/10]    <- should skip this one
+[-1/10]   <- should skip this one
+[10/10]
+)",
+    {10,100},
+    0Ul,
     0Ul};
 
 void feedParser(NinjaParser& parser, const TestData& data)
@@ -48,7 +64,8 @@ private slots:
     void extractProgress_data()
     {
         QTest::addColumn<TestData>("testData");
-        QTest::newRow("") << sample1;
+        QTest::newRow("sample1") << sample1;
+        QTest::newRow("sample2") << sample2;
     }
     void extractProgress()
     {

@@ -23,32 +23,71 @@
 **
 ****************************************************************************/
 #include "projecttree.h"
+#include <set>
 namespace MesonProjectManager {
 namespace Internal {
-ProjectTree::ProjectTree()
-{
+ProjectTree::ProjectTree() {}
 
+void buildTargetTree(std::unique_ptr<MesonProjectNode> &root, const Target &target)
+{
+    const auto path = Utils::FilePath::fromString(target.definedIn);
+    auto targetNode = std::make_unique<MesonTargetNode>(path, Target::fullName(target));
+    for (const auto &group : target.sources) {
+        for (const auto &file : group.sources) {
+            root->addNestedNode(
+                std::make_unique<ProjectExplorer::FileNode>(Utils::FilePath::fromString(file),
+                                                            ProjectExplorer::FileType::Source));
+        }
+    }
 }
 
-std::unique_ptr<MesonProjectNode> ProjectTree::buildTree(const Utils::FilePath &srcDir, const TargetsList &targets)
+void addTargetNode(std::unique_ptr<MesonProjectNode> &root, const Target &target)
+{
+    root->findNode([&target, path = Utils::FilePath::fromString(target.definedIn)](
+                       ProjectExplorer::Node *node) {
+        if (node->filePath() == path.absolutePath()) {
+            auto asFolder = dynamic_cast<ProjectExplorer::FolderNode *>(node);
+            if (asFolder) {
+                auto targetNode = std::make_unique<MesonTargetNode>(path.absolutePath().pathAppended(target.name),
+                                                                    Target::fullName(target));
+                targetNode->setDisplayName(target.name);
+                asFolder->addNode(std::move(targetNode));
+            }
+            return true;
+        }
+        return false;
+    });
+}
+
+std::unique_ptr<MesonProjectNode> ProjectTree::buildTree(const Utils::FilePath &srcDir,
+                                                         const TargetsList &targets)
 {
     using namespace ProjectExplorer;
+    std::set<Utils::FilePath> mesonFiles;
+    std::set<Utils::FilePath> targetPaths;
     auto root = std::make_unique<MesonProjectNode>(srcDir);
-    std::for_each(std::cbegin(targets),std::cend(targets),[&root](const Target& target)
-                  {
-                      auto targetNode = std::make_unique<MesonTargetNode>(Utils::FilePath::fromString(target.definedIn),Target::fullName(target));
-                      targetNode->setDisplayName(target.name);
-                      std::for_each(std::cbegin(target.sources),std::cend(target.sources),[&targetNode](const Target::SourceGroup& source)
-                                    {
-                                        std::for_each(std::cbegin(source.sources),std::cend(source.sources),[&targetNode](const QString& file)
-                                                      {
-                                                          auto sourceNode = std::make_unique<FileNode>(Utils::FilePath::fromString(file),FileType::Source);
-                                                          targetNode->addNode(std::move(sourceNode));
-                                                      });
-                                    });
-                      root->addNode(std::move(targetNode));
+    std::for_each(std::cbegin(targets),
+                  std::cend(targets),
+                  [&root, &mesonFiles, &targetPaths](const Target &target) {
+                      buildTargetTree(root, target);
+                      mesonFiles.insert(Utils::FilePath::fromString(target.definedIn));
+                      targetPaths.insert(
+                          Utils::FilePath::fromString(target.definedIn).absolutePath());
+                      addTargetNode(root, target);
                   });
+    {
+        std::for_each(std::cbegin(mesonFiles),
+                      std::cend(mesonFiles),
+                      [&root](const Utils::FilePath &file) {
+                          root->addNestedNode(std::make_unique<FileNode>(file, FileType::Project));
+                      });
+    }
+    {
+        auto meson_options = root->filePath().pathAppended("meson_options.txt");
+        if (meson_options.exists())
+            root->addNestedNode(std::make_unique<FileNode>(meson_options, FileType::Project));
+    }
     return root;
 }
 } // namespace Internal
-} // nam
+} // namespace MesonProjectManager

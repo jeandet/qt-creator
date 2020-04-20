@@ -71,7 +71,8 @@ CompilerArgs splitArgs(const QStringList &args)
         } else {
             auto macro = extractMacro(arg);
             if (macro) {
-                splited.macros << ProjectExplorer::Macro(macro->toLatin1());
+                // TODO fix this, the goal is to replace name=value with name value
+                splited.macros << ProjectExplorer::Macro(macro->replace("="," ").toLatin1());
             } else {
                 splited.args << arg;
             }
