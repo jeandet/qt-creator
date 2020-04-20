@@ -92,7 +92,13 @@ MesonCommand MesonWrapper::configure(const Utils::FilePath &sourceDirectory,
 {
     if (!isSetup(buildDirectory))
         return setup(sourceDirectory, buildDirectory, options);
-    return {m_exe, buildDirectory, options_cat("configure", options, buildDirectory.toString())};
+    return {m_exe,
+            buildDirectory,
+            options_cat("setup",
+                        "--reconfigure",
+                        options,
+                        sourceDirectory.toString(),
+                        buildDirectory.toString())};
 }
 
 MesonCommand MesonWrapper::introspect(const Utils::FilePath &sourceDirectory) const

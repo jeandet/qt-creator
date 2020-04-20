@@ -33,6 +33,8 @@
 namespace MesonProjectManager {
 namespace Internal {
 
+static const QStringList lockedOptions = {"buildtype", "debug", "backend"};
+
 inline Utils::TreeItem *makeBuildOptionTreeItem(CancellableOption *buildOption)
 {
     return new BuildOptionTreeItem(buildOption);
@@ -86,7 +88,9 @@ void BuidOptionsModel::setConfiguration(const BuildOptionsList &options)
     std::for_each(std::cbegin(options),
                   std::cend(options),
                   [this](const BuildOptionsList::value_type &option) {
-                      m_options.emplace_back(std::make_unique<CancellableOption>(option.get()));
+                      m_options.emplace_back(
+                          std::make_unique<CancellableOption>(option.get(),
+                                                              lockedOptions.contains(option->name)));
                   });
     {
         QMap<QString, QMap<QString, std::vector<CancellableOption *>>> subprojectOptions;
@@ -114,10 +118,8 @@ QStringList BuidOptionsModel::changesAsMesonArgs()
     QStringList args;
     std::for_each(std::cbegin(m_options),
                   std::cend(m_options),
-                  [&](const std::unique_ptr<CancellableOption> &option)
-                  {
-                      if(option->hasChanged())
-                      {
+                  [&](const std::unique_ptr<CancellableOption> &option) {
+                      if (option->hasChanged()) {
                           args.push_back(option->mesonArg());
                       }
                   });
@@ -178,9 +180,11 @@ QWidget *BuildOptionDelegate::createEditor(QWidget *parent,
                                            const QModelIndex &index) const
 {
     auto data = index.data(Qt::EditRole);
+    bool readOnly = index.data(Qt::UserRole).toBool();
     auto widget = makeWidget(parent, data);
     if (widget) {
         widget->setFocusPolicy(Qt::StrongFocus);
+        widget->setDisabled(readOnly);
         return widget;
     }
     return QStyledItemDelegate::createEditor(parent, option, index);

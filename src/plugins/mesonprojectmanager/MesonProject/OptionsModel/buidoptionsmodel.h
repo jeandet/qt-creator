@@ -40,12 +40,15 @@ class CancellableOption
     std::unique_ptr<BuildOption> m_savedValue;
     std::unique_ptr<BuildOption> m_currentValue;
     bool m_changed = false;
+    bool m_locked = false;
 
 public:
-    CancellableOption(BuildOption *option)
+    CancellableOption(BuildOption *option, bool locked=false)
         : m_savedValue{option->copy()}
         , m_currentValue{option->copy()}
+        , m_locked{locked}
     {}
+    inline bool isLocked(){return m_locked;}
     inline bool hasChanged() { return m_changed; }
     inline void apply()
     {
@@ -74,7 +77,7 @@ public:
     inline QString mesonArg(){return m_currentValue->mesonArg();}
     inline void setValue(const QVariant &v)
     {
-        if(v.toString()!=valueStr())
+        if(!m_locked && v.toString()!=valueStr())
         {
             m_currentValue->setValue(v);
             m_changed = v.toString()!=m_savedValue->valueStr();
@@ -126,6 +129,8 @@ public:
                 return m_option->valueStr();
             case Qt::EditRole:
                 return m_option->value();
+            case Qt::UserRole:
+                return  m_option->isLocked();
             case Qt::ToolTipRole:
                 if(m_option->hasChanged())
                     return QString("%1<br>Initial value was <b>%2</b>").arg(toolTip()).arg(m_option->savedValueStr());

@@ -26,7 +26,7 @@
 #include <QWidget>
 #include <QTimer>
 #include <projectexplorer/namedwidget.h>
-#include "buidoptionsmodel.h"
+#include "OptionsModel/buidoptionsmodel.h"
 #include "utils/categorysortfiltermodel.h"
 #include "utils/progressindicator.h"
 

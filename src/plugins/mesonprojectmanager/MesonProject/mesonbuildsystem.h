@@ -65,6 +65,9 @@ private:
     void parseProject();
     void updateNativeFile();
     void updateKit(ProjectExplorer::Kit* kit);
+    bool needsSetup();
+    void parsingCompleted(bool success);
+    QStringList configArgs(bool isSetup);
     ProjectExplorer::BuildSystem::ParseGuard m_parseGuard;
     MesonProjectParser m_parser;
     CppTools::CppProjectUpdater m_cppCodeModelUpdater;

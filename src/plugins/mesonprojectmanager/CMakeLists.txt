@@ -51,8 +51,8 @@ add_qtc_plugin(MesonProjectManager
   MesonProject/mesonbuildsettingswidget.ui
   MesonProject/mesonbuildsettingswidget.h
   MesonProject/mesonbuildsettingswidget.cpp
-  MesonProject/buidoptionsmodel.h
-  MesonProject/buidoptionsmodel.cpp
+  MesonProject/OptionsModel/buidoptionsmodel.h
+  MesonProject/OptionsModel/buidoptionsmodel.cpp
   MesonProject/mesonprocess.h
   MesonProject/mesonprocess.cpp
   MesonProject/mesonoutputparser.h

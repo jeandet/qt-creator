@@ -24,14 +24,31 @@
 ****************************************************************************/
 
 #include "mesonbuildsystem.h"
-#include "mesonbuildconfiguration.h"
 #include "kithelper.h"
+#include "mesonbuildconfiguration.h"
 #include <MesonToolSettings/mesontoolkitaspect.h>
 #include <MesonWrapper/mesonnativefilegenerator.h>
 #include <pluginmanager.h>
 #include <projectexplorer/buildconfiguration.h>
 #include <qtsupport/qtcppkitinfo.h>
 #include <qtsupport/qtkitinformation.h>
+
+#define LEAVE_IF_BUSY() \
+    { \
+        if (m_parseGuard.guardsProject()) \
+            return; \
+    }
+#define LOCK() \
+    { \
+        m_parseGuard = guardParsingRun(); \
+    }
+
+#define UNLOCK(success) \
+    { \
+        if (success) \
+            m_parseGuard.markAsSuccess(); \
+        m_parseGuard = {}; \
+    };
 
 namespace MesonProjectManager {
 namespace Internal {
@@ -48,27 +65,61 @@ void MesonBuildSystem::triggerParsing()
     parseProject();
 }
 
-void MesonBuildSystem::configure()
+bool MesonBuildSystem::needsSetup()
 {
     const Utils::FilePath &buildDir = buildConfiguration()->buildDirectory();
-    if (m_parseGuard.guardsProject())
-        return;
-    if(!isSetup(buildDir)|| !m_parser.usesSameMesonVersion(buildDir) ||!m_parser.matchesKit(m_kitData))
+    if (!isSetup(buildDir) || !m_parser.usesSameMesonVersion(buildDir)
+        || !m_parser.matchesKit(m_kitData))
+        return true;
+    return false;
+}
+
+void MesonBuildSystem::parsingCompleted(bool success)
+{
+    if (success) {
+        setRootProjectNode(m_parser.takeProjectNode());
+        if (kit() && buildConfiguration()) {
+            ProjectExplorer::KitInfo kitInfo{kit()};
+            m_cppCodeModelUpdater.update(
+                {project(),
+                 QtSupport::CppKitInfo(kit()),
+                 buildConfiguration()->environment(),
+                 m_parser.buildProjectParts(kitInfo.cxxToolChain, kitInfo.cToolChain)});
+        }
+        setApplicationTargets(m_parser.appsTargets());
+        UNLOCK(true);
+        emitBuildSystemUpdated();
+    } else {
+        UNLOCK(false);
+        emitBuildSystemUpdated();
+    }
+}
+
+QStringList MesonBuildSystem::configArgs(bool isSetup)
+{
+    if (!isSetup)
+        return m_pendingConfigArgs;
+    else
+        return QStringList{QString("--native-file=%1").arg(m_nativeFile->fileName())}
+               + m_pendingConfigArgs;
+}
+
+void MesonBuildSystem::configure()
+{
+    LEAVE_IF_BUSY();
+    if (needsSetup())
         return setup();
-    m_parseGuard = guardParsingRun();
-    m_parser.configure(projectDirectory(), buildDir, m_pendingConfigArgs);
+    LOCK();
+    m_parser.configure(projectDirectory(),
+                       buildConfiguration()->buildDirectory(),
+                       configArgs(false));
 }
 
 void MesonBuildSystem::setup()
 {
-    const Utils::FilePath &buildDir = buildConfiguration()->buildDirectory();
-    if (m_parseGuard.guardsProject())
-        return;
-    m_parseGuard = guardParsingRun();
-    QStringList args = m_pendingConfigArgs;
-    if (m_nativeFile)
-        args << QString("--native-file=%1").arg(m_nativeFile->fileName());
-    m_parser.setup(projectDirectory(), buildDir, args);
+    LEAVE_IF_BUSY();
+    LOCK();
+    m_parser.setup(projectDirectory(), buildConfiguration()->buildDirectory(), configArgs(true));
 }
 
 MesonBuildConfiguration *MesonBuildSystem::mesonBuildConfiguration()
@@ -94,42 +145,15 @@ void MesonBuildSystem::init()
             &ProjectExplorer::Project::projectFileIsDirty,
             this,
             &MesonBuildSystem::parseProject);
-    connect(&m_parser, &MesonProjectParser::parsingCompleted, this, [this](bool success) {
-        if (success) {
-            setRootProjectNode(m_parser.takeProjectNode());
-            if (kit() && buildConfiguration()) {
-                ProjectExplorer::KitInfo kitInfo{kit()};
-                m_cppCodeModelUpdater.update(
-                    {project(),
-                     QtSupport::CppKitInfo(kit()),
-                     buildConfiguration()->environment(),
-                     m_parser.buildProjectParts(kitInfo.cxxToolChain, kitInfo.cToolChain)});
-            }
-            setApplicationTargets(m_parser.appsTargets());
-            m_parseGuard.markAsSuccess();
-            m_parseGuard = {};
-            emitBuildSystemUpdated();
-        }
-        else {
-            m_parseGuard = {};
-            emitBuildSystemUpdated();
-        }
-    });
+    connect(&m_parser, &MesonProjectParser::parsingCompleted, this, &MesonBuildSystem::parsingCompleted);
 }
 
 void MesonBuildSystem::parseProject()
 {
-    if (m_parseGuard.guardsProject())
-        return;
-    m_parseGuard = guardParsingRun();
-    const auto &srcDir = projectDirectory();
-    auto bc = buildConfiguration();
-    if (bc) {
-        const auto &buildDir = bc->buildDirectory();
-        m_parser.parse(srcDir, buildDir);
-    } else {
-        m_parser.parse(srcDir);
-    }
+    LEAVE_IF_BUSY();
+    LOCK();
+    QTC_ASSERT(buildConfiguration(),return);
+    m_parser.parse(projectDirectory(), buildConfiguration()->buildDirectory());
 }
 
 void MesonBuildSystem::updateNativeFile()
@@ -142,7 +166,7 @@ void MesonBuildSystem::updateNativeFile()
 
 void MesonBuildSystem::updateKit(ProjectExplorer::Kit *kit)
 {
-    QTC_ASSERT(kit,return);
+    QTC_ASSERT(kit, return );
     m_kitData = KitHelper::kitData(kit);
     updateNativeFile();
 }
