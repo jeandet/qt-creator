@@ -81,7 +81,7 @@ void MesonBuildStep::update(bool parsingSuccessful)
 
 bool MesonBuildStep::init()
 {
-    // TODO check that the setup is ok
+    // TODO check if the setup is ok
     MesonBuildConfiguration *bc = static_cast<MesonBuildConfiguration *>(buildConfiguration());
     ProjectExplorer::ProcessParameters *pp = processParameters();
     pp->setMacroExpander(bc->macroExpander());
@@ -91,6 +91,18 @@ bool MesonBuildStep::init()
     pp->setWorkingDirectory(bc->buildDirectory());
     pp->setCommandLine(command());
     pp->resolveAll();
+
+    m_ninjaParser = new NinjaParser;
+    setOutputParser(m_ninjaParser);
+    ProjectExplorer::IOutputParser *parser = target()->kit()->createOutputParser();
+    if (parser)
+        appendOutputParser(parser);
+    outputParser()->setWorkingDirectory(pp->effectiveWorkingDirectory());
+
+    connect(m_ninjaParser, &NinjaParser::reportProgress, this, [this](int percent) {
+        emit progress(percent, QString());
+    });
+
     return AbstractProcessStep::init();
 }
 

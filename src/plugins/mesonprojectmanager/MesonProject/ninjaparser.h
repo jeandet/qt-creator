@@ -23,44 +23,25 @@
 **
 ****************************************************************************/
 #pragma once
-
-#include <projectexplorer/buildstep.h>
-#include <projectexplorer/abstractprocessstep.h>
-#include <utils/qtcprocess.h>
+#include <projectexplorer/ioutputparser.h>
+#include <projectexplorer/task.h>
+#include <utils/optional.h>
 #include <QObject>
-#include "ninjaparser.h"
-
+#include <QRegularExpression>
 namespace MesonProjectManager {
 namespace Internal {
-class MesonBuildStep final : public ProjectExplorer::AbstractProcessStep
+class NinjaParser final: public ProjectExplorer::IOutputParser
 {
     Q_OBJECT
+    QRegularExpression m_progressRegex{R"(\[(\d+)/(\d+)\])"};
+    Utils::optional<int> extractProgress(const QString &line);
 public:
-    MesonBuildStep(ProjectExplorer::BuildStepList *bsl, Core::Id id);
-    ProjectExplorer::BuildStepConfigWidget *createConfigWidget() final;
-    Utils::CommandLine command();
-    QStringList projectTargets();
-    void setBuildTarget(const QString& targetName);
-    void setCommandArgs(const QString& args);
-    const QString& targetName()const{return m_targetName;}
-    Q_SIGNAL void targetListChanged();
-    QVariantMap toMap() const override;
-    bool fromMap(const QVariantMap &map) override;
-private:
-    void update(bool parsingSuccessful);
-    bool init() override;
-    void doRun() override;
-    QString defaultBuildTarget() const;
-    QString m_commandArgs;
-    QString m_targetName;
-    NinjaParser* m_ninjaParser;
-};
+    NinjaParser();
+    void stdOutput(const QString &line) override;
+    void stdError(const QString &line) override;
 
-class MesonBuildStepFactory final: public ProjectExplorer::BuildStepFactory
-{
-public:
-    MesonBuildStepFactory();
+    bool hasFatalErrors() const override;
+    Q_SIGNAL void reportProgress(int progress);
 };
-
 } // namespace Internal
 } // namespace MesonProjectManager

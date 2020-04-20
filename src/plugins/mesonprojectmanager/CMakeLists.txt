@@ -57,6 +57,8 @@ add_qtc_plugin(MesonProjectManager
   MesonProject/mesonprocess.cpp
   MesonProject/mesonoutputparser.h
   MesonProject/mesonoutputparser.cpp
+  MesonProject/ninjaparser.h
+  MesonProject/ninjaparser.cpp
   MesonProject/mesonrunconfiguration.h
   MesonProject/mesonrunconfiguration.cpp
   MesonProject/ProjectTree/projecttree.h
@@ -98,4 +100,20 @@ add_qtc_test(tst_mesoninfoparser
     MesonInfoParser/mesoninfoparser.h
     MesonInfoParser/mesoninfoparser.cpp
 )
+
+add_qtc_test(tst_ninjaparser
+  INCLUDES
+    BEFORE "."
+  DEPENDS
+    Qt5::Core Qt5::Test Core
+    Utils ProjectExplorer
+  DEFINES
+     MESON_SAMPLES_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Tests/resources"
+     MESON_SAMPLES_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}"
+  SOURCES
+    Tests/testninjaparser.cpp
+    MesonProject/ninjaparser.cpp
+)
+
+
 endif(WITH_TESTS)

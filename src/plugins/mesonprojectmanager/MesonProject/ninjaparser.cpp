@@ -22,45 +22,45 @@
 ** be met: https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ****************************************************************************/
-#pragma once
 
-#include <projectexplorer/buildstep.h>
-#include <projectexplorer/abstractprocessstep.h>
-#include <utils/qtcprocess.h>
-#include <QObject>
 #include "ninjaparser.h"
-
 namespace MesonProjectManager {
 namespace Internal {
-class MesonBuildStep final : public ProjectExplorer::AbstractProcessStep
+NinjaParser::NinjaParser()
 {
-    Q_OBJECT
-public:
-    MesonBuildStep(ProjectExplorer::BuildStepList *bsl, Core::Id id);
-    ProjectExplorer::BuildStepConfigWidget *createConfigWidget() final;
-    Utils::CommandLine command();
-    QStringList projectTargets();
-    void setBuildTarget(const QString& targetName);
-    void setCommandArgs(const QString& args);
-    const QString& targetName()const{return m_targetName;}
-    Q_SIGNAL void targetListChanged();
-    QVariantMap toMap() const override;
-    bool fromMap(const QVariantMap &map) override;
-private:
-    void update(bool parsingSuccessful);
-    bool init() override;
-    void doRun() override;
-    QString defaultBuildTarget() const;
-    QString m_commandArgs;
-    QString m_targetName;
-    NinjaParser* m_ninjaParser;
-};
 
-class MesonBuildStepFactory final: public ProjectExplorer::BuildStepFactory
+}
+
+Utils::optional<int> NinjaParser::extractProgress(const QString &line)
 {
-public:
-    MesonBuildStepFactory();
-};
+    auto progress = m_progressRegex.match(line);
+    if(progress.hasMatch())
+    {
+        auto total = progress.captured(2).toInt();
+        auto pos = progress.captured(1).toInt();
+        return pos * 100 / total;
+    }
+    return Utils::nullopt;
+}
+
+void NinjaParser::stdOutput(const QString &line)
+{
+    auto progress = extractProgress(line);
+    if(progress) emit reportProgress(*progress);
+    else IOutputParser::stdError(line);
+
+}
+
+void NinjaParser::stdError(const QString &line)
+{
+
+}
+
+bool NinjaParser::hasFatalErrors() const
+{
+    // TODO
+    return false;
+}
 
 } // namespace Internal
 } // namespace MesonProjectManager
