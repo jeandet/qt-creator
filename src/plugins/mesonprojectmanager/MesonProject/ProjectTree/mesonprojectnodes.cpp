@@ -24,17 +24,16 @@
 ****************************************************************************/
 
 #include "mesonprojectnodes.h"
-#include <mesonpluginconstants.h>
-#include <MesonProject/mesonbuildsystem.h>
 #include <MesonProject/mesonbuildconfiguration.h>
+#include <MesonProject/mesonbuildsystem.h>
+#include <mesonpluginconstants.h>
 #include <projectexplorer/project.h>
 #include <projectexplorer/target.h>
 namespace MesonProjectManager {
 namespace Internal {
 
-
 MesonProjectNode::MesonProjectNode(const Utils::FilePath &directory)
-    :ProjectExplorer::ProjectNode{directory}
+    : ProjectExplorer::ProjectNode{directory}
 {
     static const auto MesonIcon = QIcon(Constants::Icons::MESON);
     setPriority(Node::DefaultProjectPriority + 1000);
@@ -42,23 +41,24 @@ MesonProjectNode::MesonProjectNode(const Utils::FilePath &directory)
     setListInProject(false);
 }
 
-
 MesonFileNode::MesonFileNode(const Utils::FilePath &file)
-    :ProjectExplorer::ProjectNode{file}
+    : ProjectExplorer::ProjectNode{file}
 {
-    static const auto MesonFolderIcon = Core::FileIconProvider::directoryIcon(Constants::Icons::MESON);
+    static const auto MesonFolderIcon = Core::FileIconProvider::directoryIcon(
+        Constants::Icons::MESON);
     setIcon(MesonFolderIcon);
     setListInProject(true);
 }
 
 MesonTargetNode::MesonTargetNode(const Utils::FilePath &directory, const QString &name)
-    :ProjectExplorer::ProjectNode{directory}
-    ,m_name{name}
+    : ProjectExplorer::ProjectNode{directory}
+    , m_name{name}
 {
     setPriority(Node::DefaultProjectPriority + 900);
     setIcon(QIcon(":/projectexplorer/images/build.png"));
-    setListInProject(true);
-    setProductType(ProjectExplorer::ProductType::App);
+    setListInProject(false);
+    setShowWhenEmpty(true);
+    setProductType(ProjectExplorer::ProductType::Other);
 }
 
 void MesonTargetNode::build()
@@ -66,7 +66,17 @@ void MesonTargetNode::build()
     ProjectExplorer::Project *p = getProject();
     ProjectExplorer::Target *t = p ? p->activeTarget() : nullptr;
     if (t)
-        static_cast<MesonBuildSystem*>(t->buildSystem())->mesonBuildConfiguration()->build(m_name);
+        static_cast<MesonBuildSystem *>(t->buildSystem())->mesonBuildConfiguration()->build(m_name);
+}
+
+QString MesonTargetNode::tooltip() const
+{
+    return {};
+}
+
+QString MesonTargetNode::buildKey() const
+{
+    return m_name;
 }
 
 } // namespace Internal

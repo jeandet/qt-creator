@@ -31,7 +31,6 @@ ProjectTree::ProjectTree() {}
 void buildTargetTree(std::unique_ptr<MesonProjectNode> &root, const Target &target)
 {
     const auto path = Utils::FilePath::fromString(target.definedIn);
-    auto targetNode = std::make_unique<MesonTargetNode>(path, Target::fullName(target));
     for (const auto &group : target.sources) {
         for (const auto &file : group.sources) {
             root->addNestedNode(
