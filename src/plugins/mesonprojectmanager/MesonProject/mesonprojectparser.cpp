@@ -23,7 +23,8 @@
 **
 ****************************************************************************/
 #include "mesonprojectparser.h"
-#include "MesonInfoParser/mesoninfoparser.h"
+#include <MesonInfoParser/mesoninfoparser.h>
+#include <MesonWrapper/mesontools.h>
 #include "ProjectTree/mesonprojectnodes.h"
 #include "ProjectTree/projecttree.h"
 #include <projectexplorer/projectexplorer.h>
@@ -121,7 +122,7 @@ void MesonProjectParser::configure(const Utils::FilePath &sourcePath,
 {
     m_introType = IntroDataType::file;
     m_buildDir = buildPath;
-    m_process.run(MesonTools::tool(m_meson)->configure(sourcePath, buildPath, args), m_env);
+    m_process.run(MesonTools::tool<MesonWrapper>(m_meson)->configure(sourcePath, buildPath, args), m_env);
 }
 
 void MesonProjectParser::setup(const Utils::FilePath &sourcePath,
@@ -133,7 +134,7 @@ void MesonProjectParser::setup(const Utils::FilePath &sourcePath,
     auto cmdArgs = args;
     if (isSetup(buildPath))
         cmdArgs << "--wipe";
-    m_process.run(MesonTools::tool(m_meson)->setup(sourcePath, buildPath, cmdArgs), m_env);
+    m_process.run(MesonTools::tool<MesonWrapper>(m_meson)->setup(sourcePath, buildPath, cmdArgs), m_env);
 }
 
 void MesonProjectParser::parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath)
@@ -152,7 +153,7 @@ void MesonProjectParser::parse(const Utils::FilePath &sourcePath)
 {
     m_srcDir = sourcePath;
     m_introType = IntroDataType::stdo;
-    m_process.run(MesonTools::tool(m_meson)->introspect(sourcePath), m_env, true);
+    m_process.run(MesonTools::tool<MesonWrapper>(m_meson)->introspect(sourcePath), m_env, true);
 }
 
 QList<ProjectExplorer::BuildTargetInfo> MesonProjectParser::appsTargets() const
@@ -286,7 +287,7 @@ bool MesonProjectParser::matchesKit(const KitData &kit)
 bool MesonProjectParser::usesSameMesonVersion(const Utils::FilePath &buildPath)
 {
     auto info = MesonInfoParser::mesonInfo(buildPath.toString());
-    auto meson = MesonTools::tool(m_meson);
+    auto meson = MesonTools::tool<MesonWrapper>(m_meson);
     return info && meson && info->mesonVersion == meson->version();
 }
 } // namespace Internal

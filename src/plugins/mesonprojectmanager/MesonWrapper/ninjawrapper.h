@@ -22,21 +22,44 @@
 ** be met: https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ****************************************************************************/
-
 #pragma once
-#include "utils/settingsaccessor.h"
-#include <MesonWrapper/mesontools.h>
-
+#include "../mesonpluginconstants.h"
+#include "toolwrapper.h"
 namespace MesonProjectManager {
 namespace Internal {
 
-class MesonToolSettingAccessor final: public Utils::UpgradingSettingsAccessor
+
+class NinjaWrapper final: public ToolWrapper
 {
 public:
-    MesonToolSettingAccessor();
-    void saveMesonTools(const std::vector<MesonTools::Tool_t> &tools, QWidget* parent);
-    std::vector<MesonTools::Tool_t> loadMesonTools(QWidget* parent);
+    using ToolWrapper::ToolWrapper;
+
+    static inline Utils::optional<Utils::FilePath> find()
+    {
+        return ToolWrapper::findTool({"ninja","ninja-build"});
+    }
+    static inline QString toolName(){ return "Ninja";};
 };
+
+template<>
+inline QVariantMap toVariantMap<NinjaWrapper>(const NinjaWrapper &meson)
+{
+    QVariantMap data;
+    data.insert(Constants::Settings::NAME_KEY, meson.m_name);
+    data.insert(Constants::Settings::EXE_KEY, meson.m_exe.toVariant());
+    data.insert(Constants::Settings::AUTO_DETECTED_KEY, meson.m_autoDetected);
+    data.insert(Constants::Settings::ID_KEY, meson.m_id.toSetting());
+    data.insert(Constants::Settings::TOOL_TYPE_KEY, Constants::Settings::TOOL_TYPE_NINJA);
+    return data;
+}
+template<>
+inline NinjaWrapper* fromVariantMap<NinjaWrapper>(const QVariantMap &data)
+{
+    return new NinjaWrapper(data[Constants::Settings::NAME_KEY].toString(),
+                        Utils::FilePath::fromVariant(data[Constants::Settings::EXE_KEY]),
+                        Core::Id::fromSetting(data[Constants::Settings::ID_KEY]),
+                        data[Constants::Settings::AUTO_DETECTED_KEY].toBool());
+}
 
 } // namespace Internal
 } // namespace MesonProjectManager

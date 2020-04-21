@@ -54,30 +54,8 @@ QStringList options_cat(const T &... args)
 namespace MesonProjectManager {
 namespace Internal {
 
-MesonWrapper::MesonWrapper(const QString &name, const Utils::FilePath &path, bool autoDetected)
-    : m_version(read_version(path))
-    , m_isValid{path.exists() && m_version.isValid}
-    , m_autoDetected{autoDetected}
-    , m_id{Core::Id::fromString(QUuid::createUuid().toString())}
-    , m_exe{path}
-    , m_name{name}
-{}
 
-MesonWrapper::MesonWrapper(const QString &name,
-                           const Utils::FilePath &path,
-                           const Core::Id &id,
-                           bool autoDetected)
-    : m_version(read_version(path))
-    , m_isValid{path.exists() && m_version.isValid}
-    , m_autoDetected{autoDetected}
-    , m_id{id}
-    , m_exe{path}
-    , m_name{name}
-{
-    QTC_ASSERT(m_id.isValid(), m_id = Core::Id::fromString(QUuid::createUuid().toString()));
-}
-
-MesonCommand MesonWrapper::setup(const Utils::FilePath &sourceDirectory,
+Command MesonWrapper::setup(const Utils::FilePath &sourceDirectory,
                                  const Utils::FilePath &buildDirectory,
                                  const QStringList &options) const
 {
@@ -86,7 +64,7 @@ MesonCommand MesonWrapper::setup(const Utils::FilePath &sourceDirectory,
             options_cat("setup", options, sourceDirectory.toString(), buildDirectory.toString())};
 }
 
-MesonCommand MesonWrapper::configure(const Utils::FilePath &sourceDirectory,
+Command MesonWrapper::configure(const Utils::FilePath &sourceDirectory,
                                      const Utils::FilePath &buildDirectory,
                                      const QStringList &options) const
 {
@@ -101,41 +79,13 @@ MesonCommand MesonWrapper::configure(const Utils::FilePath &sourceDirectory,
                         buildDirectory.toString())};
 }
 
-MesonCommand MesonWrapper::introspect(const Utils::FilePath &sourceDirectory) const
+Command MesonWrapper::introspect(const Utils::FilePath &sourceDirectory) const
 {
     return {m_exe,
             sourceDirectory,
             {"introspect", "-a", QString("%1/meson.build").arg(sourceDirectory.toString())}};
 }
 
-void MesonWrapper::setExe(const Utils::FilePath &newExe)
-{
-    m_exe = newExe;
-    m_version = read_version(m_exe);
-}
-
-void MesonTools::updateTool(const Core::Id &itemId, const QString &name, const Utils::FilePath &exe)
-{
-    auto self = instance();
-    auto item = std::find_if(std::begin(self->m_tools),
-                             std::end(self->m_tools),
-                             [&itemId](const auto &tool) { return tool.id() == itemId; });
-    if (item != std::end(self->m_tools)) {
-        item->setExe(exe);
-        item->setName(name);
-    } else {
-        self->m_tools.emplace_back(name, exe, itemId);
-        emit self->mesonToolAdded(self->m_tools.back());
-    }
-}
-
-void MesonTools::removeTool(const Core::Id &id)
-{
-    auto self = instance();
-    auto item = Utils::take(self->m_tools, [&id](const auto &item) { return item.id() == id; });
-    QTC_ASSERT(item, return );
-    emit self->mesonToolRemoved(*item);
-}
 
 } // namespace Internal
 } // namespace MesonProjectManager

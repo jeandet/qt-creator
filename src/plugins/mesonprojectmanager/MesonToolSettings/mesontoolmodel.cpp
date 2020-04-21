@@ -2,6 +2,7 @@
 #include "mesonetooltreeitem.h"
 #include "utils/qtcassert.h"
 #include "utils/stringutils.h"
+#include <MesonWrapper/mesontools.h>
 
 namespace MesonProjectManager {
 namespace Internal {
@@ -33,7 +34,7 @@ void MesonToolModel::updateItem(const Core::Id &itemId,
 
 void MesonToolModel::addMesonTool()
 {
-    manualGroup()->appendChild(new MesoneToolTreeItem{uniqueName(tr("New Meson"))});
+    manualGroup()->appendChild(new MesoneToolTreeItem{uniqueName(tr("New Meson or Ninja tool"))});
 }
 
 void MesonToolModel::removeMesonTool(MesoneToolTreeItem *item)
@@ -65,9 +66,9 @@ void MesonToolModel::apply()
     }
 }
 
-void MesonToolModel::addMesonTool(const MesonWrapper &tool)
+void MesonToolModel::addMesonTool(const MesonTools::Tool_t &tool)
 {
-    if (tool.autoDetected())
+    if (tool->autoDetected())
         autoDetectedGroup()->appendChild(new MesoneToolTreeItem(tool));
     else
         manualGroup()->appendChild(new MesoneToolTreeItem(tool));

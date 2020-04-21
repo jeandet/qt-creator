@@ -24,18 +24,32 @@
 ****************************************************************************/
 
 #pragma once
-#include "utils/settingsaccessor.h"
-#include <MesonWrapper/mesontools.h>
+#include "projectexplorer/kitmanager.h"
+#include "projectexplorer/kit.h"
+#include "MesonWrapper/mesontools.h"
+#include "coreplugin/id.h"
+#include <memory>
 
 namespace MesonProjectManager {
 namespace Internal {
-
-class MesonToolSettingAccessor final: public Utils::UpgradingSettingsAccessor
+class NinjaToolKitAspect final: public ProjectExplorer::KitAspect
 {
 public:
-    MesonToolSettingAccessor();
-    void saveMesonTools(const std::vector<MesonTools::Tool_t> &tools, QWidget* parent);
-    std::vector<MesonTools::Tool_t> loadMesonTools(QWidget* parent);
+    NinjaToolKitAspect();
+
+    ProjectExplorer::Tasks validate(const ProjectExplorer::Kit *k) const final;
+    void setup(ProjectExplorer::Kit *k) final;
+    void fix(ProjectExplorer::Kit *k) final;
+    ItemList toUserOutput(const ProjectExplorer::Kit *k) const final;
+    ProjectExplorer::KitAspectWidget *createConfigWidget(ProjectExplorer::Kit *) const final;
+
+    static void setNinjaTool(ProjectExplorer::Kit* kit, Core::Id id );
+    static Core::Id ninjaToolId(const ProjectExplorer::Kit* kit);
+
+    static inline decltype (auto) ninjaTool(const ProjectExplorer::Kit* kit)
+    {
+        return MesonTools::tool<NinjaWrapper>(NinjaToolKitAspect::ninjaToolId(kit));
+    }
 };
 
 } // namespace Internal

@@ -24,7 +24,7 @@
 ****************************************************************************/
 
 #pragma once
-#include "../MesonWrapper/mesonwrapper.h"
+#include <MesonWrapper/mesontools.h>
 #include "coreplugin/id.h"
 #include "mesonsettingpage.h"
 #include "utils/fileutils.h"
@@ -40,7 +40,7 @@ class MesoneToolTreeItem final : public Utils::TreeItem
     Q_DECLARE_TR_FUNCTIONS(MesonProjectManager::Internal::MesonSettingsPage)
 public:
     MesoneToolTreeItem(const QString&name);
-    MesoneToolTreeItem(const MesonWrapper &tool);
+    MesoneToolTreeItem(const MesonTools::Tool_t &tool);
     MesoneToolTreeItem(const MesoneToolTreeItem &other);
     QVariant data(int column, int role) const override;
     inline bool isAutoDetected()  const noexcept { return m_autoDetected; }
@@ -53,7 +53,7 @@ public:
 
 private:
     void self_check();
-    void update_tooltip(const MesonVersion& version);
+    void update_tooltip(const ToolVersion& version);
     void update_tooltip();
     QString m_name;
     QString m_tooltip;

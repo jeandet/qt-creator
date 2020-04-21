@@ -26,7 +26,7 @@
 #pragma once
 #include "projectexplorer/kitmanager.h"
 #include "projectexplorer/kit.h"
-#include "MesonWrapper/mesonwrapper.h"
+#include "MesonWrapper/mesontools.h"
 #include "coreplugin/id.h"
 #include <memory>
 
@@ -48,7 +48,7 @@ public:
 
     static inline decltype (auto) mesonTool(const ProjectExplorer::Kit* kit)
     {
-        return MesonTools::tool(MesonToolKitAspect::mesonToolId(kit));
+        return MesonTools::tool<MesonWrapper>(MesonToolKitAspect::mesonToolId(kit));
     }
 };
 

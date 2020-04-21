@@ -50,7 +50,6 @@ private:
                                                            const QString &installRoot) override;
 
     mutable std::unique_ptr<MesonProjectImporter> m_projectImporter;
-    MesonTools* m_tools;
 };
 
 } // namespace Internal

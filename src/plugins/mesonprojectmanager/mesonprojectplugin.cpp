@@ -32,6 +32,7 @@
 #include "MesonActionsManager/mesonactionsmanager.h"
 #include "MesonToolSettings/mesonsettingpage.h"
 #include "MesonToolSettings/mesontoolkitaspect.h"
+#include "MesonToolSettings/ninjatoolkitaspect.h"
 #include "MesonToolSettings/mesontoolsettingaccessor.h"
 #include "MesonWrapper/mesonwrapper.h"
 
@@ -79,7 +80,8 @@ public:
 private:
     MesonSettingsPage m_settingsPage;
     MesonToolSettingAccessor m_settings;
-    MesonToolKitAspect m_kitAspect;
+    MesonToolKitAspect m_mesonKitAspect;
+    NinjaToolKitAspect m_ninjaKitAspect;
     MesonBuildStepFactory m_buildStepFactory;
     MesonBuildConfigurationFactory m_buildConfigurationFactory;
     MesonRunConfigurationFactory m_runConfigurationFactory;

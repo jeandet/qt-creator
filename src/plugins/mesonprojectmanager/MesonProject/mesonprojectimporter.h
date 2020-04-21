@@ -35,7 +35,7 @@ namespace Internal {
 class MesonProjectImporter final : public QtSupport::QtProjectImporter
 {
 public:
-    MesonProjectImporter(const Utils::FilePath &path, MesonTools *tools);
+    MesonProjectImporter(const Utils::FilePath &path);
     QStringList importCandidates() final;
 
 private:
@@ -50,7 +50,6 @@ private:
 
     virtual void deleteDirectoryData(void *directoryData) const final;
 
-    MesonTools *m_tools;
 };
 } // namespace Internal
 } // namespace MesonProjectManager

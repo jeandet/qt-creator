@@ -28,6 +28,7 @@
 #include "mesonbuildstepconfigwidget.h"
 #include "mesonbuildsystem.h"
 #include "mesonpluginconstants.h"
+#include <MesonToolSettings/ninjatoolkitaspect.h>
 #include <coreplugin/id.h>
 #include <projectexplorer/buildconfiguration.h>
 #include <projectexplorer/buildsteplist.h>
@@ -57,7 +58,12 @@ ProjectExplorer::BuildStepConfigWidget *MesonBuildStep::createConfigWidget()
 
 Utils::CommandLine MesonBuildStep::command()
 {
-    Utils::CommandLine cmd{"ninja"};
+    Utils::CommandLine cmd = [this] {
+        auto tool = NinjaToolKitAspect::ninjaTool(target()->kit());
+        if (tool)
+            return Utils::CommandLine{tool->exe()};
+        return Utils::CommandLine{};
+    }();
     if (!m_commandArgs.isEmpty())
         cmd.addArgs(m_commandArgs, Utils::CommandLine::RawType::Raw);
     cmd.addArg(m_targetName);

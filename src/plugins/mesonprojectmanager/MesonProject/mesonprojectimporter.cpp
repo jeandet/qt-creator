@@ -32,8 +32,8 @@ static Q_LOGGING_CATEGORY(mInputLog, "qtc.meson.import", QtWarningMsg);
 
 namespace MesonProjectManager {
 namespace Internal {
-MesonProjectImporter::MesonProjectImporter(const Utils::FilePath &path, MesonTools *tools)
-    :QtSupport::QtProjectImporter{path}, m_tools{tools}
+MesonProjectImporter::MesonProjectImporter(const Utils::FilePath &path)
+    :QtSupport::QtProjectImporter{path}
 {
 
 }

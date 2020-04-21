@@ -23,10 +23,16 @@ add_qtc_plugin(MesonProjectManager
   MesonToolSettings/mesontoolitemsettings.cpp
   MesonToolSettings/mesontoolkitaspect.h
   MesonToolSettings/mesontoolkitaspect.cpp
+  MesonToolSettings/ninjatoolkitaspect.h
+  MesonToolSettings/ninjatoolkitaspect.cpp
   MesonToolSettings/mesontoolkitaspectwidget.h
   MesonToolSettings/mesontoolkitaspectwidget.cpp
   MesonWrapper/mesonwrapper.cpp
   MesonWrapper/mesonwrapper.h
+  MesonWrapper/ninjawrapper.h
+  MesonWrapper/toolwrapper.h
+  MesonWrapper/toolwrapper.cpp
+  MesonWrapper/mesontools.h
   MesonWrapper/mesonnativefilegenerator.h
   MesonWrapper/mesonnativefilegenerator.cpp
   MesonInfoParser/mesoninfoparser.h
@@ -82,6 +88,10 @@ add_qtc_test(tst_mesonwrapper
     Tests/testmesonwrapper.cpp
     MesonWrapper/mesonwrapper.cpp
     MesonWrapper/mesonwrapper.h
+    MesonWrapper/ninjawrapper.h
+    MesonWrapper/toolwrapper.h
+    MesonWrapper/toolwrapper.cpp
+    MesonWrapper/mesontools.h
 )
 
 add_qtc_test(tst_mesoninfoparser
@@ -97,6 +107,10 @@ add_qtc_test(tst_mesoninfoparser
     Tests/testmesoninfoparser.cpp
     MesonWrapper/mesonwrapper.cpp
     MesonWrapper/mesonwrapper.h
+    MesonWrapper/ninjawrapper.h
+    MesonWrapper/toolwrapper.h
+    MesonWrapper/toolwrapper.cpp
+    MesonWrapper/mesontools.h
     MesonInfoParser/mesoninfoparser.h
     MesonInfoParser/mesoninfoparser.cpp
 )

@@ -22,21 +22,36 @@
 ** be met: https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ****************************************************************************/
-
-#pragma once
-#include "utils/settingsaccessor.h"
-#include <MesonWrapper/mesontools.h>
-
+#include "toolwrapper.h"
 namespace MesonProjectManager {
 namespace Internal {
 
-class MesonToolSettingAccessor final: public Utils::UpgradingSettingsAccessor
+ToolWrapper::ToolWrapper(const QString &name, const Utils::FilePath &path, bool autoDetected)
+    : m_version(read_version(path))
+    , m_isValid{path.exists() && m_version.isValid}
+    , m_autoDetected{autoDetected}
+    , m_id{Core::Id::fromString(QUuid::createUuid().toString())}
+    , m_exe{path}
+    , m_name{name}
+{}
+
+ToolWrapper::ToolWrapper(const QString &name, const Utils::FilePath &path, const Core::Id &id, bool autoDetected)
+    : m_version(read_version(path))
+    , m_isValid{path.exists() && m_version.isValid}
+    , m_autoDetected{autoDetected}
+    , m_id{id}
+    , m_exe{path}
+    , m_name{name}
 {
-public:
-    MesonToolSettingAccessor();
-    void saveMesonTools(const std::vector<MesonTools::Tool_t> &tools, QWidget* parent);
-    std::vector<MesonTools::Tool_t> loadMesonTools(QWidget* parent);
-};
+    QTC_ASSERT(m_id.isValid(), m_id = Core::Id::fromString(QUuid::createUuid().toString()));
+}
+
+void ToolWrapper::setExe(const Utils::FilePath &newExe)
+{
+    m_exe = newExe;
+    m_version = read_version(m_exe);
+}
 
 } // namespace Internal
 } // namespace MesonProjectManager
+

@@ -220,7 +220,7 @@ public:
     {
         MesonInfo info;
         auto version = m_json["meson_version"].toObject();
-        info.mesonVersion = MesonVersion{version["major"].toInt(),
+        info.mesonVersion = ToolVersion{version["major"].toInt(),
                                          version["minor"].toInt(),
                                          version["patch"].toInt()};
         return info;

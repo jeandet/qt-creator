@@ -36,8 +36,6 @@ namespace Internal {
 MesonProject::MesonProject(const Utils::FilePath &path)
     : ProjectExplorer::Project{Constants::MIMETYPE, path}
 {
-    m_tools = static_cast<MesonTools *>(
-        ExtensionSystem::PluginManager::getObjectByName(Constants::MESON_TOOL_MANAGER));
     setId(Constants::Project::ID);
     setProjectLanguages(Core::Context(ProjectExplorer::Constants::CXX_LANGUAGE_ID));
     setDisplayName(projectDirectory().fileName());
@@ -57,7 +55,7 @@ ProjectExplorer::Tasks MesonProject::projectIssues(const ProjectExplorer::Kit *k
 ProjectExplorer::ProjectImporter *MesonProject::projectImporter() const
 {
     if (m_projectImporter)
-        m_projectImporter = std::make_unique<MesonProjectImporter>(projectFilePath(), m_tools);
+        m_projectImporter = std::make_unique<MesonProjectImporter>(projectFilePath());
     return m_projectImporter.get();
 }
 

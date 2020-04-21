@@ -26,6 +26,7 @@
 
 #include "MesonWrapper/mesonwrapper.h"
 #include "mesontoolkitaspect.h"
+#include "ninjatoolkitaspect.h"
 #include "projectexplorer/kitmanager.h"
 #include <QCoreApplication>
 #include <QComboBox>
@@ -38,15 +39,17 @@ class MesonToolKitAspectWidget final : public ProjectExplorer::KitAspectWidget
 {
     Q_DECLARE_TR_FUNCTIONS(MesonProjectManager::Internal::MesonToolKitAspect)
 public:
+    enum class ToolType{Meson,Ninja};
+
     MesonToolKitAspectWidget(ProjectExplorer::Kit *kit,
-                             const ProjectExplorer::KitAspect *ki);
+                             const ProjectExplorer::KitAspect *ki,ToolType type);
     ~MesonToolKitAspectWidget();
 private:
-    void addMesonTool(const MesonWrapper& tool);
-    void removeMesonTool(const MesonWrapper& tool);
+    void addTool(const MesonTools::Tool_t &tool);
+    void removeTool(const MesonTools::Tool_t& tool);
     void setCurrentToolIndex(int index);
     int indexOf(const Core::Id &id);
-
+    bool isCompatible(const MesonTools::Tool_t& tool);
     void loadTools();
     void setToDefault();
 
@@ -55,7 +58,11 @@ private:
     QWidget *buttonWidget() const override { return m_manageButton; }
     void refresh() override
     {
-        const auto id = MesonToolKitAspect::mesonToolId(m_kit);
+        const auto id = [this](){
+            if(m_type==ToolType::Meson)
+                return  MesonToolKitAspect::mesonToolId(m_kit);
+            return NinjaToolKitAspect::ninjaToolId(m_kit);
+        }();
         if (id.isValid())
             m_toolsComboBox->setCurrentIndex(indexOf(id));
         else {
@@ -65,6 +72,7 @@ private:
 
     QComboBox* m_toolsComboBox;
     QPushButton* m_manageButton;
+    ToolType m_type;
 };
 } // namespace Internal
 } // namespace MesonProjectManager

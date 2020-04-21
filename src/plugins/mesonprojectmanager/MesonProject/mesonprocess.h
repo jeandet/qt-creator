@@ -42,7 +42,7 @@ class MesonProcess final: public QObject
     Q_OBJECT
 public:
     MesonProcess();
-    void run(const MesonCommand& command, const Utils::Environment env,bool captureStdo= false);
+    void run(const Command& command, const Utils::Environment env,bool captureStdo= false);
 
     QProcess::ProcessState state() const;
 
@@ -59,7 +59,7 @@ signals:
 private:
     void handleProcessFinished(int code, QProcess::ExitStatus status);
     void checkForCancelled();
-    void setupProcess(const MesonCommand &command,const Utils::Environment env,bool captureStdo);
+    void setupProcess(const Command &command,const Utils::Environment env,bool captureStdo);
 
     void processStandardOutput();
     void processStandardError();

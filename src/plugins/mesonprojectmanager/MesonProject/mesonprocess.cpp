@@ -37,7 +37,7 @@ MesonProcess::MesonProcess()
     m_cancelTimer.setInterval(500);
 }
 
-void MesonProcess::run(const MesonCommand &command, const Utils::Environment env, bool captureStdo)
+void MesonProcess::run(const Command &command, const Utils::Environment env, bool captureStdo)
 {
     m_stdo.clear();
     m_processWasCanceled = false;
@@ -100,7 +100,7 @@ void MesonProcess::checkForCancelled()
     }
 }
 
-void MesonProcess::setupProcess(const MesonCommand &command,
+void MesonProcess::setupProcess(const Command &command,
                                 const Utils::Environment env,
                                 bool captureStdo)
 {

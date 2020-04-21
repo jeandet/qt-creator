@@ -29,7 +29,7 @@
 #include <utils/treemodel.h>
 #include <QCoreApplication>
 #include <memory>
-#include "../MesonWrapper/mesonwrapper.h"
+#include <MesonWrapper/mesontools.h>
 #include <QQueue>
 
 namespace MesonProjectManager {
@@ -47,7 +47,7 @@ public:
     MesoneToolTreeItem * cloneMesonTool(MesoneToolTreeItem * item);
     void apply();
 private:
-    void addMesonTool(const MesonWrapper&);
+    void addMesonTool(const MesonTools::Tool_t &);
     QString uniqueName(const QString& baseName);
     Utils::TreeItem* autoDetectedGroup() const;
     Utils::TreeItem* manualGroup() const;
