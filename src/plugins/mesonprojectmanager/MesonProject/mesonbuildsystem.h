@@ -67,12 +67,13 @@ private:
     void updateKit(ProjectExplorer::Kit* kit);
     bool needsSetup();
     void parsingCompleted(bool success);
+    Utils::FilePath generateNativeFilePath();
     QStringList configArgs(bool isSetup);
     ProjectExplorer::BuildSystem::ParseGuard m_parseGuard;
     MesonProjectParser m_parser;
     CppTools::CppProjectUpdater m_cppCodeModelUpdater;
     QStringList m_pendingConfigArgs;
-    std::unique_ptr<QTemporaryFile> m_nativeFile;
+    std::unique_ptr<QFile> m_nativeFile{nullptr};
     KitData m_kitData;
 };
 } // namespace Internal

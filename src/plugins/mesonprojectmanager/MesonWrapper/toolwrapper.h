@@ -33,6 +33,7 @@
 #include <QUuid>
 #include <QVariant>
 #include <QVariantMap>
+#include <versionhelper.h>
 
 namespace MesonProjectManager {
 namespace Internal {
@@ -46,35 +47,7 @@ struct Command
     QStringList arguments;
 };
 
-struct ToolVersion
-{
-    int major = -1;
-    int minor = -1;
-    int patch = -1;
-    bool isValid = false;
-    ToolVersion() = default;
-    ToolVersion(const ToolVersion &) = default;
-    ToolVersion(ToolVersion &&) = default;
-    ToolVersion &operator=(const ToolVersion &) = default;
-    ToolVersion &operator=(ToolVersion &&) = default;
 
-    bool operator==(const ToolVersion &other)
-    {
-        return other.isValid && isValid && major == other.major && minor == other.minor
-               && patch == other.patch;
-    }
-
-    ToolVersion(int major, int minor, int patch)
-        : major{major}
-        , minor{minor}
-        , patch{patch}
-        , isValid{major != -1 && minor != -1 && patch != -1}
-    {}
-    QString toQString() const noexcept
-    {
-        return QString("%1.%2.%3").arg(major).arg(minor).arg(patch);
-    }
-};
 
 class ToolWrapper
 {
@@ -101,14 +74,13 @@ public:
     inline void setName(const QString &newName) { m_name = newName; }
     virtual void setExe(const Utils::FilePath &newExe);
 
-    inline static ToolVersion read_version(const Utils::FilePath &toolPath)
+    inline static Version read_version(const Utils::FilePath &toolPath)
     {
         if (toolPath.toFileInfo().isExecutable()) {
             QProcess process;
             process.start(toolPath.toString(), {"--version"});
             if (process.waitForFinished()) {
-                const QStringList version = QString::fromUtf8(process.readLine()).split('.');
-                return ToolVersion{version[0].toInt(), version[1].toInt(), version[2].toInt()};
+                return Version::fromString(QString::fromUtf8(process.readLine()));
             }
         }
         return {};
@@ -133,7 +105,7 @@ public:
     friend T fromVariantMap(const QVariantMap &);
 
 protected:
-    ToolVersion m_version;
+    Version m_version;
     bool m_isValid;
     bool m_autoDetected;
     Core::Id m_id;

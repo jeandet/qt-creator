@@ -120,7 +120,7 @@ void MesoneToolTreeItem::self_check()
     m_pathIsExecutable = m_executable.toFileInfo().isExecutable();
 }
 
-void MesoneToolTreeItem::update_tooltip(const ToolVersion &version)
+void MesoneToolTreeItem::update_tooltip(const Version &version)
 {
     if (version.isValid)
         m_tooltip = tr("Version: %1").arg(version.toQString());

@@ -53,7 +53,7 @@ MesonBuildConfiguration::MesonBuildConfiguration(ProjectExplorer::Target *target
                                            target->kit(),
                                            displayName(),
                                            BuildConfiguration::Unknown));
-    setInitializer([this, target](const ProjectExplorer::BuildInfo &info) {
+    /*setInitializer([this, target](const ProjectExplorer::BuildInfo &info) {
         m_buildType = mesonBuildType(info.typeName);
         auto k = target->kit();
         if (info.buildDirectory.isEmpty()) {
@@ -62,7 +62,7 @@ MesonBuildConfiguration::MesonBuildConfiguration(ProjectExplorer::Target *target
                                                    info.displayName,
                                                    info.buildType));
         }
-    });
+    });*/
     m_buildSystem = new MesonBuildSystem{this};
 }
 

@@ -53,7 +53,7 @@ public:
 
 private:
     void self_check();
-    void update_tooltip(const ToolVersion& version);
+    void update_tooltip(const Version& version);
     void update_tooltip();
     QString m_name;
     QString m_tooltip;

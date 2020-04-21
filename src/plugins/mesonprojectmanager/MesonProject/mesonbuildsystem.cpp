@@ -30,6 +30,7 @@
 #include <MesonWrapper/mesonnativefilegenerator.h>
 #include <pluginmanager.h>
 #include <projectexplorer/buildconfiguration.h>
+#include <QDir>
 #include <qtsupport/qtcppkitinfo.h>
 #include <qtsupport/qtkitinformation.h>
 
@@ -95,13 +96,21 @@ void MesonBuildSystem::parsingCompleted(bool success)
     }
 }
 
+Utils::FilePath MesonBuildSystem::generateNativeFilePath()
+{
+    return mesonBuildConfiguration()->buildDirectory().pathAppended("meson-native.txt");
+}
+
 QStringList MesonBuildSystem::configArgs(bool isSetup)
 {
     if (!isSetup)
-        return m_pendingConfigArgs+mesonBuildConfiguration()->mesonConfigArgs();
-    else
+        return m_pendingConfigArgs + mesonBuildConfiguration()->mesonConfigArgs();
+    else {
+        if (!m_nativeFile||!m_nativeFile->exists())
+            updateKit(buildConfiguration()->target()->kit());
         return QStringList{QString("--native-file=%1").arg(m_nativeFile->fileName())}
-               + m_pendingConfigArgs+mesonBuildConfiguration()->mesonConfigArgs();
+               + m_pendingConfigArgs + mesonBuildConfiguration()->mesonConfigArgs();
+    }
 }
 
 void MesonBuildSystem::configure()
@@ -129,15 +138,18 @@ MesonBuildConfiguration *MesonBuildSystem::mesonBuildConfiguration()
 
 void MesonBuildSystem::init()
 {
-    auto dir = buildConfiguration()->buildDirectory();
-    updateKit(buildConfiguration()->target()->kit());
+    //auto dir = buildConfiguration()->buildDirectory();
+    //updateKit(buildConfiguration()->target()->kit());
     connect(buildConfiguration()->target(), &ProjectExplorer::Target::kitChanged, this, [this] {
         updateKit(buildConfiguration()->target()->kit());
     });
     connect(mesonBuildConfiguration(),
             &MesonBuildConfiguration::buildDirectoryChanged,
             this,
-            [this]() { this->triggerParsing(); });
+            [this]() {
+                updateKit(buildConfiguration()->target()->kit());
+                this->triggerParsing();
+            });
     connect(mesonBuildConfiguration(), &MesonBuildConfiguration::environmentChanged, this, [this]() {
         m_parser.setEnvironment(buildConfiguration()->environment());
     });
@@ -145,23 +157,31 @@ void MesonBuildSystem::init()
             &ProjectExplorer::Project::projectFileIsDirty,
             this,
             &MesonBuildSystem::parseProject);
-    connect(&m_parser, &MesonProjectParser::parsingCompleted, this, &MesonBuildSystem::parsingCompleted);
+    connect(&m_parser,
+            &MesonProjectParser::parsingCompleted,
+            this,
+            &MesonBuildSystem::parsingCompleted);
 }
 
 void MesonBuildSystem::parseProject()
 {
     LEAVE_IF_BUSY();
     LOCK();
-    QTC_ASSERT(buildConfiguration(),return);
+    QTC_ASSERT(buildConfiguration(), return );
     m_parser.parse(projectDirectory(), buildConfiguration()->buildDirectory());
 }
 
 void MesonBuildSystem::updateNativeFile()
 {
-    m_nativeFile = std::make_unique<QTemporaryFile>("Meson-Native");
-    m_nativeFile->open();
-    MesonNativeFileGenerator::makeNativeFile(m_nativeFile.get(), m_kitData);
-    m_nativeFile->flush();
+    auto nativeFilePath = generateNativeFilePath();
+    if (!nativeFilePath.absolutePath().exists()) {
+        QDir().mkdir(nativeFilePath.absolutePath().toString());
+    }
+    m_nativeFile = std::make_unique<QFile>(nativeFilePath.toString());
+    m_nativeFile->open(QIODevice::WriteOnly|QIODevice::Text);
+    if (m_nativeFile->isOpen())
+        MesonNativeFileGenerator::makeNativeFile(m_nativeFile.get(), m_kitData);
+    m_nativeFile->close();
 }
 
 void MesonBuildSystem::updateKit(ProjectExplorer::Kit *kit)
@@ -169,6 +189,7 @@ void MesonBuildSystem::updateKit(ProjectExplorer::Kit *kit)
     QTC_ASSERT(kit, return );
     m_kitData = KitHelper::kitData(kit);
     updateNativeFile();
+    m_parser.setQtVersion(m_kitData.qtVersion);
 }
 } // namespace Internal
 } // namespace MesonProjectManager

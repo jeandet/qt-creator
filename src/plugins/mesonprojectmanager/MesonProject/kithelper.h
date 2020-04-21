@@ -24,6 +24,8 @@
 ****************************************************************************/
 #include "kitdata.h"
 #include <projectexplorer/kit.h>
+#include <projectexplorer/kitinformation.h>
+#include <versionhelper.h>
 #include <utils/macroexpander.h>
 #include <utils/qtcassert.h>
 #include <QString>
@@ -74,7 +76,23 @@ inline KitData kitData(ProjectExplorer::Kit *kit)
     data.cxxCompilerPath = cxxCompilerPath(kit);
     data.cmakePath = cmakePath(kit);
     data.qmakePath = qmakePath(kit);
-    data.qtVersion = qtVersion(kit);
+    data.qtVersionStr = qtVersion(kit);
+    data.qtVersion=Utils::QtVersion::None;
+    auto version = Version::fromString(data.qtVersionStr);
+    if(version.isValid)
+    {
+        switch (version.major)
+        {
+        case 4:
+            data.qtVersion = Utils::QtVersion::Qt4;
+            break;
+        case 5:
+            data.qtVersion = Utils::QtVersion::Qt5;
+            break;
+        default:
+            data.qtVersion = Utils::QtVersion::Unknown;
+        }
+    }
     return data;
 }
 

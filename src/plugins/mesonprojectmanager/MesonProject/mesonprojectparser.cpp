@@ -57,10 +57,17 @@ inline Utils::optional<QString> extractInclude(const QString &arg)
 {
     return extractValueIfMatches(arg, {"-I", "/I", "-isystem", "-imsvc", "/imsvc"});
 }
-inline Utils::optional<QString> extractMacro(const QString &arg)
+inline Utils::optional<ProjectExplorer::Macro> extractMacro(const QString &arg)
 {
-    return extractValueIfMatches(arg, {"-D", "/D", "-U", "/U"});
+    auto define = extractValueIfMatches(arg, {"-D", "/D"});
+    if(define)
+        return ProjectExplorer::Macro(define->replace("="," ").toLatin1());
+    auto undef = extractValueIfMatches(arg, {"-U", "/U"});
+    if(undef)
+        return ProjectExplorer::Macro(undef->replace("="," ").toLatin1(), ProjectExplorer::MacroType::Undefine);
+    return Utils::nullopt;
 }
+
 
 CompilerArgs splitArgs(const QStringList &args)
 {
@@ -73,7 +80,7 @@ CompilerArgs splitArgs(const QStringList &args)
             auto macro = extractMacro(arg);
             if (macro) {
                 // TODO fix this, the goal is to replace name=value with name value
-                splited.macros << ProjectExplorer::Macro(macro->replace("="," ").toLatin1());
+                splited.macros << *macro;
             } else {
                 splited.args << arg;
             }
@@ -246,6 +253,7 @@ ProjectExplorer::RawProjectPart MesonProjectParser::buildRawPart(
         part.setFlagsForCxx({cxxToolChain, flags.args});
     else if (sources.language == "c")
         part.setFlagsForC({cToolChain, flags.args});
+    part.setQtVersion(m_qtVersion);
     return part;
 }
 

@@ -46,7 +46,10 @@ void writeBinariesSection(QIODevice *nativeFile, const KitData &kitData)
     addEntrie(nativeFile, "c", kitData.cCompilerPath);
     addEntrie(nativeFile, "cpp", kitData.cxxCompilerPath);
     addEntrie(nativeFile, "qmake", kitData.qmakePath);
-    addEntrie(nativeFile, QString{"qmake-qt%1"}.arg(kitData.qtVersion), kitData.qmakePath);
+    if(kitData.qtVersion==Utils::QtVersion::Qt4)
+        addEntrie(nativeFile, QString{"qmake-qt4"}, kitData.qmakePath);
+    else if(kitData.qtVersion==Utils::QtVersion::Qt5)
+        addEntrie(nativeFile, QString{"qmake-qt5"}, kitData.qmakePath);
     addEntrie(nativeFile, "cmake", kitData.cmakePath);
 }
 

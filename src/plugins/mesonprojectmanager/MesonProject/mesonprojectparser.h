@@ -87,6 +87,8 @@ public:
 
     inline void setEnvironment(const Utils::Environment &environment) { m_env = environment; }
 
+    inline void setQtVersion(Utils::QtVersion v){m_qtVersion=v;}
+
     bool matchesKit(const KitData& kit);
 
     bool usesSameMesonVersion(const Utils::FilePath &buildPath);
@@ -112,6 +114,7 @@ private:
     BuildOptionsList m_buildOptions; // <- Project build settings
     TargetsList m_targets;
     QStringList m_targetsNames;
+    Utils::QtVersion m_qtVersion;
     std::unique_ptr<MesonProjectNode> m_rootNode; // <- project tree root node
 };
 } // namespace Internal

@@ -347,7 +347,7 @@ void for_each_source_group(const TargetsList &targets, const function &f)
 
 struct MesonInfo
 {
-    ToolVersion mesonVersion;
+    Version mesonVersion;
 };
 
 class MesonInfoParserPrivate;
