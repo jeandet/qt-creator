@@ -43,18 +43,20 @@ Utils::optional<int> NinjaParser::extractProgress(const QString &line)
     return Utils::nullopt;
 }
 
-void NinjaParser::stdOutput(const QString &line)
+ProjectExplorer::OutputTaskParser::Status NinjaParser::handleLine(const QString &line, Utils::OutputFormat type)
 {
-    auto progress = extractProgress(line);
-    if(progress) emit reportProgress(*progress);
-    else IOutputParser::stdError(line);
-
+    if(type==Utils::OutputFormat::StdOutFormat)
+    {
+        auto progress = extractProgress(line);
+        if(progress)
+        {
+            emit reportProgress(*progress);
+            //return ProjectExplorer::OutputTaskParser::Status::InProgress;
+        }
+    }
+    return ProjectExplorer::OutputTaskParser::Status::NotHandled;
 }
 
-void NinjaParser::stdError(const QString &line)
-{
-
-}
 
 bool NinjaParser::hasFatalErrors() const
 {

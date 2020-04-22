@@ -51,7 +51,7 @@ void feedParser(NinjaParser& parser, const TestData& data)
 {
     auto lines = data.ninjaSTDO.split('\n');
     std::for_each(std::cbegin(lines), std::cend(lines), [&](const auto &line) {
-        parser.stdOutput(line);
+        parser.handleLine(line,Utils::OutputFormat::StdOutFormat);
     });
 }
 

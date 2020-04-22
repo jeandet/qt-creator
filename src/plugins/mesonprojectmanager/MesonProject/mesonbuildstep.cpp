@@ -98,12 +98,14 @@ bool MesonBuildStep::init()
     pp->setCommandLine(command());
     pp->resolveAll();
 
+
     m_ninjaParser = new NinjaParser;
     setOutputParser(m_ninjaParser);
-    ProjectExplorer::IOutputParser *parser = target()->kit()->createOutputParser();
-    if (parser)
-        appendOutputParser(parser);
-    outputParser()->setWorkingDirectory(pp->effectiveWorkingDirectory());
+
+    auto parsers = target()->kit()->createOutputParsers();
+    std::for_each(std::cbegin(parsers),std::cend(parsers),[this](const auto& parser){parser->setRedirectionDetector(m_ninjaParser);});
+    appendOutputParsers(parsers);
+    outputParser()->addSearchDir(pp->effectiveWorkingDirectory());
 
     connect(m_ninjaParser, &NinjaParser::reportProgress, this, [this](int percent) {
         emit progress(percent, QString());

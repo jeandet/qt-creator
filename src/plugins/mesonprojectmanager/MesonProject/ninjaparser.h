@@ -30,16 +30,16 @@
 #include <QRegularExpression>
 namespace MesonProjectManager {
 namespace Internal {
-class NinjaParser final: public ProjectExplorer::IOutputParser
+class NinjaParser final: public ProjectExplorer::OutputTaskParser
 {
     Q_OBJECT
     QRegularExpression m_progressRegex{R"(^\[(\d+)/(\d+)\])"};
     Utils::optional<int> extractProgress(const QString &line);
 public:
     NinjaParser();
-    void stdOutput(const QString &line) override;
-    void stdError(const QString &line) override;
+    Status handleLine(const QString &line, Utils::OutputFormat type) override;
 
+    bool hasDetectedRedirection() const override{ return true; }
     bool hasFatalErrors() const override;
     Q_SIGNAL void reportProgress(int progress);
 };
