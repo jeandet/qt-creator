@@ -1,5 +1,5 @@
 #include "MesonInfoParser/mesoninfoparser.h"
-#include "MesonWrapper/mesonwrapper.h"
+#include "ExeWrappers/mesonwrapper.h"
 #include <iostream>
 #include <QDir>
 #include <QObject>

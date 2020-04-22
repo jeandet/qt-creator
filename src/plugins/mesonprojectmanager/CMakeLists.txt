@@ -8,70 +8,72 @@ add_qtc_plugin(MesonProjectManager
   versionhelper.h
   MesonActionsManager/mesonactionsmanager.h
   MesonActionsManager/mesonactionsmanager.cpp
-  MesonToolSettings/mesonsettingpage.h
-  MesonToolSettings/mesonsettingpage.cpp
-  MesonToolSettings/mesontoolsettingswidget.ui
-  MesonToolSettings/mesontoolsettingswidget.h
-  MesonToolSettings/mesontoolsettingswidget.cpp
-  MesonToolSettings/mesontoolmodel.cpp
-  MesonToolSettings/mesontoolmodel.h
-  MesonToolSettings/mesonetooltreeitem.cpp
-  MesonToolSettings/mesonetooltreeitem.h
-  MesonToolSettings/mesontoolsettingaccessor.cpp
-  MesonToolSettings/mesontoolsettingaccessor.h
-  MesonToolSettings/mesontoolitemsettings.h
-  MesonToolSettings/mesontoolitemsettings.ui
-  MesonToolSettings/mesontoolitemsettings.cpp
-  MesonToolSettings/mesontoolkitaspect.h
-  MesonToolSettings/mesontoolkitaspect.cpp
-  MesonToolSettings/ninjatoolkitaspect.h
-  MesonToolSettings/ninjatoolkitaspect.cpp
-  MesonToolSettings/mesontoolkitaspectwidget.h
-  MesonToolSettings/mesontoolkitaspectwidget.cpp
-  MesonWrapper/mesonwrapper.cpp
-  MesonWrapper/mesonwrapper.h
-  MesonWrapper/ninjawrapper.h
-  MesonWrapper/toolwrapper.h
-  MesonWrapper/toolwrapper.cpp
-  MesonWrapper/mesontools.h
-  MesonWrapper/mesonnativefilegenerator.h
-  MesonWrapper/mesonnativefilegenerator.cpp
+  Settings/mesonsettingpage.h
+  Settings/mesonsettingpage.cpp
+  Settings/mesontoolsettingswidget.ui
+  Settings/mesontoolsettingswidget.h
+  Settings/mesontoolsettingswidget.cpp
+  Settings/mesontoolmodel.cpp
+  Settings/mesontoolmodel.h
+  Settings/mesonetooltreeitem.cpp
+  Settings/mesonetooltreeitem.h
+  Settings/mesontoolsettingaccessor.cpp
+  Settings/mesontoolsettingaccessor.h
+  Settings/mesontoolitemsettings.h
+  Settings/mesontoolitemsettings.ui
+  Settings/mesontoolitemsettings.cpp
+  Settings/mesontoolkitaspect.h
+  Settings/mesontoolkitaspect.cpp
+  Settings/ninjatoolkitaspect.h
+  Settings/ninjatoolkitaspect.cpp
+  Settings/mesontoolkitaspectwidget.h
+  Settings/mesontoolkitaspectwidget.cpp
+  ExeWrappers/mesonwrapper.cpp
+  ExeWrappers/mesonwrapper.h
+  ExeWrappers/ninjawrapper.h
+  ExeWrappers/toolwrapper.h
+  ExeWrappers/toolwrapper.cpp
+  ExeWrappers/mesontools.h
   MesonInfoParser/mesoninfoparser.h
   MesonInfoParser/mesoninfoparser.cpp
-  MesonProject/kithelper.h
-  MesonProject/kitdata.h
-  MesonProject/mesonproject.h
-  MesonProject/mesonproject.cpp
-  MesonProject/mesonprojectimporter.h
-  MesonProject/mesonprojectimporter.cpp
-  MesonProject/mesonbuildsystem.h
-  MesonProject/mesonbuildsystem.cpp
-  MesonProject/mesonprojectparser.h
-  MesonProject/mesonprojectparser.cpp
-  MesonProject/mesonbuildconfiguration.h
-  MesonProject/mesonbuildconfiguration.cpp
-  MesonProject/mesonbuildstep.h
-  MesonProject/mesonbuildstep.cpp
-  MesonProject/mesonbuildstepconfigwidget.ui
-  MesonProject/mesonbuildstepconfigwidget.h
-  MesonProject/mesonbuildstepconfigwidget.cpp
-  MesonProject/mesonbuildsettingswidget.ui
-  MesonProject/mesonbuildsettingswidget.h
-  MesonProject/mesonbuildsettingswidget.cpp
-  MesonProject/OptionsModel/buidoptionsmodel.h
-  MesonProject/OptionsModel/buidoptionsmodel.cpp
-  MesonProject/mesonprocess.h
-  MesonProject/mesonprocess.cpp
-  MesonProject/mesonoutputparser.h
-  MesonProject/mesonoutputparser.cpp
-  MesonProject/ninjaparser.h
-  MesonProject/ninjaparser.cpp
-  MesonProject/mesonrunconfiguration.h
-  MesonProject/mesonrunconfiguration.cpp
-  MesonProject/ProjectTree/projecttree.h
-  MesonProject/ProjectTree/projecttree.cpp
-  MesonProject/ProjectTree/mesonprojectnodes.h
-  MesonProject/ProjectTree/mesonprojectnodes.cpp
+  KitHelper/kitdata.h
+  KitHelper/kithelper.h
+  Project/mesonproject.h
+  Project/mesonproject.cpp
+  Project/mesonprojectimporter.h
+  Project/mesonprojectimporter.cpp
+  Project/mesonbuildsystem.h
+  Project/mesonbuildsystem.cpp
+  Project/mesonprojectparser.h
+  Project/mesonprojectparser.cpp
+  Project/mesonbuildconfiguration.h
+  Project/mesonbuildconfiguration.cpp
+  Project/mesonbuildstep.h
+  Project/mesonbuildstep.cpp
+  Project/mesonbuildstepconfigwidget.ui
+  Project/mesonbuildstepconfigwidget.h
+  Project/mesonbuildstepconfigwidget.cpp
+  Project/mesonbuildsettingswidget.ui
+  Project/mesonbuildsettingswidget.h
+  Project/mesonbuildsettingswidget.cpp
+  Project/OptionsModel/buidoptionsmodel.h
+  Project/OptionsModel/buidoptionsmodel.cpp
+  Project/mesonprocess.h
+  Project/mesonprocess.cpp
+  Project/mesonoutputparser.h
+  Project/mesonoutputparser.cpp
+  Project/ninjaparser.h
+  Project/ninjaparser.cpp
+  Project/mesonrunconfiguration.h
+  Project/mesonrunconfiguration.cpp
+  Project/ProjectTree/projecttree.h
+  Project/ProjectTree/projecttree.cpp
+  Project/ProjectTree/mesonprojectnodes.h
+  Project/ProjectTree/mesonprojectnodes.cpp
+  MachineFiles/machinefilemanager.h
+  MachineFiles/machinefilemanager.cpp
+  MachineFiles/nativefilegenerator.h
+  MachineFiles/nativefilegenerator.cpp
   ressources.qrc
 )
 
@@ -87,12 +89,12 @@ add_qtc_test(tst_mesonwrapper
      MESON_SAMPLES_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}"
   SOURCES
     Tests/testmesonwrapper.cpp
-    MesonWrapper/mesonwrapper.cpp
-    MesonWrapper/mesonwrapper.h
-    MesonWrapper/ninjawrapper.h
-    MesonWrapper/toolwrapper.h
-    MesonWrapper/toolwrapper.cpp
-    MesonWrapper/mesontools.h
+    ExeWrappers/mesonwrapper.cpp
+    ExeWrappers/mesonwrapper.h
+    ExeWrappers/ninjawrapper.h
+    ExeWrappers/toolwrapper.h
+    ExeWrappers/toolwrapper.cpp
+    ExeWrappers/mesontools.h
 )
 
 add_qtc_test(tst_mesoninfoparser
@@ -106,12 +108,12 @@ add_qtc_test(tst_mesoninfoparser
      MESON_SAMPLES_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}"
   SOURCES
     Tests/testmesoninfoparser.cpp
-    MesonWrapper/mesonwrapper.cpp
-    MesonWrapper/mesonwrapper.h
-    MesonWrapper/ninjawrapper.h
-    MesonWrapper/toolwrapper.h
-    MesonWrapper/toolwrapper.cpp
-    MesonWrapper/mesontools.h
+    ExeWrappers/mesonwrapper.cpp
+    ExeWrappers/mesonwrapper.h
+    ExeWrappers/ninjawrapper.h
+    ExeWrappers/toolwrapper.h
+    ExeWrappers/toolwrapper.cpp
+    ExeWrappers/mesontools.h
     MesonInfoParser/mesoninfoparser.h
     MesonInfoParser/mesoninfoparser.cpp
 )
@@ -127,7 +129,7 @@ add_qtc_test(tst_ninjaparser
      MESON_SAMPLES_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}"
   SOURCES
     Tests/testninjaparser.cpp
-    MesonProject/ninjaparser.cpp
+    Project/ninjaparser.cpp
 )
 
 

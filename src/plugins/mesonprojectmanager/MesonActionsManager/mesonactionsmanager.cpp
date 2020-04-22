@@ -24,8 +24,8 @@
 ****************************************************************************/
 
 #include "mesonactionsmanager.h"
-#include <MesonProject/mesonbuildsystem.h>
-#include <MesonProject/ProjectTree/mesonprojectnodes.h>
+#include <Project/mesonbuildsystem.h>
+#include <Project/ProjectTree/mesonprojectnodes.h>
 #include <projectexplorer/projectexplorer.h>
 #include <projectexplorer/projecttree.h>
 #include <coreplugin/actionmanager/actioncontainer.h>

@@ -24,17 +24,18 @@
 ****************************************************************************/
 
 #include "mesonprojectplugin.h"
-#include "MesonProject/mesonbuildconfiguration.h"
-#include "MesonProject/mesonbuildstep.h"
-#include "MesonProject/mesonbuildsystem.h"
-#include "MesonProject/mesonproject.h"
-#include "MesonProject/mesonrunconfiguration.h"
+#include "Project/mesonbuildconfiguration.h"
+#include "Project/mesonbuildstep.h"
+#include "Project/mesonbuildsystem.h"
+#include "Project/mesonproject.h"
+#include "Project/mesonrunconfiguration.h"
 #include "MesonActionsManager/mesonactionsmanager.h"
-#include "MesonToolSettings/mesonsettingpage.h"
-#include "MesonToolSettings/mesontoolkitaspect.h"
-#include "MesonToolSettings/ninjatoolkitaspect.h"
-#include "MesonToolSettings/mesontoolsettingaccessor.h"
-#include "MesonWrapper/mesonwrapper.h"
+#include "Settings/mesonsettingpage.h"
+#include "Settings/mesontoolkitaspect.h"
+#include "Settings/ninjatoolkitaspect.h"
+#include "Settings/mesontoolsettingaccessor.h"
+#include "MachineFiles/machinefilemanager.h"
+#include "ExeWrappers/mesonwrapper.h"
 
 #include <coreplugin/actionmanager/actioncontainer.h>
 #include <coreplugin/actionmanager/actionmanager.h>
@@ -86,6 +87,7 @@ private:
     MesonBuildConfigurationFactory m_buildConfigurationFactory;
     MesonRunConfigurationFactory m_runConfigurationFactory;
     MesonActionsManager m_actions;
+    MachineFileManager m_machineFilesManager;
     ProjectExplorer::RunWorkerFactory m_mesonRunWorkerFactory{
         ProjectExplorer::RunWorkerFactory::make<ProjectExplorer::SimpleTargetRunner>(),
         {ProjectExplorer::Constants::NORMAL_RUN_MODE},

@@ -1,4 +1,4 @@
-#include <MesonProject/ninjaparser.h>
+#include <Project/ninjaparser.h>
 #include <iostream>
 #include <QDir>
 #include <QObject>

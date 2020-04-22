@@ -23,7 +23,7 @@
 **
 ****************************************************************************/
 #pragma once
-#include <MesonWrapper/mesonwrapper.h>
+#include <ExeWrappers/mesonwrapper.h>
 #include <utils/fileutils.h>
 #include <utils/optional.h>
 #include <QCheckBox>
