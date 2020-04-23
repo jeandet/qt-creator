@@ -53,7 +53,7 @@ inline QVariantMap toVariantMap<NinjaWrapper>(const NinjaWrapper &meson)
     return data;
 }
 template<>
-inline NinjaWrapper* fromVariantMap<NinjaWrapper>(const QVariantMap &data)
+inline NinjaWrapper* fromVariantMap<NinjaWrapper*>(const QVariantMap &data)
 {
     return new NinjaWrapper(data[Constants::Settings::NAME_KEY].toString(),
                         Utils::FilePath::fromVariant(data[Constants::Settings::EXE_KEY]),

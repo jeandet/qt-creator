@@ -64,9 +64,9 @@ std::vector<MesonTools::Tool_t> MesonToolSettingAccessor::loadMesonTools(QWidget
             const auto map = data[name].toMap();
             auto type = map.value(Settings::TOOL_TYPE_KEY, Settings::TOOL_TYPE_MESON);
             if (type == Settings::TOOL_TYPE_NINJA)
-                result.emplace_back(fromVariantMap<NinjaWrapper>(data[name].toMap()));
+                result.emplace_back(fromVariantMap<NinjaWrapper*>(data[name].toMap()));
             else
-                result.emplace_back(fromVariantMap<MesonWrapper>(data[name].toMap()));
+                result.emplace_back(fromVariantMap<MesonWrapper*>(data[name].toMap()));
         }
     }
     return result;

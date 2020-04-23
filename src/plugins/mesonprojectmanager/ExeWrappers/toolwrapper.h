@@ -116,7 +116,7 @@ protected:
 template<typename T>
 QVariantMap toVariantMap(const T &);
 template<typename T>
-T* fromVariantMap(const QVariantMap &);
+T fromVariantMap(const QVariantMap &);
 
 } // namespace Internal
 } // namespace MesonProjectManager

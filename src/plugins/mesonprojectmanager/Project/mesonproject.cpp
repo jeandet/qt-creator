@@ -34,7 +34,7 @@
 namespace MesonProjectManager {
 namespace Internal {
 MesonProject::MesonProject(const Utils::FilePath &path)
-    : ProjectExplorer::Project{Constants::MIMETYPE, path}
+    : ProjectExplorer::Project{Constants::Project::MIMETYPE, path}
 {
     setId(Constants::Project::ID);
     setProjectLanguages(Core::Context(ProjectExplorer::Constants::CXX_LANGUAGE_ID));

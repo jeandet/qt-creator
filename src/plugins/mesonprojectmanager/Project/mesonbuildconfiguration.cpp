@@ -41,6 +41,7 @@
 #include "mesonbuildsystem.h"
 #include "mesonpluginconstants.h"
 #include <ExeWrappers/mesonwrapper.h>
+#include <mesonpluginconstants.h>
 
 namespace MesonProjectManager {
 namespace Internal {
@@ -115,13 +116,17 @@ void MesonBuildConfiguration::build(const QString &target)
 
 QVariantMap MesonBuildConfiguration::toMap() const
 {
-    return ProjectExplorer::BuildConfiguration::toMap();
+    auto data = ProjectExplorer::BuildConfiguration::toMap();
+    data[Constants::BuildConfiguration::BUILD_TYPE_KEY] = mesonBuildTypeName(m_buildType);
+    return data;
 }
 
 bool MesonBuildConfiguration::fromMap(const QVariantMap &map)
 {
     auto res = ProjectExplorer::BuildConfiguration::fromMap(map);
     m_buildSystem = new MesonBuildSystem{this};
+    m_buildType = mesonBuildType(
+        map.value(Constants::BuildConfiguration::BUILD_TYPE_KEY).toString());
     return res;
 }
 

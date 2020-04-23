@@ -35,6 +35,8 @@
 
 namespace MesonProjectManager {
 namespace Internal {
+static Q_LOGGING_CATEGORY(mesonParserLog, "qtc.meson.buildsystem", QtDebugMsg);
+
 
 struct CompilerArgs
 {
@@ -129,7 +131,9 @@ void MesonProjectParser::configure(const Utils::FilePath &sourcePath,
 {
     m_introType = IntroDataType::file;
     m_buildDir = buildPath;
-    m_process.run(MesonTools::tool<MesonWrapper>(m_meson)->configure(sourcePath, buildPath, args), m_env);
+    auto cmd = MesonTools::tool<MesonWrapper>(m_meson)->configure(sourcePath, buildPath, args);
+    qCDebug(mesonParserLog) << "Starting:" << cmd.exe << cmd.arguments.join(' ');
+    m_process.run(cmd, m_env);
 }
 
 void MesonProjectParser::setup(const Utils::FilePath &sourcePath,
@@ -141,7 +145,9 @@ void MesonProjectParser::setup(const Utils::FilePath &sourcePath,
     auto cmdArgs = args;
     if (isSetup(buildPath))
         cmdArgs << "--wipe";
-    m_process.run(MesonTools::tool<MesonWrapper>(m_meson)->setup(sourcePath, buildPath, cmdArgs), m_env);
+    auto cmd = MesonTools::tool<MesonWrapper>(m_meson)->setup(sourcePath, buildPath, cmdArgs);
+    qCDebug(mesonParserLog) << "Starting:" << cmd.exe << cmd.arguments.join(' ');
+    m_process.run(cmd, m_env);
 }
 
 void MesonProjectParser::parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath)

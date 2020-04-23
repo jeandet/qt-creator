@@ -17,15 +17,5 @@
     \"Category\" : \"Build Systems\",
     \"Description\" : \"Meson support.\",
     \"Url\" : \"http://www.mesonbuild.com\",
-    $$dependencyList,
-    \"Mimetypes\" : [
-        \"<?xml version=\'1.0\'?>\",
-        \"<mime-info xmlns=\'http://www.freedesktop.org/standards/shared-mime-info\'>\",
-        \"  <mime-type type=\'text/x-meson-project\'>\",
-        \"    <sub-class-of type=\'text/x-meson\'/>\",
-        \"    <comment>Meson Project file</comment>\",
-        \"    <glob pattern=\'meson.build\'/>\",
-        \"  </mime-type>\",
-        \"</mime-info>\"
-    ]
+    $$dependencyList
 }

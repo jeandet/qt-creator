@@ -28,11 +28,14 @@
 namespace MesonProjectManager {
 namespace Constants {
 
-const char MIMETYPE[] = "text/x-meson";
 namespace Project {
-const char MIMETYPE[] = "text/x-meson-project";
+const char MIMETYPE[] = "text/x-meson";
 const char ID[] = "MesonProjectManager.MesonProject";
 } // namespace Project
+
+namespace BuildConfiguration {
+const char BUILD_TYPE_KEY[] = "MesonProjectManager.BuildConfig.Type";
+}
 
 // Settings page
 const char MESON_SETTINGSPAGE_ID[] = "Z.Meson";

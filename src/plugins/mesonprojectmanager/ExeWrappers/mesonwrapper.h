@@ -118,7 +118,7 @@ inline QVariantMap toVariantMap<MesonWrapper>(const MesonWrapper &meson)
     return data;
 }
 template<>
-inline MesonWrapper* fromVariantMap<MesonWrapper>(const QVariantMap &data)
+inline MesonWrapper* fromVariantMap<MesonWrapper*>(const QVariantMap &data)
 {
     return new MesonWrapper(data[Constants::Settings::NAME_KEY].toString(),
                         Utils::FilePath::fromVariant(data[Constants::Settings::EXE_KEY]),
