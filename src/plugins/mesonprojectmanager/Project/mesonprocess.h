@@ -65,7 +65,7 @@ private:
     void processStandardError();
 
     std::unique_ptr<Utils::QtcProcess> m_process;
-    ProjectExplorer::IOutputParser m_parser;
+    //ProjectExplorer::IOutputParser m_parser;
     QFutureInterface<void> m_future;
     bool m_processWasCanceled = false;
     QTimer m_cancelTimer;

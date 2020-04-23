@@ -28,13 +28,13 @@
 
 namespace MesonProjectManager {
 namespace Internal {
-class MesonOutputParser final: public ProjectExplorer::IOutputParser
+/*class MesonOutputParser final: public ProjectExplorer::IOutputParser
 {
     Q_OBJECT
 public:
     MesonOutputParser();
     // TODO  this has to parse meson process output, and post Tasks for each error/warning
-};
+};*/
 
 } // namespace Internal
 } // namespace MesonProjectManager

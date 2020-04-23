@@ -25,9 +25,9 @@
 #include "mesonoutputparser.h"
 namespace MesonProjectManager {
 namespace Internal {
-MesonOutputParser::MesonOutputParser()
+/*MesonOutputParser::MesonOutputParser()
 {
 
-}
+}*/
 } // namespace Internal
 } // namespace MesonProjectManager

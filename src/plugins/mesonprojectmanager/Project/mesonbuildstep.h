@@ -50,6 +50,7 @@ private:
     void update(bool parsingSuccessful);
     bool init() override;
     void doRun() override;
+    void setupOutputFormatter(Utils::OutputFormatter *formatter) override;
     QString defaultBuildTarget() const;
     QString m_commandArgs;
     QString m_targetName;

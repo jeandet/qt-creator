@@ -24,6 +24,7 @@
 ****************************************************************************/
 
 #include "ninjaparser.h"
+#include <utils/fileutils.h>
 namespace MesonProjectManager {
 namespace Internal {
 NinjaParser::NinjaParser()
@@ -43,7 +44,12 @@ Utils::optional<int> NinjaParser::extractProgress(const QString &line)
     return Utils::nullopt;
 }
 
-ProjectExplorer::OutputTaskParser::Status NinjaParser::handleLine(const QString &line, Utils::OutputFormat type)
+void NinjaParser::setSourceDirectory(const QString &sourceDir)
+{
+    emit addSearchDir(Utils::FilePath::fromString(sourceDir));
+}
+
+Utils::OutputLineParser::Result NinjaParser::handleLine(const QString &line, Utils::OutputFormat type)
 {
     if(type==Utils::OutputFormat::StdOutFormat)
     {

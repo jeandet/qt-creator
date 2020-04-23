@@ -99,18 +99,6 @@ bool MesonBuildStep::init()
     pp->resolveAll();
 
 
-    m_ninjaParser = new NinjaParser;
-    setOutputParser(m_ninjaParser);
-
-    auto parsers = target()->kit()->createOutputParsers();
-    std::for_each(std::cbegin(parsers),std::cend(parsers),[this](const auto& parser){parser->setRedirectionDetector(m_ninjaParser);});
-    appendOutputParsers(parsers);
-    outputParser()->addSearchDir(pp->effectiveWorkingDirectory());
-
-    connect(m_ninjaParser, &NinjaParser::reportProgress, this, [this](int percent) {
-        emit progress(percent, QString());
-    });
-
     return AbstractProcessStep::init();
 }
 
@@ -129,6 +117,25 @@ QString MesonBuildStep::defaultBuildTarget() const
 void MesonBuildStep::doRun()
 {
     AbstractProcessStep::doRun();
+}
+
+void MesonBuildStep::setupOutputFormatter(Utils::OutputFormatter *formatter)
+{
+    m_ninjaParser = new NinjaParser;
+    m_ninjaParser->setSourceDirectory(project()->projectDirectory().toString());
+    formatter->addLineParser(m_ninjaParser);
+    auto additionalParsers = target()->kit()->createOutputParsers();
+    std::for_each(std::cbegin(additionalParsers),std::cend(additionalParsers),[this](const auto parser)
+                  {
+                      parser->setRedirectionDetector(m_ninjaParser);
+                  });
+    formatter->addLineParsers(additionalParsers);
+    formatter->addSearchDir(processParameters()->effectiveWorkingDirectory());
+    AbstractProcessStep::setupOutputFormatter(formatter);
+
+    connect(m_ninjaParser, &NinjaParser::reportProgress, this, [this](int percent) {
+        emit progress(percent, QString());
+    });
 }
 
 MesonBuildStepFactory::MesonBuildStepFactory()
