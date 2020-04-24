@@ -26,22 +26,30 @@
 #include "projectexplorer/ioutputparser.h"
 #include <QObject>
 #include <QRegularExpression>
+#include <array>
 
 namespace MesonProjectManager {
 namespace Internal {
 class MesonOutputParser final: public ProjectExplorer::OutputTaskParser
 {
     Q_OBJECT
-    QRegularExpression m_errorFileLocRegex{R"((^.*meson.build):(\d+):(\d+): ERROR)"};
-    QRegularExpression m_errorOptionRegex{R"!(ERROR: Value "(\w+)" )!"};
-    QRegularExpression m_3linesWarning{R"!(WARNING: Unknown options:)!"};
-    QRegularExpression m_2linesWarning{
-        R"!(WARNING: Project specifies a minimum meson_version | WARNING: Deprecated features used:)!"};
-    QRegularExpression m_1lineWarning{R"!(WARNING: )!"};
+    struct WarningRegex
+    {
+        const int lineCnt;
+        const QRegularExpression regex;
+    };
+    const QRegularExpression m_errorFileLocRegex{R"((^.*meson.build):(\d+):(\d+): ERROR)"};
+    const QRegularExpression m_errorOptionRegex{R"!(ERROR: Value "(\w+)" )!"};
+    const std::array<WarningRegex,3> m_multiLineWarnings{
+        WarningRegex{3,QRegularExpression{R"!(WARNING: Unknown options:)!"}}
+        ,WarningRegex{2,QRegularExpression{R"!(WARNING: Project specifies a minimum meson_version|WARNING: Deprecated features used:)!"}}
+        ,WarningRegex{1,QRegularExpression{R"!(WARNING: )!"}}
+    };
     int m_remainingLines = 0;
-    QString m_pending;
+    QStringList m_pending;
     void pushLine(const QString &line);
-
+    Result processErrors(const QString &line);
+    Result processWarnings(const QString &line);
 public:
     MesonOutputParser();
     Result handleLine(const QString &line, Utils::OutputFormat type) override;

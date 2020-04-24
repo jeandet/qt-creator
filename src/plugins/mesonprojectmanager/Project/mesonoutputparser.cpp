@@ -32,12 +32,50 @@ void MesonOutputParser::pushLine(const QString &line)
 {
     m_remainingLines--;
     m_pending.append(line);
-    m_pending.append('\n');
     if (m_remainingLines == 0) {
-        ProjectExplorer::TaskHub::addTask(
-            ProjectExplorer::BuildSystemTask(ProjectExplorer::Task::TaskType::Warning, m_pending));
+        auto task = ProjectExplorer::BuildSystemTask(ProjectExplorer::Task::TaskType::Warning,
+                                                     m_pending.join('\n'));
+        ProjectExplorer::TaskHub::addTask(task);
         m_pending.clear();
     }
+}
+
+Utils::OutputLineParser::Result MesonOutputParser::processErrors(const QString &line)
+{
+    auto optionsErrors = m_errorOptionRegex.match(line);
+    if (optionsErrors.hasMatch()) {
+        auto task = ProjectExplorer::BuildSystemTask(ProjectExplorer::Task::TaskType::Error, line);
+        ProjectExplorer::TaskHub::addTask(task);
+        return ProjectExplorer::OutputTaskParser::Status::Done;
+    }
+    auto locatedErrors = m_errorFileLocRegex.match(line);
+    if (locatedErrors.hasMatch()) {
+        auto fileName = absoluteFilePath(Utils::FilePath::fromString(locatedErrors.captured(1)));
+        auto task = ProjectExplorer::BuildSystemTask(ProjectExplorer::Task::TaskType::Error,
+                                                     QString("Meson build:%1").arg(line),
+                                                     fileName,
+                                                     locatedErrors.captured(2).toInt());
+        ProjectExplorer::TaskHub::addTask(task);
+        LinkSpecs linkSpecs;
+        addLinkSpecForAbsoluteFilePath(linkSpecs, task.file, task.line, locatedErrors, 1);
+        return {ProjectExplorer::OutputTaskParser::Status::Done, linkSpecs};
+    }
+    return ProjectExplorer::OutputTaskParser::Status::NotHandled;
+}
+
+Utils::OutputLineParser::Result MesonOutputParser::processWarnings(const QString &line)
+{
+    for(const auto& warning:m_multiLineWarnings)
+    {
+        const auto match = warning.regex.match(line);
+        if(match.hasMatch())
+        {
+            m_remainingLines = warning.lineCnt;
+            pushLine(line);
+            return ProjectExplorer::OutputTaskParser::Status::Done;
+        }
+    }
+    return ProjectExplorer::OutputTaskParser::Status::NotHandled;
 }
 
 MesonOutputParser::MesonOutputParser() {}
@@ -51,42 +89,10 @@ Utils::OutputLineParser::Result MesonOutputParser::handleLine(const QString &lin
         pushLine(line);
         return ProjectExplorer::OutputTaskParser::Status::Done;
     }
-    auto optionsErrors = m_errorOptionRegex.match(line);
-    if (optionsErrors.hasMatch()) {
-        ProjectExplorer::TaskHub::addTask(
-            ProjectExplorer::BuildSystemTask(ProjectExplorer::Task::TaskType::Error, line));
-        return ProjectExplorer::OutputTaskParser::Status::Done;
-    }
-    auto locatedErrors = m_errorFileLocRegex.match(line);
-    if (locatedErrors.hasMatch()) {
-        ProjectExplorer::TaskHub::addTask(
-            ProjectExplorer::BuildSystemTask(ProjectExplorer::Task::TaskType::Error,
-                                             line,
-                                             absoluteFilePath(Utils::FilePath::fromString(
-                                                 locatedErrors.captured(1))),
-                                             locatedErrors.captured(2).toInt()));
-
-        return ProjectExplorer::OutputTaskParser::Status::Done;
-    }
-    auto warning = m_3linesWarning.match(line);
-    if (warning.hasMatch()) {
-        m_remainingLines = 3;
-        pushLine(line);
-        return ProjectExplorer::OutputTaskParser::Status::Done;
-    }
-    warning = m_2linesWarning.match(line);
-    if (warning.hasMatch()) {
-        m_remainingLines = 3;
-        pushLine(line);
-        return ProjectExplorer::OutputTaskParser::Status::Done;
-    }
-    warning = m_1lineWarning.match(line);
-    if (warning.hasMatch()) {
-        m_remainingLines = 1;
-        pushLine(line);
-        return ProjectExplorer::OutputTaskParser::Status::Done;
-    }
-    return ProjectExplorer::OutputTaskParser::Status::NotHandled;
+    auto result = processErrors(line);
+    if(result.status==ProjectExplorer::OutputTaskParser::Status::Done)
+        return result;
+    return  processWarnings(line);
 }
 
 void MesonOutputParser::readStdo(const QByteArray &data)

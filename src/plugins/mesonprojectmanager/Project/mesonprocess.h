@@ -50,8 +50,8 @@ public:
     void reportFinished();
     void setProgressValue(int p);
 
-    const QByteArray& stdo()const {return m_stdo;}
-    const QByteArray& stderr()const {return m_stderr;}
+    const QByteArray& stdOut()const {return m_stdo;}
+    const QByteArray& stdErr()const {return m_stderr;}
 signals:
     void started();
     void finished(int exitCode, QProcess::ExitStatus exitStatus);

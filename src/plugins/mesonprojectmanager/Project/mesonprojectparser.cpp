@@ -120,7 +120,7 @@ MesonProjectParser::MesonProjectParser(const Core::Id &meson, Utils::Environment
                 {
                     if(m_introType==IntroDataType::stdo)
                     {
-                        auto data = m_process.stderr();
+                        auto data = m_process.stdErr();
                         Core::MessageManager::write(QString::fromLatin1(data));
                         m_outputParser.readStdo(data);
                     }
@@ -210,7 +210,7 @@ void MesonProjectParser::startParser()
                                              MesonInfoParser parser(buildDir);
                                              return extractParserResults(srcDir, parser);
                                          } else {
-                                             MesonInfoParser parser(process->stdo());
+                                             MesonInfoParser parser(process->stdOut());
                                              return extractParserResults(srcDir, parser);
                                          }
                                      });
@@ -303,7 +303,7 @@ bool MesonProjectParser::matchesKit(const KitData &kit)
 {
     bool matches = true;
     for_each_source_group(m_targets,
-                          [&matches, &kit](const Target &target,
+                          [&matches, &kit](const Target &,
                                            const Target::SourceGroup &sourceGroup) {
                               matches = matches && sourceGroupMatchesKit(kit, sourceGroup);
                           });
