@@ -132,6 +132,8 @@ add_qtc_test(tst_ninjaparser
 add_qtc_test(tst_mesonparser
   INCLUDES
     BEFORE "."
+  DEFINES
+    MESONPARSER_DISABLE_TASKS_FOR_TESTS
   DEPENDS
     Qt5::Core Qt5::Test Core
     Utils ProjectExplorer

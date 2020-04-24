@@ -1,6 +1,9 @@
 #include <Project/mesonoutputparser.h>
 #include <iostream>
 #include <projectexplorer/taskhub.h>
+#include <utils/fileinprojectfinder.h>
+#include <utils/theme/theme.h>
+#include <utils/theme/theme_p.h>
 #include <QDir>
 #include <QObject>
 #include <QString>
@@ -12,8 +15,7 @@ using namespace MesonProjectManager::Internal;
 struct TestData
 {
     QString stdo;
-    std::size_t warnings;
-    std::size_t errors;
+    QStringList linesToExtract;
 };
 Q_DECLARE_METATYPE(TestData);
 
@@ -22,13 +24,15 @@ static const TestData sample1{
 ERROR: Value "true" for combo option is not one of the choices. Possible choices are: "shared", "static", "both".
 ERROR: Value shared is not boolean (true or false).
 )",
-    0Ul,
-    3Ul};
+    {
+        R"(ERROR: Value "C++11" for combo option is not one of the choices. Possible choices are: "none", "c++98", "c++03", "c++11", "c++14", "c++17", "c++1z", "c++2a", "gnu++03", "gnu++11", "gnu++14", "gnu++17", "gnu++1z", "gnu++2a".)",
+        R"(ERROR: Value "true" for combo option is not one of the choices. Possible choices are: "shared", "static", "both".)",
+        R"(ERROR: Value shared is not boolean (true or false).)",
+    }};
 
 static const TestData sample2{
     R"(../core/meson.build:163:0: ERROR: could not get https://gitlab.com/mdds/mdds/-/archive/1.6.0/mdds-1.6.0.tar.gz is the internet available?)",
-    0Ul,
-    1Ul};
+    {R"(../core/meson.build:163:0: ERROR: could not get https://gitlab.com/mdds/mdds/-/archive/1.6.0/mdds-1.6.0.tar.gz is the internet available?)"}};
 
 static const TestData sample3{
     R"!(
@@ -168,7 +172,7 @@ Detecting Qt5 tools
  lrelease: YES (/usr/lib64/qt5/bin/lrelease, 5.13.2)
 Program python3 found: YES (/usr/bin/python3)
 Program shiboken2 found: YES (/usr/bin/shiboken2)
-Program python3 (PySide2, shiboken2, shiboken2_generator, numpy) found: YES (/usr/bin/python3) modules: PySide2, shiboken2, shiboken2_generator, numpy
+Program python4Ul3 (PySide2, shiboken2, shiboken2_generator, numpy) found: YES (/usr/bin/python3) modules: PySide2, shiboken2, shiboken2_generator, numpy
 Dependency python found: YES (pkgconfig)
 WARNING: Project targeting '>=0.51.0' but tried to use feature introduced in '0.53.0': embed arg in python_installation.dependency
 Dependency python found: YES (pkgconfig)
@@ -192,8 +196,16 @@ SciQLOP 1.1.0
 
 Found ninja-1.10.0 at /usr/bin/ninja
 )!",
-    0Ul,
-    0Ul};
+    {R"(WARNING: Unknown options: "unknown")",
+     R"(The value of new options can be set with:)",
+     R"(meson setup <builddir> --reconfigure -Dnew_option=new_value ...)",
+     R"(WARNING: rcc dependencies will not work reliably until this upstream issue is fixed: https://bugreports.qt.io/browse/QTBUG-45460)",
+     R"(WARNING: Project targeting '>=0.51.0' but tried to use feature introduced in '0.53.0': embed arg in python_installation.dependency)",
+     R"(WARNING: Project specifies a minimum meson_version '>=0.51.0' but uses features which were added in newer versions:)",
+     R"( * 0.53.0: {'embed arg in python_installation.dependency'})",
+     R"(WARNING: Deprecated features used:)",
+     R"( * 0.53.0: {'embed arg in python_installation.dependency'})",
+     }};
 
 static const TestData sample4{
     R"([0/1] Regenerating build files.
@@ -212,15 +224,21 @@ FAILED: build.ninja
 /usr/bin/meson --internal regenerate /home/jeandet/Documents/prog/SciQLop /home/jeandet/Documents/prog/build-SciQLop-Desktop-debug --backend ninja
 ninja: error: rebuilding 'build.ninja': subcommand failed
 )",
-    0Ul,
-    1Ul};
+    {
+        R"(../SciQLop/meson.build:21:0: ERROR: Expecting eof got rparen.)"
+    }};
 
-void feedParser(MesonOutputParser &parser, const TestData &data)
+QStringList feedParser(MesonOutputParser &parser, const TestData &data)
 {
+    QStringList extractedLines;
     auto lines = data.stdo.split('\n');
     std::for_each(std::cbegin(lines), std::cend(lines), [&](const auto &line) {
-        parser.handleLine(line,Utils::OutputFormat::StdOutFormat);
+        Utils::OutputLineParser::Result result
+            = parser.handleLine(line, Utils::OutputFormat::StdOutFormat);
+        if (result.status == Utils::OutputLineParser::Status::Done)
+            extractedLines << line;
     });
+    return extractedLines;
 }
 
 class AMesonOutputParser : public QObject
@@ -229,19 +247,7 @@ class AMesonOutputParser : public QObject
 
     std::size_t task_count;
     std::size_t error_count;
-public:
-    AMesonOutputParser()
-    {
-        connect(ProjectExplorer::TaskHub::instance(),
-                &ProjectExplorer::TaskHub::taskAdded,
-                this,
-                [this](const ProjectExplorer::Task& task)
-                {
-                    task_count++;
-                    if(task.type==ProjectExplorer::Task::TaskType::Error)
-                        error_count++;
-                } );
-    }
+
 private slots:
     void initTestCase() {}
     void extractProgress_data()
@@ -255,14 +261,15 @@ private slots:
     void extractProgress()
     {
         QFETCH(TestData, testData);
-        error_count=0;
-        task_count=0;
+        error_count = 0;
+        task_count = 0;
         MesonOutputParser parser;
-        feedParser(parser, testData);
-        QVERIFY(testData.errors==error_count);
+        auto extracetdLines = feedParser(parser, testData);
+        QCOMPARE(extracetdLines, testData.linesToExtract );
     }
     void cleanupTestCase() {}
 };
 
 QTEST_MAIN(AMesonOutputParser)
+
 #include "testmesonparser.moc"

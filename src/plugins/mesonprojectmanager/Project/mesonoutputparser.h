@@ -24,6 +24,7 @@
 ****************************************************************************/
 #pragma once
 #include "projectexplorer/ioutputparser.h"
+#include "utils/outputformatter.h"
 #include <QObject>
 #include <QRegularExpression>
 #include <array>
@@ -39,7 +40,7 @@ class MesonOutputParser final: public ProjectExplorer::OutputTaskParser
         const QRegularExpression regex;
     };
     const QRegularExpression m_errorFileLocRegex{R"((^.*meson.build):(\d+):(\d+): ERROR)"};
-    const QRegularExpression m_errorOptionRegex{R"!(ERROR: Value "(\w+)" )!"};
+    const QRegularExpression m_errorOptionRegex{R"!(ERROR: Value)!"};
     const std::array<WarningRegex,3> m_multiLineWarnings{
         WarningRegex{3,QRegularExpression{R"!(WARNING: Unknown options:)!"}}
         ,WarningRegex{2,QRegularExpression{R"!(WARNING: Project specifies a minimum meson_version|WARNING: Deprecated features used:)!"}}
@@ -50,6 +51,9 @@ class MesonOutputParser final: public ProjectExplorer::OutputTaskParser
     void pushLine(const QString &line);
     Result processErrors(const QString &line);
     Result processWarnings(const QString &line);
+    void addTask(ProjectExplorer::Task::TaskType type, const QString &line);
+    void addTask(ProjectExplorer::Task task);
+    Utils::OutputLineParser::LinkSpecs addTask(ProjectExplorer::Task::TaskType type, const QString &line, const QRegularExpressionMatch &match, int fileCapIndex, int lineNumberCapIndex);
 public:
     MesonOutputParser();
     Result handleLine(const QString &line, Utils::OutputFormat type) override;
