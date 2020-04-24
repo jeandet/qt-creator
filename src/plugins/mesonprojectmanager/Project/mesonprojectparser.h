@@ -25,6 +25,7 @@
 #pragma once
 #include "ProjectTree/mesonprojectnodes.h"
 #include "mesonprocess.h"
+#include "mesonoutputparser.h"
 #include <KitHelper/kitdata.h>
 #include <MesonInfoParser/mesoninfoparser.h>
 #include <ExeWrappers/mesonwrapper.h>
@@ -103,7 +104,7 @@ private:
                                                  const ProjectExplorer::ToolChain *cxxToolChain,
                                                  const ProjectExplorer::ToolChain *cToolChain);
     MesonProcess m_process;
-
+    MesonOutputParser m_outputParser;
     Utils::Environment m_env;
     Core::Id m_meson;
     Utils::FilePath m_buildDir;

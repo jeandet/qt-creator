@@ -23,11 +23,12 @@
 **
 ****************************************************************************/
 
-#include "mesonbuildstep.h"
+#include "ninjabuildstep.h"
 #include "mesonbuildconfiguration.h"
 #include "mesonbuildstepconfigwidget.h"
 #include "mesonbuildsystem.h"
 #include "mesonpluginconstants.h"
+#include "mesonoutputparser.h"
 #include <Settings/ninjatoolkitaspect.h>
 #include <coreplugin/id.h>
 #include <projectexplorer/buildconfiguration.h>
@@ -41,22 +42,22 @@ namespace Internal {
 const char TARGETS_KEY[] = "MesonProjectManager.BuildStep.BuildTargets";
 const char TOOL_ARGUMENTS_KEY[] = "MesonProjectManager.BuildStep.AdditionalArguments";
 
-MesonBuildStep::MesonBuildStep(ProjectExplorer::BuildStepList *bsl, Core::Id id)
+NinjaBuildStep::NinjaBuildStep(ProjectExplorer::BuildStepList *bsl, Core::Id id)
     : ProjectExplorer::AbstractProcessStep{bsl, id}
 {
     setDefaultDisplayName(tr("Meson Build"));
     if (m_targetName.isEmpty())
         setBuildTarget(defaultBuildTarget());
     setLowPriority();
-    connect(target(), &ProjectExplorer::Target::parsingFinished, this, &MesonBuildStep::update);
+    connect(target(), &ProjectExplorer::Target::parsingFinished, this, &NinjaBuildStep::update);
 }
 
-ProjectExplorer::BuildStepConfigWidget *MesonBuildStep::createConfigWidget()
+ProjectExplorer::BuildStepConfigWidget *NinjaBuildStep::createConfigWidget()
 {
     return new MesonBuildStepConfigWidget{this};
 }
 
-Utils::CommandLine MesonBuildStep::command()
+Utils::CommandLine NinjaBuildStep::command()
 {
     Utils::CommandLine cmd = [this] {
         auto tool = NinjaToolKitAspect::ninjaTool(target()->kit());
@@ -70,12 +71,12 @@ Utils::CommandLine MesonBuildStep::command()
     return cmd;
 }
 
-QStringList MesonBuildStep::projectTargets()
+QStringList NinjaBuildStep::projectTargets()
 {
     return static_cast<MesonBuildSystem *>(buildSystem())->targetList();
 }
 
-void MesonBuildStep::update(bool parsingSuccessful)
+void NinjaBuildStep::update(bool parsingSuccessful)
 {
     if (parsingSuccessful) {
         if (!projectTargets().contains(m_targetName)) {
@@ -85,7 +86,7 @@ void MesonBuildStep::update(bool parsingSuccessful)
     }
 }
 
-bool MesonBuildStep::init()
+bool NinjaBuildStep::init()
 {
     // TODO check if the setup is ok
     MesonBuildConfiguration *bc = static_cast<MesonBuildConfiguration *>(buildConfiguration());
@@ -102,7 +103,7 @@ bool MesonBuildStep::init()
     return AbstractProcessStep::init();
 }
 
-QString MesonBuildStep::defaultBuildTarget() const
+QString NinjaBuildStep::defaultBuildTarget() const
 {
     const ProjectExplorer::BuildStepList *const bsl = stepList();
     QTC_ASSERT(bsl, return {});
@@ -114,15 +115,18 @@ QString MesonBuildStep::defaultBuildTarget() const
     return Constants::Targets::all;
 }
 
-void MesonBuildStep::doRun()
+void NinjaBuildStep::doRun()
 {
     AbstractProcessStep::doRun();
 }
 
-void MesonBuildStep::setupOutputFormatter(Utils::OutputFormatter *formatter)
+void NinjaBuildStep::setupOutputFormatter(Utils::OutputFormatter *formatter)
 {
+    auto mesonOutputParser = new MesonOutputParser;
+    mesonOutputParser->setSourceDirectory(project()->projectDirectory());
+    formatter->addLineParser(mesonOutputParser);
     m_ninjaParser = new NinjaParser;
-    m_ninjaParser->setSourceDirectory(project()->projectDirectory().toString());
+    m_ninjaParser->setSourceDirectory(project()->projectDirectory());
     formatter->addLineParser(m_ninjaParser);
     auto additionalParsers = target()->kit()->createOutputParsers();
     std::for_each(std::cbegin(additionalParsers),std::cend(additionalParsers),[this](const auto parser)
@@ -140,22 +144,22 @@ void MesonBuildStep::setupOutputFormatter(Utils::OutputFormatter *formatter)
 
 MesonBuildStepFactory::MesonBuildStepFactory()
 {
-    registerStep<MesonBuildStep>(Constants::MESON_BUILD_STEP_ID);
+    registerStep<NinjaBuildStep>(Constants::MESON_BUILD_STEP_ID);
     setSupportedProjectType(Constants::Project::ID);
-    setDisplayName(MesonBuildStep::tr("meson"));
+    setDisplayName(NinjaBuildStep::tr("meson"));
 }
 
-void MesonProjectManager::Internal::MesonBuildStep::setBuildTarget(const QString &targetName)
+void MesonProjectManager::Internal::NinjaBuildStep::setBuildTarget(const QString &targetName)
 {
     m_targetName = targetName;
 }
 
-void MesonBuildStep::setCommandArgs(const QString &args)
+void NinjaBuildStep::setCommandArgs(const QString &args)
 {
     m_commandArgs = args.trimmed();
 }
 
-QVariantMap MesonBuildStep::toMap() const
+QVariantMap NinjaBuildStep::toMap() const
 {
     QVariantMap map(AbstractProcessStep::toMap());
     map.insert(TARGETS_KEY, m_targetName);
@@ -163,7 +167,7 @@ QVariantMap MesonBuildStep::toMap() const
     return map;
 }
 
-bool MesonBuildStep::fromMap(const QVariantMap &map)
+bool NinjaBuildStep::fromMap(const QVariantMap &map)
 {
     m_targetName = map.value(TARGETS_KEY).toString();
     m_commandArgs = map.value(TOOL_ARGUMENTS_KEY).toString();

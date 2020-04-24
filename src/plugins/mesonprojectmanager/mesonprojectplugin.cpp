@@ -25,7 +25,7 @@
 
 #include "mesonprojectplugin.h"
 #include "Project/mesonbuildconfiguration.h"
-#include "Project/mesonbuildstep.h"
+#include "Project/ninjabuildstep.h"
 #include "Project/mesonbuildsystem.h"
 #include "Project/mesonproject.h"
 #include "Project/mesonrunconfiguration.h"

@@ -33,7 +33,6 @@
 #include <memory>
 #include "ExeWrappers/mesonwrapper.h"
 #include "utils/qtcprocess.h"
-#include "projectexplorer/ioutputparser.h"
 
 namespace MesonProjectManager {
 namespace Internal {
@@ -52,6 +51,7 @@ public:
     void setProgressValue(int p);
 
     const QByteArray& stdo()const {return m_stdo;}
+    const QByteArray& stderr()const {return m_stderr;}
 signals:
     void started();
     void finished(int exitCode, QProcess::ExitStatus exitStatus);
@@ -65,12 +65,12 @@ private:
     void processStandardError();
 
     std::unique_ptr<Utils::QtcProcess> m_process;
-    //ProjectExplorer::IOutputParser m_parser;
     QFutureInterface<void> m_future;
     bool m_processWasCanceled = false;
     QTimer m_cancelTimer;
     QElapsedTimer m_elapsed;
     QByteArray m_stdo;
+    QByteArray m_stderr;
 };
 } // namespace Internal
 } // namespace MesonProjectManager

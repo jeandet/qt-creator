@@ -24,11 +24,12 @@
 ****************************************************************************/
 
 #include "mesonprocess.h"
-#include "coreplugin/messagemanager.h"
-#include "coreplugin/progressmanager/progressmanager.h"
-#include "projectexplorer/projectexplorerconstants.h"
-#include "projectexplorer/taskhub.h"
-#include "utils/stringutils.h"
+#include "mesonoutputparser.h"
+#include <coreplugin/messagemanager.h>
+#include <coreplugin/progressmanager/progressmanager.h>
+#include <projectexplorer/projectexplorerconstants.h>
+#include <projectexplorer/taskhub.h>
+#include <utils/stringutils.h>
 namespace MesonProjectManager {
 namespace Internal {
 MesonProcess::MesonProcess()
@@ -79,8 +80,9 @@ void MesonProcess::handleProcessFinished(int code, QProcess::ExitStatus status)
 {
     // TODO process output
     m_cancelTimer.stop();
+    m_stdo = m_process->readAllStandardOutput();
+    m_stderr = m_process->readAllStandardError();
     if (status == QProcess::NormalExit) {
-        m_stdo = m_process->readAllStandardOutput();
         m_future.setProgressValue(1);
         m_future.reportFinished();
     } else {
@@ -112,16 +114,17 @@ void MesonProcess::setupProcess(const Command &command,
             this,
             &MesonProcess::handleProcessFinished);
 
-    if (!captureStdo)
+    if (!captureStdo) {
         connect(m_process.get(),
                 &QProcess::readyReadStandardOutput,
                 this,
                 &MesonProcess::processStandardOutput);
 
-    connect(m_process.get(),
-            &QProcess::readyReadStandardError,
-            this,
-            &MesonProcess::processStandardError);
+        connect(m_process.get(),
+                &QProcess::readyReadStandardError,
+                this,
+                &MesonProcess::processStandardError);
+    }
 
     m_process->setWorkingDirectory(command.workDir.toString());
     m_process->setEnvironment(env);
@@ -132,8 +135,9 @@ void MesonProcess::setupProcess(const Command &command,
 void MesonProcess::processStandardOutput()
 {
     QTC_ASSERT(m_process, return );
-
-    Core::MessageManager::write(QString::fromLatin1(m_process->readAllStandardOutput()));
+    auto data = m_process->readAllStandardOutput();
+    Core::MessageManager::write(QString::fromLatin1(data));
+    emit readyReadStandardOutput(data);
 }
 
 void MesonProcess::processStandardError()

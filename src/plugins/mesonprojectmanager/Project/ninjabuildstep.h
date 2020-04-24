@@ -32,11 +32,11 @@
 
 namespace MesonProjectManager {
 namespace Internal {
-class MesonBuildStep final : public ProjectExplorer::AbstractProcessStep
+class NinjaBuildStep final : public ProjectExplorer::AbstractProcessStep
 {
     Q_OBJECT
 public:
-    MesonBuildStep(ProjectExplorer::BuildStepList *bsl, Core::Id id);
+    NinjaBuildStep(ProjectExplorer::BuildStepList *bsl, Core::Id id);
     ProjectExplorer::BuildStepConfigWidget *createConfigWidget() final;
     Utils::CommandLine command();
     QStringList projectTargets();

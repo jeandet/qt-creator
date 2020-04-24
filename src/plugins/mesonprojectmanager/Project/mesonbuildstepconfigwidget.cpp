@@ -32,7 +32,7 @@
 #include <QRadioButton>
 namespace MesonProjectManager {
 namespace Internal {
-MesonBuildStepConfigWidget::MesonBuildStepConfigWidget(MesonBuildStep *step)
+MesonBuildStepConfigWidget::MesonBuildStepConfigWidget(NinjaBuildStep *step)
     : ProjectExplorer::BuildStepConfigWidget{step}
     , ui(new Ui::MesonBuildStepConfigWidget)
     , m_buildTargetsList{new QListWidget}
@@ -47,12 +47,12 @@ MesonBuildStepConfigWidget::MesonBuildStepConfigWidget(MesonBuildStep *step)
     updateDetails();
     updateTargetList();
     connect(step,
-            &MesonBuildStep::targetListChanged,
+            &NinjaBuildStep::targetListChanged,
             this,
             &MesonBuildStepConfigWidget::updateTargetList);
     connect(ui->m_toolArguments,&QLineEdit::textEdited,this,[this](const QString& text)
             {
-                auto mesonBuildStep = static_cast<MesonBuildStep *>(this->step());
+                auto mesonBuildStep = static_cast<NinjaBuildStep *>(this->step());
                 mesonBuildStep->setCommandArgs(text);
                 updateDetails();
             });
@@ -73,7 +73,7 @@ MesonBuildStepConfigWidget::~MesonBuildStepConfigWidget()
 
 void MesonBuildStepConfigWidget::updateDetails()
 {
-    auto mesonBuildStep = static_cast<MesonBuildStep *>(step());
+    auto mesonBuildStep = static_cast<NinjaBuildStep *>(step());
     ProjectExplorer::ProcessParameters param;
     param.setMacroExpander(mesonBuildStep->macroExpander());
     param.setEnvironment(mesonBuildStep->buildEnvironment());

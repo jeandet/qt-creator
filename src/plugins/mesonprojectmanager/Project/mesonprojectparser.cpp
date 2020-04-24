@@ -28,6 +28,7 @@
 #include "ProjectTree/mesonprojectnodes.h"
 #include "ProjectTree/projecttree.h"
 #include <projectexplorer/projectexplorer.h>
+#include <coreplugin/messagemanager.h>
 #include <utils/optional.h>
 #include <utils/runextensions.h>
 #include <QStringList>
@@ -116,8 +117,17 @@ MesonProjectParser::MesonProjectParser(const Core::Id &meson, Utils::Environment
                 if (exitCode == 0 && exitStatus == QProcess::NormalExit) {
                     startParser();
                 } else
+                {
+                    if(m_introType==IntroDataType::stdo)
+                    {
+                        auto data = m_process.stderr();
+                        Core::MessageManager::write(QString::fromLatin1(data));
+                        m_outputParser.readStdo(data);
+                    }
                     emit parsingCompleted(false);
+                }
             });
+    connect(&m_process,&MesonProcess::readyReadStandardOutput,&m_outputParser,&MesonOutputParser::readStdo);
 }
 
 void MesonProjectParser::setMesonTool(const Core::Id &meson)
@@ -131,6 +141,7 @@ void MesonProjectParser::configure(const Utils::FilePath &sourcePath,
 {
     m_introType = IntroDataType::file;
     m_buildDir = buildPath;
+    m_outputParser.setSourceDirectory(sourcePath);
     auto cmd = MesonTools::tool<MesonWrapper>(m_meson)->configure(sourcePath, buildPath, args);
     qCDebug(mesonParserLog) << "Starting:" << cmd.exe << cmd.arguments.join(' ');
     m_process.run(cmd, m_env);
@@ -142,6 +153,7 @@ void MesonProjectParser::setup(const Utils::FilePath &sourcePath,
 {
     m_introType = IntroDataType::file;
     m_buildDir = buildPath;
+    m_outputParser.setSourceDirectory(sourcePath);
     auto cmdArgs = args;
     if (isSetup(buildPath))
         cmdArgs << "--wipe";

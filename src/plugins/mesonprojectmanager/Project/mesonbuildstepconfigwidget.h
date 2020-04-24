@@ -26,7 +26,7 @@
 #include <QWidget>
 #include <QListWidget>
 #include "projectexplorer/buildstep.h"
-#include "mesonbuildstep.h"
+#include "ninjabuildstep.h"
 
 namespace Ui {
 class MesonBuildStepConfigWidget;
@@ -38,15 +38,15 @@ class MesonBuildStepConfigWidget final: public ProjectExplorer::BuildStepConfigW
     Q_DECLARE_TR_FUNCTIONS(MesonProjectManager::Internal::MesonBuildStepConfigWidget)
 
 public:
-    explicit MesonBuildStepConfigWidget(MesonBuildStep *step);
+    explicit MesonBuildStepConfigWidget(NinjaBuildStep *step);
     ~MesonBuildStepConfigWidget();
 
 private:
     void updateDetails();
     void updateTargetList();
-    inline MesonBuildStep *mesonBuildStep()
+    inline NinjaBuildStep *mesonBuildStep()
     {
-        return static_cast<MesonBuildStep *>(step());
+        return static_cast<NinjaBuildStep *>(step());
     }
     Ui::MesonBuildStepConfigWidget *ui;
     QListWidget* m_buildTargetsList;

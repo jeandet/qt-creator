@@ -38,7 +38,7 @@ class NinjaParser final: public ProjectExplorer::OutputTaskParser
 public:
     NinjaParser();
     Result handleLine(const QString &line, Utils::OutputFormat type) override;
-    void setSourceDirectory(const QString &sourceDir);
+    void setSourceDirectory(const Utils::FilePath &sourceDir);
 
     bool hasDetectedRedirection() const override{ return true; }
     bool hasFatalErrors() const override;

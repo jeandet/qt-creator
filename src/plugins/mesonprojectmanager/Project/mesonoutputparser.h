@@ -25,16 +25,29 @@
 #pragma once
 #include "projectexplorer/ioutputparser.h"
 #include <QObject>
+#include <QRegularExpression>
 
 namespace MesonProjectManager {
 namespace Internal {
-/*class MesonOutputParser final: public ProjectExplorer::IOutputParser
+class MesonOutputParser final: public ProjectExplorer::OutputTaskParser
 {
     Q_OBJECT
+    QRegularExpression m_errorFileLocRegex{R"((^.*meson.build):(\d+):(\d+): ERROR)"};
+    QRegularExpression m_errorOptionRegex{R"!(ERROR: Value "(\w+)" )!"};
+    QRegularExpression m_3linesWarning{R"!(WARNING: Unknown options:)!"};
+    QRegularExpression m_2linesWarning{
+        R"!(WARNING: Project specifies a minimum meson_version | WARNING: Deprecated features used:)!"};
+    QRegularExpression m_1lineWarning{R"!(WARNING: )!"};
+    int m_remainingLines = 0;
+    QString m_pending;
+    void pushLine(const QString &line);
+
 public:
     MesonOutputParser();
-    // TODO  this has to parse meson process output, and post Tasks for each error/warning
-};*/
+    Result handleLine(const QString &line, Utils::OutputFormat type) override;
+    void readStdo(const QByteArray& data);
+    void setSourceDirectory(const Utils::FilePath &sourceDir);
+};
 
 } // namespace Internal
 } // namespace MesonProjectManager
