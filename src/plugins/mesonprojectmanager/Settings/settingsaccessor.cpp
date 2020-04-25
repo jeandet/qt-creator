@@ -1,8 +1,8 @@
-#include "mesontoolsettingaccessor.h"
-#include "../mesonpluginconstants.h"
-#include "app/app_version.h"
-#include "coreplugin/icore.h"
-#include "utils/fileutils.h"
+#include "settingsaccessor.h"
+#include <mesonpluginconstants.h>
+#include <app/app_version.h>
+#include <coreplugin/icore.h>
+#include <utils/fileutils.h>
 #include <iterator>
 #include <vector>
 #include <QCoreApplication>
@@ -18,7 +18,7 @@ inline QString entryName(int index)
 }
 } // namespace
 
-MesonToolSettingAccessor::MesonToolSettingAccessor()
+SettingsAccessor::SettingsAccessor()
     : UpgradingSettingsAccessor("QtCreatorMesonTools",
                                 QCoreApplication::translate("MesonProjectManager::MesonToolManager",
                                                             "Meson"),
@@ -28,7 +28,7 @@ MesonToolSettingAccessor::MesonToolSettingAccessor()
                         .pathAppended(Constants::Settings::FILENAME));
 }
 
-void MesonToolSettingAccessor::saveMesonTools(const std::vector<MesonTools::Tool_t> &tools,
+void SettingsAccessor::saveMesonTools(const std::vector<MesonTools::Tool_t> &tools,
                                               QWidget *parent)
 {
     using namespace Constants;
@@ -52,7 +52,7 @@ void MesonToolSettingAccessor::saveMesonTools(const std::vector<MesonTools::Tool
     saveSettings(data, parent);
 }
 
-std::vector<MesonTools::Tool_t> MesonToolSettingAccessor::loadMesonTools(QWidget *parent)
+std::vector<MesonTools::Tool_t> SettingsAccessor::loadMesonTools(QWidget *parent)
 {
     using namespace Constants;
     auto data = restoreSettings(parent);

@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include "mesonsettingpage.h"
+#include "toolssettingspage.h"
 #include <utils/treemodel.h>
 #include <QCoreApplication>
 #include <memory>
@@ -34,17 +34,17 @@
 
 namespace MesonProjectManager {
 namespace Internal {
-class MesoneToolTreeItem;
-class MesonToolModel final: public Utils::TreeModel<Utils::TreeItem, Utils::TreeItem, MesoneToolTreeItem>
+class ToolTreeItem;
+class ToolsModel final: public Utils::TreeModel<Utils::TreeItem, Utils::TreeItem, ToolTreeItem>
 {
-    Q_DECLARE_TR_FUNCTIONS(MesonProjectManager::Internal::MesonSettingsPage)
+    Q_DECLARE_TR_FUNCTIONS(MesonProjectManager::Internal::ToolsSettingsPage)
 public:
-    MesonToolModel();
-    MesoneToolTreeItem *mesoneToolTreeItem(const QModelIndex &index) const;
+    ToolsModel();
+    ToolTreeItem *mesoneToolTreeItem(const QModelIndex &index) const;
     Q_SLOT void updateItem(const Core::Id& itemId,const QString& name, const Utils::FilePath& exe);
     void addMesonTool();
-    void removeMesonTool(MesoneToolTreeItem * item);
-    MesoneToolTreeItem * cloneMesonTool(MesoneToolTreeItem * item);
+    void removeMesonTool(ToolTreeItem * item);
+    ToolTreeItem * cloneMesonTool(ToolTreeItem * item);
     void apply();
 private:
     void addMesonTool(const MesonTools::Tool_t &);

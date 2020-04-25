@@ -29,7 +29,7 @@
 #include "mesonbuildsystem.h"
 #include "mesonpluginconstants.h"
 #include "mesonoutputparser.h"
-#include <Settings/ninjatoolkitaspect.h>
+#include <Settings/Tools/KitAspect/ninjatoolkitaspect.h>
 #include <coreplugin/id.h>
 #include <projectexplorer/buildconfiguration.h>
 #include <projectexplorer/buildsteplist.h>

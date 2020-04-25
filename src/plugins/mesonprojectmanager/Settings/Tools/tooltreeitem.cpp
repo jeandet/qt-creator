@@ -23,14 +23,14 @@
 **
 ****************************************************************************/
 
-#include "mesonetooltreeitem.h"
-#include "utils/utilsicons.h"
+#include "tooltreeitem.h"
+#include <utils/utilsicons.h>
 #include <QFileInfo>
 #include <QUuid>
 
 namespace MesonProjectManager {
 namespace Internal {
-MesoneToolTreeItem::MesoneToolTreeItem(const QString &name)
+ToolTreeItem::ToolTreeItem(const QString &name)
     : m_name{name}
     , m_autoDetected{false}
     , m_id(Core::Id::fromString(QUuid::createUuid().toString()))
@@ -40,7 +40,7 @@ MesoneToolTreeItem::MesoneToolTreeItem(const QString &name)
     update_tooltip();
 }
 
-MesoneToolTreeItem::MesoneToolTreeItem(const MesonTools::Tool_t &tool)
+ToolTreeItem::ToolTreeItem(const MesonTools::Tool_t &tool)
     : m_name{tool->name()}
     , m_executable{tool->exe()}
     , m_autoDetected{tool->autoDetected()}
@@ -50,7 +50,7 @@ MesoneToolTreeItem::MesoneToolTreeItem(const MesonTools::Tool_t &tool)
     self_check();
 }
 
-MesoneToolTreeItem::MesoneToolTreeItem(const MesoneToolTreeItem &other)
+ToolTreeItem::ToolTreeItem(const ToolTreeItem &other)
     : m_name{tr("Clone of %1").arg(other.m_name)}
     , m_executable{other.m_executable}
     , m_autoDetected{false}
@@ -61,7 +61,7 @@ MesoneToolTreeItem::MesoneToolTreeItem(const MesoneToolTreeItem &other)
     update_tooltip();
 }
 
-QVariant MesoneToolTreeItem::data(int column, int role) const
+QVariant ToolTreeItem::data(int column, int role) const
 {
     switch (role) {
     case Qt::DisplayRole: {
@@ -82,13 +82,13 @@ QVariant MesoneToolTreeItem::data(int column, int role) const
     }
     case Qt::ToolTipRole: {
         if (!m_pathExists)
-            return QCoreApplication::translate("MesonProjectManager::Internal::MesoneToolTreeItem",
+            return QCoreApplication::translate("MesonProjectManager::Internal::ToolTreeItem",
                                                "Meson executable path does not exist.");
         if (!m_pathIsFile)
-            return QCoreApplication::translate("MesonProjectManager::Internal::MesoneToolTreeItem",
+            return QCoreApplication::translate("MesonProjectManager::Internal::ToolTreeItem",
                                                "Meson executable path is not a file.");
         if (!m_pathIsExecutable)
-            return QCoreApplication::translate("MesonProjectManager::Internal::MesoneToolTreeItem",
+            return QCoreApplication::translate("MesonProjectManager::Internal::ToolTreeItem",
                                                "Meson executable path is not executable.");
         return m_tooltip;
     }
@@ -101,7 +101,7 @@ QVariant MesoneToolTreeItem::data(int column, int role) const
     return {};
 }
 
-void MesoneToolTreeItem::update(const QString &name, const Utils::FilePath &exe)
+void ToolTreeItem::update(const QString &name, const Utils::FilePath &exe)
 {
     m_unsavedChanges = true;
     m_name = name;
@@ -113,14 +113,14 @@ void MesoneToolTreeItem::update(const QString &name, const Utils::FilePath &exe)
     }
 }
 
-void MesoneToolTreeItem::self_check()
+void ToolTreeItem::self_check()
 {
     m_pathExists = m_executable.exists();
     m_pathIsFile = m_executable.toFileInfo().isFile();
     m_pathIsExecutable = m_executable.toFileInfo().isExecutable();
 }
 
-void MesoneToolTreeItem::update_tooltip(const Version &version)
+void ToolTreeItem::update_tooltip(const Version &version)
 {
     if (version.isValid)
         m_tooltip = tr("Version: %1").arg(version.toQString());
@@ -128,7 +128,7 @@ void MesoneToolTreeItem::update_tooltip(const Version &version)
         m_tooltip = tr("Can't get Tool version");
 }
 
-void MesoneToolTreeItem::update_tooltip()
+void ToolTreeItem::update_tooltip()
 {
     update_tooltip(MesonWrapper::read_version(m_executable));
 }

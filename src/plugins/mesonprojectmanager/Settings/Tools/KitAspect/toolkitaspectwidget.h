@@ -35,15 +35,15 @@
 
 namespace MesonProjectManager {
 namespace Internal {
-class MesonToolKitAspectWidget final : public ProjectExplorer::KitAspectWidget
+class ToolKitAspectWidget final : public ProjectExplorer::KitAspectWidget
 {
-    Q_DECLARE_TR_FUNCTIONS(MesonProjectManager::Internal::MesonToolKitAspect)
+    Q_DECLARE_TR_FUNCTIONS(MesonProjectManager::Internal::ToolKitAspect)
 public:
     enum class ToolType{Meson,Ninja};
 
-    MesonToolKitAspectWidget(ProjectExplorer::Kit *kit,
+    ToolKitAspectWidget(ProjectExplorer::Kit *kit,
                              const ProjectExplorer::KitAspect *ki,ToolType type);
-    ~MesonToolKitAspectWidget();
+    ~ToolKitAspectWidget();
 private:
     void addTool(const MesonTools::Tool_t &tool);
     void removeTool(const MesonTools::Tool_t& tool);

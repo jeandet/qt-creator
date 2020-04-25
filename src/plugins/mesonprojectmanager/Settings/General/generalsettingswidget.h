@@ -24,19 +24,30 @@
 ****************************************************************************/
 
 #pragma once
-#include "utils/settingsaccessor.h"
-#include <ExeWrappers/mesontools.h>
+#include <coreplugin/dialogs/ioptionspage.h>
+#include <memory>
+#include <QCoreApplication>
+#include <QWidget>
+#include <QTabWidget>
+
+namespace Ui {
+class GeneralSettingsWidget;
+}
 
 namespace MesonProjectManager {
 namespace Internal {
-
-class MesonToolSettingAccessor final: public Utils::UpgradingSettingsAccessor
+class GeneralSettingsWidget final : public Core::IOptionsPageWidget
 {
-public:
-    MesonToolSettingAccessor();
-    void saveMesonTools(const std::vector<MesonTools::Tool_t> &tools, QWidget* parent);
-    std::vector<MesonTools::Tool_t> loadMesonTools(QWidget* parent);
-};
+    Q_DECLARE_TR_FUNCTIONS(MesonProjectManager::Internal::GeneralSettingsWidget)
+    void apply() final;
 
+public:
+    explicit GeneralSettingsWidget();
+    ~GeneralSettingsWidget();
+
+private:
+    Ui::GeneralSettingsWidget *ui;
+
+};
 } // namespace Internal
 } // namespace MesonProjectManager

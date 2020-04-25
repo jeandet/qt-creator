@@ -23,72 +23,72 @@
 **
 ****************************************************************************/
 
-#include "ninjatoolkitaspect.h"
-#include "mesontoolkitaspectwidget.h"
-#include "utils/qtcassert.h"
+#include "mesontoolkitaspect.h"
+#include "toolkitaspectwidget.h"
+#include <utils/qtcassert.h>
 
 namespace MesonProjectManager {
 namespace Internal {
 
-static const char TOOL_ID[] = "MesonProjectManager.MesonKitInformation.Ninja";
+static const char TOOL_ID[] = "MesonProjectManager.MesonKitInformation.Meson";
 
-NinjaToolKitAspect::NinjaToolKitAspect()
+MesonToolKitAspect::MesonToolKitAspect()
 {
-    setObjectName(QLatin1String("NinjaKitAspect"));
+    setObjectName(QLatin1String("MesonKitAspect"));
     setId(TOOL_ID);
-    setDisplayName(tr("Ninja Tool"));
-    setDescription(tr("The Ninja Tool to use when building a project with Meson.<br>"
+    setDisplayName(tr("Meson Tool"));
+    setDescription(tr("The Meson Tool to use when building a project with Meson.<br>"
                       "This setting is ignored when using other build systems."));
     setPriority(9000);
 }
 
-ProjectExplorer::Tasks NinjaToolKitAspect::validate(const ProjectExplorer::Kit *k) const
+ProjectExplorer::Tasks MesonToolKitAspect::validate(const ProjectExplorer::Kit *k) const
 {
     ProjectExplorer::Tasks tasks;
-    const auto tool = ninjaTool(k);
+    const auto tool = mesonTool(k);
     if (tool && !tool->isValid())
         tasks << ProjectExplorer::BuildSystemTask{ProjectExplorer::Task::Warning,
-                                                  tr("Can't validate this ninja executable.")};
+                                                  tr("Can't validate this meson executable.")};
     return tasks;
 }
 
-void NinjaToolKitAspect::setup(ProjectExplorer::Kit *k)
+void MesonToolKitAspect::setup(ProjectExplorer::Kit *k)
 {
-    const auto tool = ninjaTool(k);
+    const auto tool = mesonTool(k);
     if (!tool) {
-        const auto autoDetected = MesonTools::autoDetected<NinjaWrapper>();
+        const auto autoDetected = MesonTools::autoDetected<MesonWrapper>();
         if (autoDetected)
-            setNinjaTool(k, autoDetected->id());
+            setMesonTool(k, autoDetected->id());
     }
 }
 
-void NinjaToolKitAspect::fix(ProjectExplorer::Kit *k)
+void MesonToolKitAspect::fix(ProjectExplorer::Kit *k)
 {
     setup(k);
 }
 
-ProjectExplorer::KitAspect::ItemList NinjaToolKitAspect::toUserOutput(
+ProjectExplorer::KitAspect::ItemList MesonToolKitAspect::toUserOutput(
     const ProjectExplorer::Kit *k) const
 {
-    const auto tool = ninjaTool(k);
-    if(tool)
-        return {{tr("Ninja"),tool->name()}};
-    return {{tr("Ninja"),tr("Unconfigured")}};
+    const auto tool = mesonTool(k);
+    if (tool)
+        return {{tr("Meson"), tool->name()}};
+    return {{tr("Meson"), tr("Unconfigured")}};
 }
 
-ProjectExplorer::KitAspectWidget *NinjaToolKitAspect::createConfigWidget(ProjectExplorer::Kit *k) const
+ProjectExplorer::KitAspectWidget *MesonToolKitAspect::createConfigWidget(ProjectExplorer::Kit *k) const
 {
     QTC_ASSERT(k, return nullptr);
-    return new MesonToolKitAspectWidget{k, this,MesonToolKitAspectWidget::ToolType::Ninja};
+    return new ToolKitAspectWidget{k, this, ToolKitAspectWidget::ToolType::Meson};
 }
 
-void NinjaToolKitAspect::setNinjaTool(ProjectExplorer::Kit *kit, Core::Id id)
+void MesonToolKitAspect::setMesonTool(ProjectExplorer::Kit *kit, Core::Id id)
 {
     QTC_ASSERT(kit && id.isValid(), return );
     kit->setValue(TOOL_ID, id.toSetting());
 }
 
-Core::Id NinjaToolKitAspect::ninjaToolId(const ProjectExplorer::Kit *kit)
+Core::Id MesonToolKitAspect::mesonToolId(const ProjectExplorer::Kit *kit)
 {
     QTC_ASSERT(kit, return {});
     return Core::Id::fromSetting(kit->value(TOOL_ID));

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MesonToolItemSettings</class>
- <widget class="QWidget" name="MesonToolItemSettings">
+ <class>ToolItemSettings</class>
+ <widget class="QWidget" name="ToolItemSettings">
   <property name="geometry">
    <rect>
     <x>0</x>

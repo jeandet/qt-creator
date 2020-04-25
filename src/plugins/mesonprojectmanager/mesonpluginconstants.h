@@ -38,7 +38,11 @@ const char BUILD_TYPE_KEY[] = "MesonProjectManager.BuildConfig.Type";
 }
 
 // Settings page
-const char MESON_SETTINGSPAGE_ID[] = "Z.Meson";
+namespace SettingsPage {
+const char GENERAL_ID[] = "A.MesonProjectManager.SettingsPage.General";
+const char TOOLS_ID[] = "Z.MesonProjectManager.SettingsPage.Tools";
+const char CATEGORY[] = "Z.Meson";
+}
 
 namespace Settings {
 const char FILENAME[] = "mesontools.xml";
@@ -55,6 +59,7 @@ const char ID_KEY[] = "uuid";
 
 namespace Icons {
     const char MESON[] = ":/mesonproject/icons/meson_logo.png";
+    const char MESON_BW[] =":/mesonproject/icons/meson_bw_logo.png";
 }
 
 const char MESON_INFO_DIR[] = "meson-info";

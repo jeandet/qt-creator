@@ -1,26 +1,26 @@
-#include "mesontoolitemsettings.h"
-#include "mesonetooltreeitem.h"
-#include "ui_mesontoolitemsettings.h"
+#include "toolitemsettings.h"
+#include "tooltreeitem.h"
+#include "ui_toolitemsettings.h"
 
 namespace MesonProjectManager {
 namespace Internal {
-MesonToolItemSettings::MesonToolItemSettings(QWidget *parent)
+ToolItemSettings::ToolItemSettings(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::MesonToolItemSettings)
+    , ui(new Ui::ToolItemSettings)
 {
     ui->setupUi(this);
     ui->mesonPathChooser->setExpectedKind(Utils::PathChooser::ExistingCommand);
     ui->mesonPathChooser->setHistoryCompleter(QLatin1String("Meson.Command.History"));
-    connect(ui->mesonPathChooser, &Utils::PathChooser::rawPathChanged, this, &MesonToolItemSettings::store);
-    connect(ui->mesonNameLineEdit, &QLineEdit::textChanged, this, &MesonToolItemSettings::store);
+    connect(ui->mesonPathChooser, &Utils::PathChooser::rawPathChanged, this, &ToolItemSettings::store);
+    connect(ui->mesonNameLineEdit, &QLineEdit::textChanged, this, &ToolItemSettings::store);
 }
 
-MesonToolItemSettings::~MesonToolItemSettings()
+ToolItemSettings::~ToolItemSettings()
 {
     delete ui;
 }
 
-void MesonToolItemSettings::load(MesoneToolTreeItem *item)
+void ToolItemSettings::load(ToolTreeItem *item)
 {
     if (item) {
         m_currentId = Utils::nullopt;
@@ -34,7 +34,7 @@ void MesonToolItemSettings::load(MesoneToolTreeItem *item)
     }
 }
 
-void MesonToolItemSettings::store()
+void ToolItemSettings::store()
 {
     if (m_currentId)
         emit applyChanges(*m_currentId,

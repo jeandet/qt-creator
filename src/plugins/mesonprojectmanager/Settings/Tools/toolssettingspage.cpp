@@ -23,20 +23,20 @@
 **
 ****************************************************************************/
 
-#include "mesonpluginconstants.h"
-#include "mesonsettingpage.h"
+#include <mesonpluginconstants.h>
+#include "toolssettingspage.h"
+#include "toolssettingswidget.h"
 #include <projectexplorer.h>
-#include "mesontoolsettingswidget.h"
 
 namespace MesonProjectManager {
 namespace Internal {
 
-MesonSettingsPage::MesonSettingsPage()
+ToolsSettingsPage::ToolsSettingsPage()
 {
-    setId(Constants::MESON_SETTINGSPAGE_ID);
-    setDisplayName(MesonToolSettingsWidget::tr("Meson"));
-    setCategory(ProjectExplorer::Constants::KITS_SETTINGS_CATEGORY);
-    setWidgetCreator([]() { return new MesonToolSettingsWidget; });
+    setId(Constants::SettingsPage::TOOLS_ID);
+    setDisplayName(tr("Tools"));
+    setCategory(Constants::SettingsPage::CATEGORY);
+    setWidgetCreator([]() { return new ToolsSettingsWidget; });
 }
 
 } // namespace Internal

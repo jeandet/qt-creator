@@ -25,23 +25,23 @@
 
 #pragma once
 #include <ExeWrappers/mesontools.h>
-#include "coreplugin/id.h"
-#include "mesonsettingpage.h"
-#include "utils/fileutils.h"
-#include "utils/treemodel.h"
-#include "utils/optional.h"
+#include <coreplugin/id.h>
+#include "toolssettingspage.h"
+#include <utils/fileutils.h>
+#include <utils/treemodel.h>
+#include <utils/optional.h>
 #include <QCoreApplication>
 #include <QString>
 
 namespace MesonProjectManager {
 namespace Internal {
-class MesoneToolTreeItem final : public Utils::TreeItem
+class ToolTreeItem final : public Utils::TreeItem
 {
-    Q_DECLARE_TR_FUNCTIONS(MesonProjectManager::Internal::MesonSettingsPage)
+    Q_DECLARE_TR_FUNCTIONS(MesonProjectManager::Internal::ToolsSettingsPage)
 public:
-    MesoneToolTreeItem(const QString&name);
-    MesoneToolTreeItem(const MesonTools::Tool_t &tool);
-    MesoneToolTreeItem(const MesoneToolTreeItem &other);
+    ToolTreeItem(const QString&name);
+    ToolTreeItem(const MesonTools::Tool_t &tool);
+    ToolTreeItem(const ToolTreeItem &other);
     QVariant data(int column, int role) const override;
     inline bool isAutoDetected()  const noexcept { return m_autoDetected; }
     inline QString name()  const noexcept { return m_name; }

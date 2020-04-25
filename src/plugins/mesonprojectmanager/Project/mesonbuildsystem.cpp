@@ -26,7 +26,7 @@
 #include "mesonbuildsystem.h"
 #include <KitHelper/kithelper.h>
 #include "mesonbuildconfiguration.h"
-#include <Settings/mesontoolkitaspect.h>
+#include <Settings/Tools/KitAspect/mesontoolkitaspect.h>
 #include <MachineFiles/machinefilemanager.h>
 #include <pluginmanager.h>
 #include <projectexplorer/buildconfiguration.h>

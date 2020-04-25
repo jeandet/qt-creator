@@ -24,18 +24,34 @@
 ****************************************************************************/
 
 #pragma once
+#include "coreplugin/id.h"
+#include "utils/fileutils.h"
+#include "utils/optional.h"
+#include <QWidget>
 
-#include <coreplugin/dialogs/ioptionspage.h>
-#include <memory>
+namespace Ui {
+class ToolItemSettings;
+}
 
 namespace MesonProjectManager {
 namespace Internal {
-class MesonTools;
-class MesonSettingsPage final : public Core::IOptionsPage
-{
-public:
-    MesonSettingsPage();
-};
 
+class ToolTreeItem;
+
+class ToolItemSettings : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit ToolItemSettings(QWidget *parent = nullptr);
+    ~ToolItemSettings();
+    void load(ToolTreeItem *item);
+    void store();
+    Q_SIGNAL void applyChanges(Core::Id itemId, const QString &name, const Utils::FilePath &exe);
+
+private:
+    Ui::ToolItemSettings *ui;
+    Utils::optional<Core::Id> m_currentId{Utils::nullopt};
+};
 } // namespace Internal
 } // namespace MesonProjectManager

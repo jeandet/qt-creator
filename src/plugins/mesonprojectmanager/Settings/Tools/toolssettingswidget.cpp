@@ -23,21 +23,21 @@
 **
 ****************************************************************************/
 
-#include "mesontoolsettingswidget.h"
-#include "mesonetooltreeitem.h"
-#include "mesontoolmodel.h"
-#include "ui_mesontoolsettingswidget.h"
+#include "toolssettingswidget.h"
+#include "tooltreeitem.h"
+#include "toolsmodel.h"
+#include "ui_toolssettingswidget.h"
 
 namespace MesonProjectManager {
 namespace Internal {
-MesonToolSettingsWidget::MesonToolSettingsWidget()
+ToolsSettingsWidget::ToolsSettingsWidget()
     : Core::IOptionsPageWidget()
-    , ui(new Ui::MesonToolSettingsWidget)
+    , ui(new Ui::ToolsSettingsWidget)
 {
     ui->setupUi(this);
     ui->mesonDetails->setState(Utils::DetailsWidget::NoSummary);
     ui->mesonDetails->setVisible(false);
-    m_itemSettings = new MesonToolItemSettings;
+    m_itemSettings = new ToolItemSettings;
     ui->mesonDetails->setWidget(m_itemSettings);
 
     ui->mesonList->setModel(&m_model);
@@ -48,32 +48,32 @@ MesonToolSettingsWidget::MesonToolSettingsWidget()
     connect(ui->mesonList->selectionModel(),
             &QItemSelectionModel::currentChanged,
             this,
-            &MesonToolSettingsWidget::currentMesonToolChanged);
+            &ToolsSettingsWidget::currentMesonToolChanged);
     connect(m_itemSettings,
-            &MesonToolItemSettings::applyChanges,
+            &ToolItemSettings::applyChanges,
             &m_model,
-            &MesonToolModel::updateItem);
+            &ToolsModel::updateItem);
 
     connect(ui->addButton,
             &QPushButton::clicked,
             &m_model,
-            qOverload<>(&MesonToolModel::addMesonTool));
+            qOverload<>(&ToolsModel::addMesonTool));
     connect(ui->cloneButton,
             &QPushButton::clicked,
             this,
-            &MesonToolSettingsWidget::cloneMesonTool);
+            &ToolsSettingsWidget::cloneMesonTool);
     connect(ui->removeButton,
             &QPushButton::clicked,
             this,
-            &MesonToolSettingsWidget::removeMesonTool);
+            &ToolsSettingsWidget::removeMesonTool);
 }
 
-MesonToolSettingsWidget::~MesonToolSettingsWidget()
+ToolsSettingsWidget::~ToolsSettingsWidget()
 {
     delete ui;
 }
 
-void MesonToolSettingsWidget::cloneMesonTool()
+void ToolsSettingsWidget::cloneMesonTool()
 {
     if(m_currentItem)
     {
@@ -82,7 +82,7 @@ void MesonToolSettingsWidget::cloneMesonTool()
     }
 }
 
-void MesonToolSettingsWidget::removeMesonTool()
+void ToolsSettingsWidget::removeMesonTool()
 {
     if(m_currentItem)
     {
@@ -90,7 +90,7 @@ void MesonToolSettingsWidget::removeMesonTool()
     }
 }
 
-void MesonToolSettingsWidget::currentMesonToolChanged(const QModelIndex &newCurrent)
+void ToolsSettingsWidget::currentMesonToolChanged(const QModelIndex &newCurrent)
 {
     m_currentItem = m_model.mesoneToolTreeItem(newCurrent);
     m_itemSettings->load(m_currentItem);
@@ -99,7 +99,7 @@ void MesonToolSettingsWidget::currentMesonToolChanged(const QModelIndex &newCurr
     ui->removeButton->setEnabled(m_currentItem && !m_currentItem->isAutoDetected());
 }
 
-void MesonToolSettingsWidget::apply()
+void ToolsSettingsWidget::apply()
 {
     m_model.apply();
 }

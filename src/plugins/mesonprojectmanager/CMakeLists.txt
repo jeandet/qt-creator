@@ -8,26 +8,31 @@ add_qtc_plugin(MesonProjectManager
   versionhelper.h
   MesonActionsManager/mesonactionsmanager.h
   MesonActionsManager/mesonactionsmanager.cpp
-  Settings/mesonsettingpage.h
-  Settings/mesonsettingpage.cpp
-  Settings/mesontoolsettingswidget.ui
-  Settings/mesontoolsettingswidget.h
-  Settings/mesontoolsettingswidget.cpp
-  Settings/mesontoolmodel.cpp
-  Settings/mesontoolmodel.h
-  Settings/mesonetooltreeitem.cpp
-  Settings/mesonetooltreeitem.h
-  Settings/mesontoolsettingaccessor.cpp
-  Settings/mesontoolsettingaccessor.h
-  Settings/mesontoolitemsettings.h
-  Settings/mesontoolitemsettings.ui
-  Settings/mesontoolitemsettings.cpp
-  Settings/mesontoolkitaspect.h
-  Settings/mesontoolkitaspect.cpp
-  Settings/ninjatoolkitaspect.h
-  Settings/ninjatoolkitaspect.cpp
-  Settings/mesontoolkitaspectwidget.h
-  Settings/mesontoolkitaspectwidget.cpp
+  Settings/settingsaccessor.cpp
+  Settings/Tools/toolsmodel.cpp
+  Settings/Tools/toolssettingswidget.h
+  Settings/Tools/toolssettingswidget.ui
+  Settings/Tools/toolssettingswidget.cpp
+  Settings/Tools/toolssettingspage.cpp
+  Settings/Tools/toolssettingspage.h
+  Settings/Tools/toolitemsettings.ui
+  Settings/Tools/toolitemsettings.cpp
+  Settings/Tools/toolitemsettings.h
+  Settings/Tools/tooltreeitem.cpp
+  Settings/Tools/tooltreeitem.h
+  Settings/Tools/toolsmodel.h
+  Settings/Tools/KitAspect/ninjatoolkitaspect.cpp
+  Settings/Tools/KitAspect/ninjatoolkitaspect.h
+  Settings/Tools/KitAspect/toolkitaspectwidget.h
+  Settings/Tools/KitAspect/toolkitaspectwidget.cpp
+  Settings/Tools/KitAspect/mesontoolkitaspect.cpp
+  Settings/Tools/KitAspect/mesontoolkitaspect.h
+  Settings/settingsaccessor.h
+  Settings/General/generalsettingswidget.ui
+  Settings/General/generalsettingswidget.cpp
+  Settings/General/generalsettingswidget.h
+  Settings/General/generalsettingspage.h
+  Settings/General/generalsettingspage.cpp
   ExeWrappers/mesonwrapper.cpp
   ExeWrappers/mesonwrapper.h
   ExeWrappers/ninjawrapper.h
