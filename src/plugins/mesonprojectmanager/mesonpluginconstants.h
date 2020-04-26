@@ -44,7 +44,7 @@ const char TOOLS_ID[] = "Z.MesonProjectManager.SettingsPage.Tools";
 const char CATEGORY[] = "Z.Meson";
 }
 
-namespace Settings {
+namespace ToolsSettings {
 const char FILENAME[] = "mesontools.xml";
 const char ENTRY_KEY[] = "Tool.";
 const char ENTRY_COUNT[] = "Tools.Count";
@@ -55,7 +55,12 @@ const char EXE_KEY[] = "exe";
 const char AUTO_DETECTED_KEY[] = "autodetected";
 const char NAME_KEY[] = "name";
 const char ID_KEY[] = "uuid";
-} // namespace Settings
+} // namespace ToolsSettings
+
+namespace GeneralSettings {
+    const char SECTION[] = "MesonProjectManager";
+    const char AUTORUN_MESON_KEY[] = "meson.autorun";
+}
 
 namespace Icons {
     const char MESON[] = ":/mesonproject/icons/meson_logo.png";

@@ -51,9 +51,9 @@ bool withFile(const Utils::FilePath &path, const F &f)
     return false;
 }
 
-QString MachineFilesDir()
+Utils::FilePath MachineFilesDir()
 {
-    return Core::ICore::userResourcePath();
+    return Utils::FilePath::fromString(Core::ICore::userResourcePath()).pathAppended("Meson-machine-files");
 }
 
 MachineFileManager::MachineFileManager()
@@ -83,7 +83,7 @@ Utils::FilePath MesonProjectManager::Internal::MachineFileManager::machineFile(
     auto baseName
         = QString("%1%2%3").arg(MACHINE_FILE_PREFIX).arg(kit->id().toString()).arg(MACHINE_FILE_EXT);
     baseName = baseName.remove('{').remove('}');
-    return Utils::FilePath::fromString(MachineFilesDir()).pathAppended(baseName);
+    return MachineFilesDir().pathAppended(baseName);
 }
 
 void MachineFileManager::addMachineFile(const ProjectExplorer::Kit *kit)
@@ -111,7 +111,12 @@ void MachineFileManager::updateMachineFile(const ProjectExplorer::Kit *kit)
 void MachineFileManager::cleanupMachineFiles()
 {
     auto kits = ProjectExplorer::KitManager::kits();
-    auto machineFiles = QDir(MachineFilesDir()).entryList({QString("%1*%2").arg(MACHINE_FILE_PREFIX).arg(MACHINE_FILE_EXT)});
+    auto machineFilesDir = QDir(MachineFilesDir().toString());
+    if(!machineFilesDir.exists())
+    {
+        machineFilesDir.mkdir(machineFilesDir.path());
+    }
+    auto machineFiles = QDir(MachineFilesDir().toString()).entryList({QString("%1*%2").arg(MACHINE_FILE_PREFIX).arg(MACHINE_FILE_EXT)});
     QStringList expected;
     std::for_each(std::cbegin(kits),
                   std::cend(kits),

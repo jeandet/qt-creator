@@ -45,20 +45,20 @@ template<>
 inline QVariantMap toVariantMap<NinjaWrapper>(const NinjaWrapper &meson)
 {
     QVariantMap data;
-    data.insert(Constants::Settings::NAME_KEY, meson.m_name);
-    data.insert(Constants::Settings::EXE_KEY, meson.m_exe.toVariant());
-    data.insert(Constants::Settings::AUTO_DETECTED_KEY, meson.m_autoDetected);
-    data.insert(Constants::Settings::ID_KEY, meson.m_id.toSetting());
-    data.insert(Constants::Settings::TOOL_TYPE_KEY, Constants::Settings::TOOL_TYPE_NINJA);
+    data.insert(Constants::ToolsSettings::NAME_KEY, meson.m_name);
+    data.insert(Constants::ToolsSettings::EXE_KEY, meson.m_exe.toVariant());
+    data.insert(Constants::ToolsSettings::AUTO_DETECTED_KEY, meson.m_autoDetected);
+    data.insert(Constants::ToolsSettings::ID_KEY, meson.m_id.toSetting());
+    data.insert(Constants::ToolsSettings::TOOL_TYPE_KEY, Constants::ToolsSettings::TOOL_TYPE_NINJA);
     return data;
 }
 template<>
 inline NinjaWrapper* fromVariantMap<NinjaWrapper*>(const QVariantMap &data)
 {
-    return new NinjaWrapper(data[Constants::Settings::NAME_KEY].toString(),
-                        Utils::FilePath::fromVariant(data[Constants::Settings::EXE_KEY]),
-                        Core::Id::fromSetting(data[Constants::Settings::ID_KEY]),
-                        data[Constants::Settings::AUTO_DETECTED_KEY].toBool());
+    return new NinjaWrapper(data[Constants::ToolsSettings::NAME_KEY].toString(),
+                        Utils::FilePath::fromVariant(data[Constants::ToolsSettings::EXE_KEY]),
+                        Core::Id::fromSetting(data[Constants::ToolsSettings::ID_KEY]),
+                        data[Constants::ToolsSettings::AUTO_DETECTED_KEY].toBool());
 }
 
 } // namespace Internal

@@ -25,6 +25,7 @@
 
 #include "ui_generalsettingswidget.h"
 #include "generalsettingswidget.h"
+#include "settings.h"
 
 namespace MesonProjectManager {
 namespace Internal {
@@ -33,7 +34,7 @@ GeneralSettingsWidget::GeneralSettingsWidget()
     , ui(new Ui::GeneralSettingsWidget)
 {
     ui->setupUi(this);
-
+    ui->autorunChkBox->setChecked(Settings::autorunMeson());
 }
 
 GeneralSettingsWidget::~GeneralSettingsWidget()
@@ -43,6 +44,7 @@ GeneralSettingsWidget::~GeneralSettingsWidget()
 
 void GeneralSettingsWidget::apply()
 {
+    Settings::setAutorunMeson(ui->autorunChkBox->isChecked());
 }
 } // namespace Internal
 } // namespace MesonProjectManager

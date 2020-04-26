@@ -34,7 +34,7 @@
 #include "Settings/Tools/toolssettingspage.h"
 #include "Settings/Tools/KitAspect/mesontoolkitaspect.h"
 #include "Settings/Tools/KitAspect/ninjatoolkitaspect.h"
-#include "Settings/settingsaccessor.h"
+#include "Settings/Tools/toolssettingsaccessor.h"
 #include "MachineFiles/machinefilemanager.h"
 #include "ExeWrappers/mesonwrapper.h"
 
@@ -69,11 +69,11 @@ class MesonProjectPluginPrivate : public QObject
 public:
     MesonProjectPluginPrivate()
     {
-        MesonTools::setTools(m_settings.loadMesonTools(ICore::dialogParent()));
+        MesonTools::setTools(m_toolsSettings.loadMesonTools(ICore::dialogParent()));
         connect(ICore::instance(),
                 &ICore::saveSettingsRequested,
                 this,
-                &MesonProjectPluginPrivate::saveMesonTools);
+                &MesonProjectPluginPrivate::saveAll);
     }
 
     ~MesonProjectPluginPrivate() {}
@@ -82,7 +82,7 @@ public:
 private:
     GeneralSettingsPage m_generalSettingsPage;
     ToolsSettingsPage m_toolslSettingsPage;
-    SettingsAccessor m_settings;
+    ToolsSettingsAccessor m_toolsSettings;
     MesonToolKitAspect m_mesonKitAspect;
     NinjaToolKitAspect m_ninjaKitAspect;
     MesonBuildStepFactory m_buildStepFactory;
@@ -94,9 +94,10 @@ private:
         ProjectExplorer::RunWorkerFactory::make<ProjectExplorer::SimpleTargetRunner>(),
         {ProjectExplorer::Constants::NORMAL_RUN_MODE},
         {m_runConfigurationFactory.id()}};
-    Q_SLOT void saveMesonTools()
+    Q_SLOT void saveAll()
     {
-        m_settings.saveMesonTools(MesonTools::tools(), ICore::dialogParent());
+        m_toolsSettings.saveMesonTools(MesonTools::tools(), ICore::dialogParent());
+        m_generalSettingsPage.saveAll();
     }
 };
 

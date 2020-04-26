@@ -22,31 +22,51 @@
 ** be met: https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ****************************************************************************/
-
+#pragma once
+#include <coreplugin/icore.h>
 #include <mesonpluginconstants.h>
-#include "generalsettingspage.h"
-#include <projectexplorer.h>
-#include "generalsettingswidget.h"
-#include "settings.h"
-
+#include <QObject>
 namespace MesonProjectManager {
 namespace Internal {
-
-GeneralSettingsPage::GeneralSettingsPage()
+template<class F>
+void with_group(QSettings *settings, const QString &name, const F &f)
 {
-    setId(Constants::SettingsPage::GENERAL_ID);
-    setDisplayName(tr("General"));
-    setDisplayCategory("Meson");
-    setCategory(Constants::SettingsPage::CATEGORY);
-    setCategoryIconPath(Constants::Icons::MESON_BW);
-    setWidgetCreator([]() { return new GeneralSettingsWidget; });
-    Settings::loadAll();
-}
+    settings->beginGroup(name);
+    f();
+    settings->endGroup();
+};
 
-void GeneralSettingsPage::saveAll()
+class Settings : public QObject
 {
-    Settings::saveAll();
-}
+    Q_OBJECT
+    explicit Settings(QObject *parent = nullptr);
+    bool m_autorunMeson;
 
+public:
+    inline static Settings *instance()
+    {
+        static Settings m_settings;
+        return &m_settings;
+    }
+    inline static bool autorunMeson() { return instance()->m_autorunMeson; }
+    inline static void setAutorunMeson(bool autorun) { instance()->m_autorunMeson = autorun; }
+    static inline void saveAll()
+    {
+        using namespace Constants;
+        auto settings = Core::ICore::settings(QSettings::Scope::UserScope);
+        with_group(settings, GeneralSettings::SECTION, [settings]() {
+            settings->setValue(GeneralSettings::AUTORUN_MESON_KEY, Settings::autorunMeson());
+        });
+    }
+    static inline void loadAll()
+    {
+        using namespace Constants;
+        auto settings = Core::ICore::settings(QSettings::Scope::UserScope);
+        with_group(settings, GeneralSettings::SECTION, [settings]() {
+            Settings::setAutorunMeson(
+                settings->value(GeneralSettings::AUTORUN_MESON_KEY, true).toBool());
+        });
+    }
+};
 } // namespace Internal
 } // namespace MesonProjectManager

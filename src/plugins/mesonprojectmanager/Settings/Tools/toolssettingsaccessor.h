@@ -30,10 +30,10 @@
 namespace MesonProjectManager {
 namespace Internal {
 
-class SettingsAccessor final: public Utils::UpgradingSettingsAccessor
+class ToolsSettingsAccessor final: public Utils::UpgradingSettingsAccessor
 {
 public:
-    SettingsAccessor();
+    ToolsSettingsAccessor();
     void saveMesonTools(const std::vector<MesonTools::Tool_t> &tools, QWidget* parent);
     std::vector<MesonTools::Tool_t> loadMesonTools(QWidget* parent);
 };

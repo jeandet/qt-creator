@@ -27,6 +27,7 @@
 #include <KitHelper/kithelper.h>
 #include "mesonbuildconfiguration.h"
 #include <Settings/Tools/KitAspect/mesontoolkitaspect.h>
+#include <Settings/General/settings.h>
 #include <MachineFiles/machinefilemanager.h>
 #include <pluginmanager.h>
 #include <projectexplorer/buildconfiguration.h>
@@ -173,6 +174,8 @@ void MesonBuildSystem::init()
 
 void MesonBuildSystem::parseProject()
 {
+    if(!isSetup(buildConfiguration()->buildDirectory())&&Settings::autorunMeson())
+            return configure();
     LEAVE_IF_BUSY();
     LOCK();
     QTC_ASSERT(buildConfiguration(), return );

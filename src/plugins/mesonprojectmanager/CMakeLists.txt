@@ -8,7 +8,6 @@ add_qtc_plugin(MesonProjectManager
   versionhelper.h
   MesonActionsManager/mesonactionsmanager.h
   MesonActionsManager/mesonactionsmanager.cpp
-  Settings/settingsaccessor.cpp
   Settings/Tools/toolsmodel.cpp
   Settings/Tools/toolssettingswidget.h
   Settings/Tools/toolssettingswidget.ui
@@ -27,12 +26,15 @@ add_qtc_plugin(MesonProjectManager
   Settings/Tools/KitAspect/toolkitaspectwidget.cpp
   Settings/Tools/KitAspect/mesontoolkitaspect.cpp
   Settings/Tools/KitAspect/mesontoolkitaspect.h
-  Settings/settingsaccessor.h
+  Settings/Tools/toolssettingsaccessor.h
+  Settings/Tools/toolssettingsaccessor.cpp
   Settings/General/generalsettingswidget.ui
   Settings/General/generalsettingswidget.cpp
   Settings/General/generalsettingswidget.h
   Settings/General/generalsettingspage.h
   Settings/General/generalsettingspage.cpp
+  Settings/General/settings.h
+  Settings/General/settings.cpp
   ExeWrappers/mesonwrapper.cpp
   ExeWrappers/mesonwrapper.h
   ExeWrappers/ninjawrapper.h

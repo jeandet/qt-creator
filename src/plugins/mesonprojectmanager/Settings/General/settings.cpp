@@ -23,30 +23,12 @@
 **
 ****************************************************************************/
 
-#include <mesonpluginconstants.h>
-#include "generalsettingspage.h"
-#include <projectexplorer.h>
-#include "generalsettingswidget.h"
 #include "settings.h"
-
-namespace MesonProjectManager {
-namespace Internal {
-
-GeneralSettingsPage::GeneralSettingsPage()
+namespace MesonProjectManager{
+namespace Internal{
+Settings::Settings(QObject *parent) : QObject(parent)
 {
-    setId(Constants::SettingsPage::GENERAL_ID);
-    setDisplayName(tr("General"));
-    setDisplayCategory("Meson");
-    setCategory(Constants::SettingsPage::CATEGORY);
-    setCategoryIconPath(Constants::Icons::MESON_BW);
-    setWidgetCreator([]() { return new GeneralSettingsWidget; });
-    Settings::loadAll();
-}
 
-void GeneralSettingsPage::saveAll()
-{
-    Settings::saveAll();
 }
-
 } // namespace Internal
 } // namespace MesonProjectManager

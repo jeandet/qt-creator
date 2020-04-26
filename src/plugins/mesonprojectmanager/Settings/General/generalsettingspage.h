@@ -35,6 +35,7 @@ class GeneralSettingsPage final : public Core::IOptionsPage
 {
 public:
     GeneralSettingsPage();
+    void saveAll();
 };
 
 } // namespace Internal

@@ -23,12 +23,12 @@
 **
 ****************************************************************************/
 #include "mesonprojectparser.h"
-#include <MesonInfoParser/mesoninfoparser.h>
-#include <ExeWrappers/mesontools.h>
 #include "ProjectTree/mesonprojectnodes.h"
 #include "ProjectTree/projecttree.h"
-#include <projectexplorer/projectexplorer.h>
+#include <ExeWrappers/mesontools.h>
+#include <MesonInfoParser/mesoninfoparser.h>
 #include <coreplugin/messagemanager.h>
+#include <projectexplorer/projectexplorer.h>
 #include <utils/optional.h>
 #include <utils/runextensions.h>
 #include <QStringList>
@@ -37,7 +37,6 @@
 namespace MesonProjectManager {
 namespace Internal {
 static Q_LOGGING_CATEGORY(mesonParserLog, "qtc.meson.buildsystem", QtDebugMsg);
-
 
 struct CompilerArgs
 {
@@ -63,14 +62,14 @@ inline Utils::optional<QString> extractInclude(const QString &arg)
 inline Utils::optional<ProjectExplorer::Macro> extractMacro(const QString &arg)
 {
     auto define = extractValueIfMatches(arg, {"-D", "/D"});
-    if(define)
-        return ProjectExplorer::Macro(define->replace("="," ").toLatin1());
+    if (define)
+        return ProjectExplorer::Macro(define->replace("=", " ").toLatin1());
     auto undef = extractValueIfMatches(arg, {"-U", "/U"});
-    if(undef)
-        return ProjectExplorer::Macro(undef->replace("="," ").toLatin1(), ProjectExplorer::MacroType::Undefine);
+    if (undef)
+        return ProjectExplorer::Macro(undef->replace("=", " ").toLatin1(),
+                                      ProjectExplorer::MacroType::Undefine);
     return Utils::nullopt;
 }
-
 
 CompilerArgs splitArgs(const QStringList &args)
 {
@@ -116,10 +115,8 @@ MesonProjectParser::MesonProjectParser(const Core::Id &meson, Utils::Environment
             [this](int exitCode, QProcess::ExitStatus exitStatus) {
                 if (exitCode == 0 && exitStatus == QProcess::NormalExit) {
                     startParser();
-                } else
-                {
-                    if(m_introType==IntroDataType::stdo)
-                    {
+                } else {
+                    if (m_introType == IntroDataType::stdo) {
                         auto data = m_process.stdErr();
                         Core::MessageManager::write(QString::fromLatin1(data));
                         m_outputParser.readStdo(data);
@@ -127,7 +124,10 @@ MesonProjectParser::MesonProjectParser(const Core::Id &meson, Utils::Environment
                     emit parsingCompleted(false);
                 }
             });
-    connect(&m_process,&MesonProcess::readyReadStandardOutput,&m_outputParser,&MesonOutputParser::readStdo);
+    connect(&m_process,
+            &MesonProcess::readyReadStandardOutput,
+            &m_outputParser,
+            &MesonOutputParser::readStdo);
 }
 
 void MesonProjectParser::setMesonTool(const Core::Id &meson)
@@ -140,6 +140,7 @@ void MesonProjectParser::configure(const Utils::FilePath &sourcePath,
                                    const QStringList &args)
 {
     m_introType = IntroDataType::file;
+    m_srcDir = sourcePath;
     m_buildDir = buildPath;
     m_outputParser.setSourceDirectory(sourcePath);
     auto cmd = MesonTools::tool<MesonWrapper>(m_meson)->configure(sourcePath, buildPath, args);
@@ -152,6 +153,7 @@ void MesonProjectParser::setup(const Utils::FilePath &sourcePath,
                                const QStringList &args)
 {
     m_introType = IntroDataType::file;
+    m_srcDir = sourcePath;
     m_buildDir = buildPath;
     m_outputParser.setSourceDirectory(sourcePath);
     auto cmdArgs = args;
@@ -303,8 +305,7 @@ bool MesonProjectParser::matchesKit(const KitData &kit)
 {
     bool matches = true;
     for_each_source_group(m_targets,
-                          [&matches, &kit](const Target &,
-                                           const Target::SourceGroup &sourceGroup) {
+                          [&matches, &kit](const Target &, const Target::SourceGroup &sourceGroup) {
                               matches = matches && sourceGroupMatchesKit(kit, sourceGroup);
                           });
     return matches;
