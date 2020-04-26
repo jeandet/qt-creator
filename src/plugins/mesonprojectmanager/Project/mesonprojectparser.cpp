@@ -195,6 +195,7 @@ QList<ProjectExplorer::BuildTargetInfo> MesonProjectParser::appsTargets() const
             bti.targetFilePath = Utils::FilePath::fromString(target.fileName.first());
             bti.workingDirectory = Utils::FilePath::fromString(target.fileName.first())
                                        .absolutePath();
+            bti.projectFilePath = Utils::FilePath::fromString(target.definedIn);
             bti.usesTerminal = true;
             apps.append(bti);
         }
@@ -264,11 +265,12 @@ ProjectExplorer::RawProjectPart MesonProjectParser::buildRawPart(
 {
     ProjectExplorer::RawProjectPart part;
     part.setDisplayName(target.name);
-    part.setBuildSystemTarget(target.name);
+    part.setBuildSystemTarget(Target::fullName(target));
     part.setFiles(sources.sources + sources.generatedSources);
     auto flags = splitArgs(sources.parameters);
     part.setMacros(flags.macros);
     part.setIncludePaths(toAbsolutePath(this->m_buildDir, flags.includePaths));
+    part.setProjectFileLocation(target.definedIn);
     if (sources.language == "cpp")
         part.setFlagsForCxx({cxxToolChain, flags.args});
     else if (sources.language == "c")
