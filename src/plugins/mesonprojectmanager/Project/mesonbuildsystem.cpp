@@ -24,17 +24,17 @@
 ****************************************************************************/
 
 #include "mesonbuildsystem.h"
-#include <KitHelper/kithelper.h>
 #include "mesonbuildconfiguration.h"
-#include <Settings/Tools/KitAspect/mesontoolkitaspect.h>
-#include <Settings/General/settings.h>
+#include <KitHelper/kithelper.h>
 #include <MachineFiles/machinefilemanager.h>
+#include <Settings/General/settings.h>
+#include <Settings/Tools/KitAspect/mesontoolkitaspect.h>
 #include <pluginmanager.h>
 #include <projectexplorer/buildconfiguration.h>
 #include <QDir>
+#include <QLoggingCategory>
 #include <qtsupport/qtcppkitinfo.h>
 #include <qtsupport/qtkitinformation.h>
-#include <QLoggingCategory>
 
 #define LEAVE_IF_BUSY() \
     { \
@@ -57,7 +57,6 @@ namespace MesonProjectManager {
 namespace Internal {
 static Q_LOGGING_CATEGORY(mesonBuildSystemLog, "qtc.meson.buildsystem", QtDebugMsg);
 
-
 MesonBuildSystem::MesonBuildSystem(MesonBuildConfiguration *bc)
     : ProjectExplorer::BuildSystem{bc}
     , m_parser{MesonToolKitAspect::mesonToolId(bc->target()->kit()), bc->environment()}
@@ -79,10 +78,8 @@ void MesonBuildSystem::triggerParsing()
 bool MesonBuildSystem::needsSetup()
 {
     const Utils::FilePath &buildDir = buildConfiguration()->buildDirectory();
-    if (!isSetup(buildDir) || !m_parser.usesSameMesonVersion(buildDir)
-        || !m_parser.matchesKit(m_kitData))
-        return true;
-    return false;
+    return (!isSetup(buildDir) || !m_parser.usesSameMesonVersion(buildDir)
+            || !m_parser.matchesKit(m_kitData));
 }
 
 void MesonBuildSystem::parsingCompleted(bool success)
@@ -106,7 +103,7 @@ void MesonBuildSystem::parsingCompleted(bool success)
     }
 }
 
-ProjectExplorer::Kit* MesonBuildSystem::MesonBuildSystem::kit()
+ProjectExplorer::Kit *MesonBuildSystem::MesonBuildSystem::kit()
 {
     return buildConfiguration()->target()->kit();
 }
@@ -116,7 +113,8 @@ QStringList MesonBuildSystem::configArgs(bool isSetup)
     if (!isSetup)
         return m_pendingConfigArgs + mesonBuildConfiguration()->mesonConfigArgs();
     else {
-        return QStringList{QString("--native-file=%1").arg(MachineFileManager::machineFile(kit()).toString())}
+        return QStringList{QString("--native-file=%1")
+                               .arg(MachineFileManager::machineFile(kit()).toString())}
                + m_pendingConfigArgs + mesonBuildConfiguration()->mesonConfigArgs();
     }
 }
@@ -170,12 +168,13 @@ void MesonBuildSystem::init()
             &MesonProjectParser::parsingCompleted,
             this,
             &MesonBuildSystem::parsingCompleted);
+    updateKit(kit());
 }
 
 void MesonBuildSystem::parseProject()
 {
-    if(!isSetup(buildConfiguration()->buildDirectory())&&Settings::autorunMeson())
-            return configure();
+    if (!isSetup(buildConfiguration()->buildDirectory()) && Settings::autorunMeson())
+        return configure();
     LEAVE_IF_BUSY();
     LOCK();
     QTC_ASSERT(buildConfiguration(), return );
@@ -189,7 +188,6 @@ void MesonBuildSystem::updateKit(ProjectExplorer::Kit *kit)
     m_kitData = KitHelper::kitData(kit);
     m_parser.setQtVersion(m_kitData.qtVersion);
 }
-
 
 } // namespace Internal
 } // namespace MesonProjectManager
