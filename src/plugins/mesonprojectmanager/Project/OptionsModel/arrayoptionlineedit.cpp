@@ -31,6 +31,12 @@ ArrayOptionLineEdit::ArrayOptionLineEdit(QWidget *parent)
 {
     m_highLighter = new RegexHighlighter(this);
     m_highLighter->setDocument(this->document());
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setLineWrapMode(QPlainTextEdit::NoWrap);
+    QFontMetrics metrics(this->font());
+    int lineHeight = metrics.lineSpacing();
+    this->setFixedHeight(lineHeight*1.5);
 }
 
 QStringList ArrayOptionLineEdit::options()
