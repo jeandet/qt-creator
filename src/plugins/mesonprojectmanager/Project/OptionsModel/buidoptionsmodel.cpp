@@ -27,8 +27,10 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QTextEdit>
 #include <QMap>
 #include <QStyledItemDelegate>
+#include "arrayoptionlineedit.h"
 
 namespace MesonProjectManager {
 namespace Internal {
@@ -142,8 +144,8 @@ QWidget *BuildOptionDelegate::makeWidget(QWidget *parent, const QVariant &data)
         return w;
     }
     case QVariant::StringList: {
-        auto w = new QLineEdit{parent};
-        w->setText(data.toString());
+        auto w = new ArrayOptionLineEdit{parent};
+        w->setPlainText(data.toStringList().join(","));
         return w;
     }
     case QVariant::String: {
@@ -188,6 +190,16 @@ QWidget *BuildOptionDelegate::createEditor(QWidget *parent,
         return widget;
     }
     return QStyledItemDelegate::createEditor(parent, option, index);
+}
+
+void BuildOptionDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+{
+    ArrayOptionLineEdit *arrayWidget = qobject_cast<ArrayOptionLineEdit *>(editor);
+    if (arrayWidget) {
+        model->setData(index, QVariant::fromValue(arrayWidget->options()));
+    } else {
+        QStyledItemDelegate::setModelData(editor, model, index);
+    }
 }
 
 } // namespace Internal

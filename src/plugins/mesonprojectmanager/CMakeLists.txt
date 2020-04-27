@@ -65,6 +65,8 @@ add_qtc_plugin(MesonProjectManager
   Project/mesonbuildsettingswidget.cpp
   Project/OptionsModel/buidoptionsmodel.h
   Project/OptionsModel/buidoptionsmodel.cpp
+  Project/OptionsModel/arrayoptionlineedit.cpp
+  Project/OptionsModel/arrayoptionlineedit.h
   Project/mesonprocess.h
   Project/mesonprocess.cpp
   Project/mesonoutputparser.h

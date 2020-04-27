@@ -72,10 +72,8 @@ Command MesonWrapper::configure(const Utils::FilePath &sourceDirectory,
         return setup(sourceDirectory, buildDirectory, options);
     return {m_exe,
             buildDirectory,
-            options_cat("setup",
-                        "--reconfigure",
+            options_cat("configure",
                         options,
-                        sourceDirectory.toString(),
                         buildDirectory.toString())};
 }
 

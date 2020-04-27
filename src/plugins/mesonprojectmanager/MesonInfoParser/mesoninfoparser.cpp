@@ -180,7 +180,7 @@ public:
             return std::make_unique<ArrayBuildOption>(option["name"].toString(),
                                                       option["section"].toString(),
                                                       option["description"].toString(),
-                                                      option["value"]);
+                                                      option["value"].toVariant());
         if (type == "feature")
             return std::make_unique<FeatureBuildOption>(option["name"].toString(),
                                                         option["section"].toString(),

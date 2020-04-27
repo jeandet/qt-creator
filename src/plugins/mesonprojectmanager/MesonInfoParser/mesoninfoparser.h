@@ -86,12 +86,15 @@ struct BuildOption
     virtual void setValue(const QVariant &) = 0;
     virtual Type type() const = 0;
     virtual BuildOption *copy() const = 0;
-    inline QString mesonArg() const
+    inline QString fullName() const
     {
         if (subproject)
-            return QString("-D%1:%2=%3").arg(*subproject).arg(name).arg(valueStr());
-        else
-            return QString("-D%1=%2").arg(name).arg(valueStr());
+            return QString("%1:%2").arg(*subproject).arg(name);
+        return name;
+    }
+    inline virtual QString mesonArg() const
+    {
+        return QString("-D%1=%2").arg(fullName()).arg(valueStr());
     }
     BuildOption(const QString &name, const QString &section, const QString &description)
         : name{name.contains(":") ? name.split(":").last() : name}
@@ -182,21 +185,39 @@ protected:
     ComboData m_currentValue;
 };
 
+static inline QStringList quoteAll(const QStringList& values)
+{
+    QStringList quoted;
+    std::transform(std::cbegin(values),
+                   std::cend(values),
+                   std::back_inserter(quoted),
+                   [](const QString &v) {
+                       if (v.front() == '\'' && v.back() == '\'')
+                           return v;
+                       return QString("\'%1\'").arg(v);
+                   });
+    return quoted;
+}
 struct ArrayBuildOption : BuildOption
 {
     QVariant value() const override { return m_currentValue; }
-    QString valueStr() const override { return m_currentValue.join(":"); }
+    QString valueStr() const override { return m_currentValue.join(","); }
     void setValue(const QVariant &value) override { m_currentValue = value.toStringList(); }
     Type type() const override { return Type::array; }
     BuildOption *copy() const override { return new ArrayBuildOption{*this}; }
-
+    inline virtual QString mesonArg() const override
+    {
+        return QString(R"(-D%1=[%2])").arg(fullName()).arg(quoteAll(m_currentValue).join(','));
+    }
     ArrayBuildOption(const QString &name,
                      const QString &section,
                      const QString &description,
                      const QVariant &value)
         : BuildOption(name, section, description)
-        , m_currentValue{value.toStringList()}
-    {}
+        , m_currentValue{quoteAll(value.toStringList())}
+    {
+
+    }
 
 protected:
     QStringList m_currentValue;
@@ -361,6 +382,7 @@ public:
     TargetsList targets();
     BuildOptionsList buildOptions();
     static Utils::optional<MesonInfo> mesonInfo(const QString &buildDir);
+
 private:
     MesonInfoParserPrivate *d_ptr;
 };
