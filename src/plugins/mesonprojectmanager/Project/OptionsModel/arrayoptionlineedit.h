@@ -35,7 +35,7 @@ namespace Internal {
 
 class RegexHighlighter : public QSyntaxHighlighter {
     Q_OBJECT
-    const QRegularExpression m_regex{R"(('[^']+')+|([^', ]+)[, ]*)"};
+    const QRegularExpression m_regex{R"('([^']+)'+|([^', ]+)[, ]*)"};
     QTextCharFormat m_format;
 public:
     RegexHighlighter(QWidget *parent);

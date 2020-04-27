@@ -77,10 +77,10 @@ public:
     inline QString mesonArg(){return m_currentValue->mesonArg();}
     inline void setValue(const QVariant &v)
     {
-        if(!m_locked && v.toString()!=valueStr())
+        if(!m_locked)
         {
             m_currentValue->setValue(v);
-            m_changed = v.toString()!=m_savedValue->valueStr();
+            m_changed =m_currentValue->valueStr()!=m_savedValue->valueStr();
         }
     }
     inline BuildOption::Type type() { return m_currentValue->type(); }
