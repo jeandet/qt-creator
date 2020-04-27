@@ -50,6 +50,12 @@ public:
     {
         return MesonTools::tool<MesonWrapper>(MesonToolKitAspect::mesonToolId(kit));
     }
+
+    static inline bool isValid(const ProjectExplorer::Kit* kit)
+    {
+        auto tool = mesonTool(kit);
+        return (tool && tool->isValid());
+    }
 };
 
 } // namespace Internal

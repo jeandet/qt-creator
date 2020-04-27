@@ -26,10 +26,14 @@
 #include "mesonproject.h"
 #include "mesonpluginconstants.h"
 #include "mesonbuildsystem.h"
-#include "pluginmanager.h"
-#include "coreplugin/icontext.h"
-#include "projectexplorer/projectexplorerconstants.h"
-#include "projectexplorer/target.h"
+#include <ExeWrappers/mesontools.h>
+#include <Settings/Tools/KitAspect/mesontoolkitaspect.h>
+#include <Settings/Tools/KitAspect/ninjatoolkitaspect.h>
+#include <pluginmanager.h>
+#include <coreplugin/icontext.h>
+#include <projectexplorer/projectexplorerconstants.h>
+#include <projectexplorer/kitinformation.h>
+#include <projectexplorer/target.h>
 
 namespace MesonProjectManager {
 namespace Internal {
@@ -46,9 +50,17 @@ MesonProject::MesonProject(const Utils::FilePath &path)
 
 ProjectExplorer::Tasks MesonProject::projectIssues(const ProjectExplorer::Kit *k) const
 {
-    auto tasks = Project::projectIssues(k);
-    // TODO later
-    return tasks;
+
+    ProjectExplorer::Tasks result = Project::projectIssues(k);
+
+    if (!MesonToolKitAspect::isValid(k))
+        result.append(createProjectTask(ProjectExplorer::Task::TaskType::Error, tr("No meson tool set.")));
+    if (!NinjaToolKitAspect::isValid(k))
+        result.append(createProjectTask(ProjectExplorer::Task::TaskType::Error, tr("No ninja tool set.")));
+    if (ProjectExplorer::ToolChainKitAspect::toolChains(k).isEmpty())
+        result.append(createProjectTask(ProjectExplorer::Task::TaskType::Warning, tr("No compilers set in kit.")));
+    return result;
+
 }
 
 ProjectExplorer::ProjectImporter *MesonProject::projectImporter() const

@@ -50,6 +50,11 @@ public:
     {
         return MesonTools::tool<NinjaWrapper>(NinjaToolKitAspect::ninjaToolId(kit));
     }
+    static inline bool isValid(const ProjectExplorer::Kit* kit)
+    {
+        auto tool = ninjaTool(kit);
+        return (tool && tool->isValid());
+    }
 };
 
 } // namespace Internal
