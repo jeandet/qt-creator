@@ -145,7 +145,7 @@ QWidget *BuildOptionDelegate::makeWidget(QWidget *parent, const QVariant &data)
     }
     case QVariant::StringList: {
         auto w = new ArrayOptionLineEdit{parent};
-        w->setPlainText(data.toStringList().join(","));
+        w->setPlainText(data.toStringList().join(" "));
         return w;
     }
     case QVariant::String: {

@@ -201,7 +201,7 @@ static inline QStringList quoteAll(const QStringList& values)
 struct ArrayBuildOption : BuildOption
 {
     QVariant value() const override { return m_currentValue; }
-    QString valueStr() const override { return m_currentValue.join(","); }
+    QString valueStr() const override { return m_currentValue.join(" "); }
     void setValue(const QVariant &value) override { m_currentValue = value.toStringList(); }
     Type type() const override { return Type::array; }
     BuildOption *copy() const override { return new ArrayBuildOption{*this}; }
