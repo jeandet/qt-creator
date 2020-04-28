@@ -24,30 +24,30 @@
 ****************************************************************************/
 #pragma once
 #include <coreplugin/id.h>
+#include <utils/environment.h>
 #include <utils/fileutils.h>
 #include <utils/qtcassert.h>
-#include <utils/environment.h>
+#include <versionhelper.h>
 #include <QFileInfo>
 #include <QProcess>
 #include <QString>
 #include <QUuid>
 #include <QVariant>
 #include <QVariantMap>
-#include <versionhelper.h>
 
 namespace MesonProjectManager {
 namespace Internal {
-
-
 
 struct Command
 {
     Utils::FilePath exe;
     Utils::FilePath workDir;
     QStringList arguments;
+    QString toString() const
+    {
+        return QString("%1 %2").arg(exe.toString()).arg(arguments.join(' '));
+    };
 };
-
-
 
 class ToolWrapper
 {
@@ -86,12 +86,11 @@ public:
         return {};
     }
 
-    static inline Utils::optional<Utils::FilePath> findTool(const QStringList& exeNames)
+    static inline Utils::optional<Utils::FilePath> findTool(const QStringList &exeNames)
     {
         using namespace Utils;
         Environment systemEnvironment = Environment::systemEnvironment();
-        for(const auto& exe:exeNames)
-        {
+        for (const auto &exe : exeNames) {
             const FilePath exe_path = systemEnvironment.searchInPath(exe);
             if (exe_path.exists())
                 return exe_path;

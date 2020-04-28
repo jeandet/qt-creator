@@ -30,6 +30,7 @@
 #include <projectexplorer/projectexplorerconstants.h>
 #include <projectexplorer/taskhub.h>
 #include <utils/stringutils.h>
+
 namespace MesonProjectManager {
 namespace Internal {
 MesonProcess::MesonProcess()
@@ -38,8 +39,11 @@ MesonProcess::MesonProcess()
     m_cancelTimer.setInterval(500);
 }
 
-void MesonProcess::run(const Command &command, const Utils::Environment env, bool captureStdo)
+bool MesonProcess::run(const Command &command, const Utils::Environment env, bool captureStdo)
 {
+    if(!sanityCheck(command))
+        return false;
+    m_currentCommand = command;
     m_stdo.clear();
     m_processWasCanceled = false;
     m_future = decltype(m_future){};
@@ -54,6 +58,7 @@ void MesonProcess::run(const Command &command, const Utils::Environment env, boo
     m_elapsed.start();
     m_process->start();
     m_cancelTimer.start(500);
+    return true;
 }
 
 QProcess::ProcessState MesonProcess::state() const
@@ -78,7 +83,6 @@ void MesonProcess::setProgressValue(int p)
 
 void MesonProcess::handleProcessFinished(int code, QProcess::ExitStatus status)
 {
-    // TODO process output
     m_cancelTimer.stop();
     m_stdo = m_process->readAllStandardOutput();
     m_stderr = m_process->readAllStandardError();
@@ -87,10 +91,41 @@ void MesonProcess::handleProcessFinished(int code, QProcess::ExitStatus status)
         m_future.reportFinished();
     } else {
         m_future.reportCanceled();
+        m_future.reportFinished();
     }
     const QString elapsedTime = Utils::formatElapsedTime(m_elapsed.elapsed());
     Core::MessageManager::write(elapsedTime);
     emit finished(code, status);
+}
+
+void MesonProcess::handleProcessError(QProcess::ProcessError error)
+{
+    QString message;
+    QString commandStr = m_currentCommand.toString();
+    switch (error) {
+    case QProcess::ProcessError::FailedToStart:
+        message = tr("Failed to start");
+        break;
+    case QProcess::ProcessError::Crashed:
+        message = tr("Command crashed");
+        break;
+    case QProcess::ProcessError::Timedout:
+        message = tr("Command timedout");
+        break;
+    case QProcess::ProcessError::WriteError:
+        message = tr("Write error");
+        break;
+    case QProcess::ProcessError::ReadError:
+        message = tr("Read error");
+        break;
+    case QProcess::ProcessError::UnknownError:
+        message = tr("Unknown error with command");
+        break;
+    }
+    ProjectExplorer::TaskHub::addTask(
+        ProjectExplorer::BuildSystemTask{ProjectExplorer::Task::TaskType::Error,
+                                         QString("%1: %2").arg(message).arg(commandStr)});
+    handleProcessFinished(-1, QProcess::CrashExit);
 }
 
 void MesonProcess::checkForCancelled()
@@ -113,7 +148,7 @@ void MesonProcess::setupProcess(const Command &command,
             QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
             this,
             &MesonProcess::handleProcessFinished);
-
+    connect(m_process.get(), &QProcess::errorOccurred, this, &MesonProcess::handleProcessError);
     if (!captureStdo) {
         connect(m_process.get(),
                 &QProcess::readyReadStandardOutput,
@@ -128,8 +163,26 @@ void MesonProcess::setupProcess(const Command &command,
 
     m_process->setWorkingDirectory(command.workDir.toString());
     m_process->setEnvironment(env);
-    Utils::CommandLine commandLine(command.exe, command.arguments);
+    Utils::CommandLine commandLine{command.exe, command.arguments};
     m_process->setCommand(commandLine);
+}
+
+bool MesonProcess::sanityCheck(const Command &command) const
+{
+    if(!command.exe.exists())
+    {
+        //Should only reach this point if Meson exe is removed while a Meson project is opened
+        ProjectExplorer::TaskHub::addTask(
+            ProjectExplorer::BuildSystemTask{ProjectExplorer::Task::TaskType::Error,tr("Following executable doens't exist: %1").arg(command.exe.toString())});
+        return false;
+    }
+    if(!command.exe.toFileInfo().isExecutable())
+    {
+        ProjectExplorer::TaskHub::addTask(
+            ProjectExplorer::BuildSystemTask{ProjectExplorer::Task::TaskType::Error,tr("Following command is not executable: %1").arg(command.exe.toString())});
+        return false;
+    }
+    return true;
 }
 
 void MesonProcess::processStandardOutput()

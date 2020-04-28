@@ -48,8 +48,8 @@ public:
     inline const BuildOptionsList& buildOptions()const {return m_parser.buildOptions();}
     inline const TargetsList& targets()const {return m_parser.targets();}
 
-    void configure();
-    void setup();
+    bool configure();
+    bool setup();
 
     MesonBuildConfiguration* mesonBuildConfiguration();
 
@@ -62,7 +62,7 @@ public:
 
 private:
     void init();
-    void parseProject();
+    bool parseProject();
     void updateKit(ProjectExplorer::Kit* kit);
     bool needsSetup();
     void parsingCompleted(bool success);

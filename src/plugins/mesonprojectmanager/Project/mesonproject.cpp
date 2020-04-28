@@ -73,14 +73,14 @@ ProjectExplorer::ProjectImporter *MesonProject::projectImporter() const
 
 ProjectExplorer::DeploymentKnowledge MesonProject::deploymentKnowledge() const
 {
-    // TODO
+    // TODO in next releases
     return ProjectExplorer::DeploymentKnowledge::Bad;
 }
 
 ProjectExplorer::MakeInstallCommand MesonProject::makeInstallCommand(
     const ProjectExplorer::Target *target, const QString &installRoot)
 {
-    // TODO
+    // TODO in next releases
     return {};
 }
 

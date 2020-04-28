@@ -39,7 +39,7 @@
 #define LEAVE_IF_BUSY() \
     { \
         if (m_parseGuard.guardsProject()) \
-            return; \
+            return false; \
     }
 #define LOCK() \
     { \
@@ -119,24 +119,31 @@ QStringList MesonBuildSystem::configArgs(bool isSetup)
     }
 }
 
-void MesonBuildSystem::configure()
+bool MesonBuildSystem::configure()
 {
     LEAVE_IF_BUSY();
     qCDebug(mesonBuildSystemLog) << "Configure";
     if (needsSetup())
         return setup();
     LOCK();
-    m_parser.configure(projectDirectory(),
-                       buildConfiguration()->buildDirectory(),
-                       configArgs(false));
+    if (m_parser.configure(projectDirectory(),
+                           buildConfiguration()->buildDirectory(),
+                           configArgs(false))) {
+        return true;
+    }
+    UNLOCK(false);
+    return false;
 }
 
-void MesonBuildSystem::setup()
+bool MesonBuildSystem::setup()
 {
     LEAVE_IF_BUSY();
     LOCK();
     qCDebug(mesonBuildSystemLog) << "Setup";
-    m_parser.setup(projectDirectory(), buildConfiguration()->buildDirectory(), configArgs(true));
+    if (m_parser.setup(projectDirectory(), buildConfiguration()->buildDirectory(), configArgs(true)))
+        return true;
+    UNLOCK(false);
+    return false;
 }
 
 MesonBuildConfiguration *MesonBuildSystem::mesonBuildConfiguration()
@@ -171,15 +178,18 @@ void MesonBuildSystem::init()
     updateKit(kit());
 }
 
-void MesonBuildSystem::parseProject()
+bool MesonBuildSystem::parseProject()
 {
+    QTC_ASSERT(buildConfiguration(), return false );
     if (!isSetup(buildConfiguration()->buildDirectory()) && Settings::autorunMeson())
         return configure();
     LEAVE_IF_BUSY();
     LOCK();
-    QTC_ASSERT(buildConfiguration(), return );
     qCDebug(mesonBuildSystemLog) << "Starting parser";
-    m_parser.parse(projectDirectory(), buildConfiguration()->buildDirectory());
+    if(m_parser.parse(projectDirectory(), buildConfiguration()->buildDirectory()))
+        return true;
+    UNLOCK(false);
+    return false;
 }
 
 void MesonBuildSystem::updateKit(ProjectExplorer::Kit *kit)

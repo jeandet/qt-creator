@@ -135,7 +135,7 @@ void MesonProjectParser::setMesonTool(const Core::Id &meson)
     m_meson = meson;
 }
 
-void MesonProjectParser::configure(const Utils::FilePath &sourcePath,
+bool MesonProjectParser::configure(const Utils::FilePath &sourcePath,
                                    const Utils::FilePath &buildPath,
                                    const QStringList &args)
 {
@@ -145,10 +145,10 @@ void MesonProjectParser::configure(const Utils::FilePath &sourcePath,
     m_outputParser.setSourceDirectory(sourcePath);
     auto cmd = MesonTools::tool<MesonWrapper>(m_meson)->configure(sourcePath, buildPath, args);
     qCDebug(mesonParserLog) << "Starting:" << cmd.exe << cmd.arguments.join(' ');
-    m_process.run(cmd, m_env);
+    return m_process.run(cmd, m_env);
 }
 
-void MesonProjectParser::setup(const Utils::FilePath &sourcePath,
+bool MesonProjectParser::setup(const Utils::FilePath &sourcePath,
                                const Utils::FilePath &buildPath,
                                const QStringList &args)
 {
@@ -161,26 +161,26 @@ void MesonProjectParser::setup(const Utils::FilePath &sourcePath,
         cmdArgs << "--wipe";
     auto cmd = MesonTools::tool<MesonWrapper>(m_meson)->setup(sourcePath, buildPath, cmdArgs);
     qCDebug(mesonParserLog) << "Starting:" << cmd.exe << cmd.arguments.join(' ');
-    m_process.run(cmd, m_env);
+    return m_process.run(cmd, m_env);
 }
 
-void MesonProjectParser::parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath)
+bool MesonProjectParser::parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath)
 {
     m_srcDir = sourcePath;
     m_buildDir = buildPath;
     if (!isSetup(buildPath)) {
-        parse(sourcePath);
+        return parse(sourcePath);
     } else {
         m_introType = IntroDataType::file;
-        startParser();
+        return startParser();
     }
 }
 
-void MesonProjectParser::parse(const Utils::FilePath &sourcePath)
+bool MesonProjectParser::parse(const Utils::FilePath &sourcePath)
 {
     m_srcDir = sourcePath;
     m_introType = IntroDataType::stdo;
-    m_process.run(MesonTools::tool<MesonWrapper>(m_meson)->introspect(sourcePath), m_env, true);
+    return  m_process.run(MesonTools::tool<MesonWrapper>(m_meson)->introspect(sourcePath), m_env, true);
 }
 
 QList<ProjectExplorer::BuildTargetInfo> MesonProjectParser::appsTargets() const
@@ -202,7 +202,7 @@ QList<ProjectExplorer::BuildTargetInfo> MesonProjectParser::appsTargets() const
     });
     return apps;
 }
-void MesonProjectParser::startParser()
+bool MesonProjectParser::startParser()
 {
     m_parserResult = Utils::runAsync(ProjectExplorer::ProjectExplorerPlugin::sharedThreadPool(),
                                      [process = &m_process,
@@ -219,6 +219,7 @@ void MesonProjectParser::startParser()
                                      });
 
     Utils::onFinished(m_parserResult, this, &MesonProjectParser::update);
+    return true;
 }
 
 MesonProjectParser::ParserData *MesonProjectParser::extractParserResults(

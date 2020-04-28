@@ -54,14 +54,14 @@ class MesonProjectParser : public QObject
 public:
     MesonProjectParser(const Core::Id &meson, Utils::Environment env);
     void setMesonTool(const Core::Id &meson);
-    Q_SLOT void configure(const Utils::FilePath &sourcePath,
+    Q_SLOT bool configure(const Utils::FilePath &sourcePath,
                           const Utils::FilePath &buildPath,
                           const QStringList &args);
-    Q_SLOT void setup(const Utils::FilePath &sourcePath,
+    Q_SLOT bool setup(const Utils::FilePath &sourcePath,
                       const Utils::FilePath &buildPath,
                       const QStringList &args);
-    Q_SLOT void parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath);
-    Q_SLOT void parse(const Utils::FilePath &sourcePath);
+    Q_SLOT bool parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath);
+    Q_SLOT bool parse(const Utils::FilePath &sourcePath);
 
     Q_SIGNAL void parsingCompleted(bool success);
 
@@ -95,7 +95,7 @@ public:
     bool usesSameMesonVersion(const Utils::FilePath &buildPath);
 
 private:
-    void startParser();
+    bool startParser();
     static ParserData *extractParserResults(const Utils::FilePath &srcDir, MesonInfoParser &parser);
     static void addMissingTargets(QStringList &targetList);
     void update(const QFuture<ParserData *> &data);
