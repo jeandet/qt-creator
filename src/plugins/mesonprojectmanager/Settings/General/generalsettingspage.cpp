@@ -25,7 +25,6 @@
 
 #include <mesonpluginconstants.h>
 #include "generalsettingspage.h"
-#include <projectexplorer.h>
 #include "generalsettingswidget.h"
 #include "settings.h"
 

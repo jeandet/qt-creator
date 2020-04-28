@@ -29,7 +29,6 @@
 #include <ExeWrappers/mesontools.h>
 #include <Settings/Tools/KitAspect/mesontoolkitaspect.h>
 #include <Settings/Tools/KitAspect/ninjatoolkitaspect.h>
-#include <pluginmanager.h>
 #include <coreplugin/icontext.h>
 #include <projectexplorer/projectexplorerconstants.h>
 #include <projectexplorer/kitinformation.h>

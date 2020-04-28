@@ -30,7 +30,7 @@
 #include <projectexplorer/projecttree.h>
 #include <coreplugin/actionmanager/actioncontainer.h>
 #include <coreplugin/actionmanager/actionmanager.h>
-#include <coreconstants.h>
+#include <coreplugin/coreconstants.h>
 #include <utils/parameteraction.h>
 namespace MesonProjectManager {
 namespace Internal {

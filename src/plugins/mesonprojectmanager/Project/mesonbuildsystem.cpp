@@ -29,7 +29,6 @@
 #include <MachineFiles/machinefilemanager.h>
 #include <Settings/General/settings.h>
 #include <Settings/Tools/KitAspect/mesontoolkitaspect.h>
-#include <pluginmanager.h>
 #include <projectexplorer/buildconfiguration.h>
 #include <QDir>
 #include <QLoggingCategory>

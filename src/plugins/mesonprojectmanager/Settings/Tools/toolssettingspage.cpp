@@ -26,7 +26,6 @@
 #include <mesonpluginconstants.h>
 #include "toolssettingspage.h"
 #include "toolssettingswidget.h"
-#include <projectexplorer.h>
 
 namespace MesonProjectManager {
 namespace Internal {
