@@ -28,7 +28,7 @@
 #include <projectexplorer/abstractprocessstep.h>
 #include <utils/qtcprocess.h>
 #include <QObject>
-#include "ninjaparser.h"
+#include "OutputParsers/ninjaparser.h"
 
 namespace MesonProjectManager {
 namespace Internal {
@@ -44,6 +44,7 @@ public:
     void setCommandArgs(const QString& args);
     const QString& targetName()const{return m_targetName;}
     Q_SIGNAL void targetListChanged();
+    Q_SIGNAL void commandChanged();
     QVariantMap toMap() const override;
     bool fromMap(const QVariantMap &map) override;
 private:

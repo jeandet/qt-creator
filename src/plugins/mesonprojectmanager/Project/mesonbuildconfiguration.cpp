@@ -36,7 +36,7 @@
 #include <QDir>
 
 #include "mesonbuildconfiguration.h"
-#include "mesonbuildsettingswidget.h"
+#include "BuildOptions/mesonbuildsettingswidget.h"
 #include "ninjabuildstep.h"
 #include "mesonbuildsystem.h"
 #include "mesonpluginconstants.h"

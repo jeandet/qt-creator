@@ -57,22 +57,22 @@ add_qtc_plugin(MesonProjectManager
   Project/mesonbuildconfiguration.cpp
   Project/ninjabuildstep.h
   Project/ninjabuildstep.cpp
-  Project/mesonbuildstepconfigwidget.ui
-  Project/mesonbuildstepconfigwidget.h
-  Project/mesonbuildstepconfigwidget.cpp
-  Project/mesonbuildsettingswidget.ui
-  Project/mesonbuildsettingswidget.h
-  Project/mesonbuildsettingswidget.cpp
-  Project/OptionsModel/buidoptionsmodel.h
-  Project/OptionsModel/buidoptionsmodel.cpp
-  Project/OptionsModel/arrayoptionlineedit.cpp
-  Project/OptionsModel/arrayoptionlineedit.h
+  Project/BuildOptions/mesonbuildstepconfigwidget.ui
+  Project/BuildOptions/mesonbuildstepconfigwidget.h
+  Project/BuildOptions/mesonbuildstepconfigwidget.cpp
+  Project/BuildOptions/mesonbuildsettingswidget.ui
+  Project/BuildOptions/mesonbuildsettingswidget.h
+  Project/BuildOptions/mesonbuildsettingswidget.cpp
+  Project/BuildOptions/OptionsModel/buidoptionsmodel.h
+  Project/BuildOptions/OptionsModel/buidoptionsmodel.cpp
+  Project/BuildOptions/OptionsModel/arrayoptionlineedit.cpp
+  Project/BuildOptions/OptionsModel/arrayoptionlineedit.h
   Project/mesonprocess.h
   Project/mesonprocess.cpp
-  Project/mesonoutputparser.h
-  Project/mesonoutputparser.cpp
-  Project/ninjaparser.h
-  Project/ninjaparser.cpp
+  Project/OutputParsers/mesonoutputparser.h
+  Project/OutputParsers/mesonoutputparser.cpp
+  Project/OutputParsers/ninjaparser.h
+  Project/OutputParsers/ninjaparser.cpp
   Project/mesonrunconfiguration.h
   Project/mesonrunconfiguration.cpp
   Project/ProjectTree/projecttree.h
@@ -135,7 +135,7 @@ add_qtc_test(tst_ninjaparser
     Utils ProjectExplorer
   SOURCES
     Tests/testninjaparser.cpp
-    Project/ninjaparser.cpp
+    Project/OutputParsers/ninjaparser.cpp
 )
 
 add_qtc_test(tst_mesonparser
@@ -148,7 +148,7 @@ add_qtc_test(tst_mesonparser
     Utils ProjectExplorer
   SOURCES
     Tests/testmesonparser.cpp
-    Project/mesonoutputparser.cpp
+    Project/OutputParsers/mesonoutputparser.cpp
 )
 
 

@@ -1,4 +1,4 @@
-#include <Project/mesonoutputparser.h>
+#include <Project/OutputParsers/mesonoutputparser.h>
 #include <iostream>
 #include <projectexplorer/taskhub.h>
 #include <utils/fileinprojectfinder.h>

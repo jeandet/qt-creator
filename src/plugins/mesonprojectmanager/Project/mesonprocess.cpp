@@ -24,7 +24,7 @@
 ****************************************************************************/
 
 #include "mesonprocess.h"
-#include "mesonoutputparser.h"
+#include "OutputParsers/mesonoutputparser.h"
 #include <coreplugin/messagemanager.h>
 #include <coreplugin/progressmanager/progressmanager.h>
 #include <projectexplorer/projectexplorerconstants.h>

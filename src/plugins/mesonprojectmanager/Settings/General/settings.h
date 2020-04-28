@@ -36,11 +36,23 @@ void with_group(QSettings *settings, const QString &name, const F &f)
     settings->endGroup();
 };
 
+#define ADD_PROPERTY(name, setter, type) \
+private: \
+    type m_##name; \
+\
+public: \
+    inline static type name() { return instance()->m_##name; } \
+    inline static void setter(type value) \
+    { \
+        instance()->m_##name = value; \
+        emit instance()->name##Changed(value); \
+    } \
+    Q_SIGNAL void name##Changed(type newValue);
+
 class Settings : public QObject
 {
     Q_OBJECT
     explicit Settings(QObject *parent = nullptr);
-    bool m_autorunMeson;
 
 public:
     inline static Settings *instance()
@@ -48,14 +60,17 @@ public:
         static Settings m_settings;
         return &m_settings;
     }
-    inline static bool autorunMeson() { return instance()->m_autorunMeson; }
-    inline static void setAutorunMeson(bool autorun) { instance()->m_autorunMeson = autorun; }
+
+    ADD_PROPERTY(autorunMeson, setAutorunMeson, bool)
+    ADD_PROPERTY(verboseNinja, setVerboseNinja, bool)
+
     static inline void saveAll()
     {
         using namespace Constants;
         auto settings = Core::ICore::settings(QSettings::Scope::UserScope);
         with_group(settings, GeneralSettings::SECTION, [settings]() {
             settings->setValue(GeneralSettings::AUTORUN_MESON_KEY, Settings::autorunMeson());
+            settings->setValue(GeneralSettings::VERBOSE_NINJA_KEY, Settings::verboseNinja());
         });
     }
     static inline void loadAll()
@@ -65,6 +80,8 @@ public:
         with_group(settings, GeneralSettings::SECTION, [settings]() {
             Settings::setAutorunMeson(
                 settings->value(GeneralSettings::AUTORUN_MESON_KEY, true).toBool());
+            Settings::setVerboseNinja(
+                settings->value(GeneralSettings::VERBOSE_NINJA_KEY, true).toBool());
         });
     }
 };

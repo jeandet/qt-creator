@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>GeneralSettingsWidget</class>
- <widget class="QWidget" name="MesonToolConfigWidget">
+ <widget class="QWidget" name="GeneralSettingsWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -24,6 +24,16 @@
         </property>
         <property name="text">
          <string>Autorun Meson</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="verboseNinjaChkBox">
+        <property name="toolTip">
+         <string>Enables verbose mode by default when invoking Ninja.</string>
+        </property>
+        <property name="text">
+         <string>Ninja verbose mode</string>
         </property>
        </widget>
       </item>

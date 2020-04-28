@@ -22,15 +22,15 @@
 ** be met: https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ****************************************************************************/
-#include "coreplugin/find/itemviewfind.h"
-#include "projectexplorer/buildaspects.h"
-#include "projectexplorer/projectconfiguration.h"
-#include "utils/detailswidget.h"
-#include "utils/headerviewstretcher.h"
+#include <coreplugin/find/itemviewfind.h>
+#include <projectexplorer/buildaspects.h>
+#include <projectexplorer/projectconfiguration.h>
+#include <utils/detailswidget.h>
+#include <utils/headerviewstretcher.h>
 
-#include "mesonbuildconfiguration.h"
+#include "../mesonbuildconfiguration.h"
 #include "mesonbuildsettingswidget.h"
-#include "mesonbuildsystem.h"
+#include "../mesonbuildsystem.h"
 #include "ui_mesonbuildsettingswidget.h"
 
 namespace MesonProjectManager {

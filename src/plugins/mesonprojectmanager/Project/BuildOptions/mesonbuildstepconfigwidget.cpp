@@ -47,6 +47,10 @@ MesonBuildStepConfigWidget::MesonBuildStepConfigWidget(NinjaBuildStep *step)
     updateDetails();
     updateTargetList();
     connect(step,
+            &NinjaBuildStep::commandChanged,
+            this,
+            &MesonBuildStepConfigWidget::updateDetails);
+    connect(step,
             &NinjaBuildStep::targetListChanged,
             this,
             &MesonBuildStepConfigWidget::updateTargetList);

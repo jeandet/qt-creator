@@ -60,6 +60,7 @@ const char ID_KEY[] = "uuid";
 namespace GeneralSettings {
     const char SECTION[] = "MesonProjectManager";
     const char AUTORUN_MESON_KEY[] = "meson.autorun";
+    const char VERBOSE_NINJA_KEY[] = "ninja.verbose";
 }
 
 namespace Icons {

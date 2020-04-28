@@ -25,11 +25,12 @@
 
 #include "ninjabuildstep.h"
 #include "mesonbuildconfiguration.h"
-#include "mesonbuildstepconfigwidget.h"
+#include "BuildOptions/mesonbuildstepconfigwidget.h"
 #include "mesonbuildsystem.h"
 #include "mesonpluginconstants.h"
-#include "mesonoutputparser.h"
+#include "OutputParsers/mesonoutputparser.h"
 #include <Settings/Tools/KitAspect/ninjatoolkitaspect.h>
+#include <Settings/General/settings.h>
 #include <coreplugin/id.h>
 #include <projectexplorer/buildconfiguration.h>
 #include <projectexplorer/buildsteplist.h>
@@ -50,6 +51,7 @@ NinjaBuildStep::NinjaBuildStep(ProjectExplorer::BuildStepList *bsl, Core::Id id)
         setBuildTarget(defaultBuildTarget());
     setLowPriority();
     connect(target(), &ProjectExplorer::Target::parsingFinished, this, &NinjaBuildStep::update);
+    connect(Settings::instance(),&Settings::verboseNinjaChanged,this,&NinjaBuildStep::commandChanged);
 }
 
 ProjectExplorer::BuildStepConfigWidget *NinjaBuildStep::createConfigWidget()
@@ -67,6 +69,8 @@ Utils::CommandLine NinjaBuildStep::command()
     }();
     if (!m_commandArgs.isEmpty())
         cmd.addArgs(m_commandArgs, Utils::CommandLine::RawType::Raw);
+    if(Settings::verboseNinja())
+        cmd.addArg("--verbose");
     cmd.addArg(m_targetName);
     return cmd;
 }

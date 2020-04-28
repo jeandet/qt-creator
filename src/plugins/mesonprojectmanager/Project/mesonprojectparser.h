@@ -25,7 +25,7 @@
 #pragma once
 #include "ProjectTree/mesonprojectnodes.h"
 #include "mesonprocess.h"
-#include "mesonoutputparser.h"
+#include "OutputParsers/mesonoutputparser.h"
 #include <KitHelper/kitdata.h>
 #include <MesonInfoParser/mesoninfoparser.h>
 #include <ExeWrappers/mesonwrapper.h>

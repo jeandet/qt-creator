@@ -1,4 +1,4 @@
-#include <Project/ninjaparser.h>
+#include <Project/OutputParsers/ninjaparser.h>
 #include <iostream>
 #include <QDir>
 #include <QObject>

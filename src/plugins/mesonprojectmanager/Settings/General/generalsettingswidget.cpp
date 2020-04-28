@@ -35,6 +35,7 @@ GeneralSettingsWidget::GeneralSettingsWidget()
 {
     ui->setupUi(this);
     ui->autorunChkBox->setChecked(Settings::autorunMeson());
+    ui->verboseNinjaChkBox->setChecked(Settings::verboseNinja());
 }
 
 GeneralSettingsWidget::~GeneralSettingsWidget()
@@ -45,6 +46,7 @@ GeneralSettingsWidget::~GeneralSettingsWidget()
 void GeneralSettingsWidget::apply()
 {
     Settings::setAutorunMeson(ui->autorunChkBox->isChecked());
+    Settings::setVerboseNinja(ui->verboseNinjaChkBox->isChecked());
 }
 } // namespace Internal
 } // namespace MesonProjectManager

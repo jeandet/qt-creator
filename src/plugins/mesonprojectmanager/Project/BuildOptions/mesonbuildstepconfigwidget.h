@@ -26,7 +26,7 @@
 #include <QWidget>
 #include <QListWidget>
 #include "projectexplorer/buildstep.h"
-#include "ninjabuildstep.h"
+#include "../ninjabuildstep.h"
 
 namespace Ui {
 class MesonBuildStepConfigWidget;
