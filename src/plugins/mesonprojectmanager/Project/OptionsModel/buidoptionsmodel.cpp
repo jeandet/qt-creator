@@ -24,13 +24,13 @@
 ****************************************************************************/
 
 #include "buidoptionsmodel.h"
+#include "arrayoptionlineedit.h"
 #include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
-#include <QTextEdit>
 #include <QMap>
 #include <QStyledItemDelegate>
-#include "arrayoptionlineedit.h"
+#include <QTextEdit>
 
 namespace MesonProjectManager {
 namespace Internal {
@@ -115,6 +115,14 @@ void BuidOptionsModel::setConfiguration(const BuildOptionsList &options)
     }
 }
 
+bool BuidOptionsModel::setData(const QModelIndex &idx, const QVariant &data, int role)
+{
+    auto result = Utils::TreeModel<>::setData(idx, data, role);
+    if(hasChanges())
+        emit configurationChanged();
+    return result;
+}
+
 QStringList BuidOptionsModel::changesAsMesonArgs()
 {
     QStringList args;
@@ -126,6 +134,16 @@ QStringList BuidOptionsModel::changesAsMesonArgs()
                       }
                   });
     return args;
+}
+
+bool BuidOptionsModel::hasChanges() const
+{
+    for(const auto& option:m_options)
+    {
+        if(option->hasChanged())
+            return true;
+    }
+    return false;
 }
 
 QWidget *BuildOptionDelegate::makeWidget(QWidget *parent, const QVariant &data)
@@ -192,7 +210,9 @@ QWidget *BuildOptionDelegate::createEditor(QWidget *parent,
     return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
-void BuildOptionDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+void BuildOptionDelegate::setModelData(QWidget *editor,
+                                       QAbstractItemModel *model,
+                                       const QModelIndex &index) const
 {
     ArrayOptionLineEdit *arrayWidget = qobject_cast<ArrayOptionLineEdit *>(editor);
     if (arrayWidget) {

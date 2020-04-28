@@ -148,16 +148,21 @@ bool MesonProjectParser::configure(const Utils::FilePath &sourcePath,
     return m_process.run(cmd, m_env);
 }
 
+bool MesonProjectParser::wipe(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath, const QStringList &args)
+{
+    return setup(sourcePath,buildPath,args,true);
+}
+
 bool MesonProjectParser::setup(const Utils::FilePath &sourcePath,
                                const Utils::FilePath &buildPath,
-                               const QStringList &args)
+                               const QStringList &args, bool forceWipe)
 {
     m_introType = IntroDataType::file;
     m_srcDir = sourcePath;
     m_buildDir = buildPath;
     m_outputParser.setSourceDirectory(sourcePath);
     auto cmdArgs = args;
-    if (isSetup(buildPath))
+    if (forceWipe || isSetup(buildPath))
         cmdArgs << "--wipe";
     auto cmd = MesonTools::tool<MesonWrapper>(m_meson)->setup(sourcePath, buildPath, cmdArgs);
     qCDebug(mesonParserLog) << "Starting:" << cmd.exe << cmd.arguments.join(' ');

@@ -63,7 +63,9 @@ MesonBuildSettingsWidget::MesonBuildSettingsWidget(MesonBuildConfiguration *buil
     m_showProgressTimer.setSingleShot(true);
     m_showProgressTimer.setInterval(50); // don't show progress for < 50ms tasks
     connect(&m_showProgressTimer, &QTimer::timeout, [this]() { m_progressIndicator.show(); });
-
+    connect(&m_optionsModel, &BuidOptionsModel::configurationChanged, this, [this]() {
+        ui->configureButton->setEnabled(true);
+    });
     m_optionsFilter.setSourceModel(&m_optionsModel);
     m_optionsFilter.setSortRole(Qt::DisplayRole);
     m_optionsFilter.setFilterKeyColumn(-1);
@@ -73,33 +75,32 @@ MesonBuildSettingsWidget::MesonBuildSettingsWidget(MesonBuildConfiguration *buil
 
     ui->optionsTreeView->setItemDelegate(new BuildOptionDelegate{ui->optionsTreeView});
     MesonBuildSystem *bs = static_cast<MesonBuildSystem *>(buildCfg->buildSystem());
-    connect(buildCfg->target(), &ProjectExplorer::Target::parsingFinished, this,[this, bs](bool success) {
-        if (success) {
-            m_optionsModel.setConfiguration(bs->buildOptions());
-        }
-        else {
-            m_optionsModel.clear();
-        }
-        ui->optionsTreeView->expandAll();
-        ui->optionsTreeView->resizeColumnToContents(0);
-        ui->optionsTreeView->setEnabled(true);
-        ui->configureButton->setEnabled(true);
-        m_showProgressTimer.stop();
-        m_progressIndicator.hide();
-        });
+    connect(buildCfg->target(),
+            &ProjectExplorer::Target::parsingFinished,
+            this,
+            [this, bs](bool success) {
+                if (success) {
+                    m_optionsModel.setConfiguration(bs->buildOptions());
+                } else {
+                    m_optionsModel.clear();
+                }
+                ui->optionsTreeView->expandAll();
+                ui->optionsTreeView->resizeColumnToContents(0);
+                ui->optionsTreeView->setEnabled(true);
+                m_showProgressTimer.stop();
+                m_progressIndicator.hide();
+            });
 
-    connect(bs, &MesonBuildSystem::parsingStarted, this,[this]() {
+    connect(bs, &MesonBuildSystem::parsingStarted, this, [this]() {
         if (!m_showProgressTimer.isActive()) {
             ui->optionsTreeView->setEnabled(false);
-            ui->configureButton->setEnabled(false);
             m_showProgressTimer.start();
         }
     });
 
-    connect(&m_optionsModel,&BuidOptionsModel::dataChanged,this, [bs,this]()
-            {
-                bs->setMesonConfigArgs(this->m_optionsModel.changesAsMesonArgs());
-            });
+    connect(&m_optionsModel, &BuidOptionsModel::dataChanged, this, [bs, this]() {
+        bs->setMesonConfigArgs(this->m_optionsModel.changesAsMesonArgs());
+    });
 
     connect(&m_optionsFilter, &QAbstractItemModel::modelReset, this, [this]() {
         ui->optionsTreeView->expandAll();
@@ -113,11 +114,17 @@ MesonBuildSettingsWidget::MesonBuildSettingsWidget(MesonBuildConfiguration *buil
             &Utils::TreeView::activated,
             ui->optionsTreeView,
             [tree = ui->optionsTreeView](const QModelIndex &idx) { tree->edit(idx); });
-    connect(ui->configureButton, &QPushButton::clicked, [bs, buildCfg, this]() {
+    connect(ui->configureButton, &QPushButton::clicked, [bs, this]() {
         ui->optionsTreeView->setEnabled(false);
         ui->configureButton->setEnabled(false);
         m_showProgressTimer.start();
         bs->configure();
+    });
+    connect(ui->wipeButton, &QPushButton::clicked, [bs, this]() {
+        ui->optionsTreeView->setEnabled(false);
+        ui->configureButton->setEnabled(false);
+        m_showProgressTimer.start();
+        bs->wipe();
     });
     bs->triggerParsing();
 }

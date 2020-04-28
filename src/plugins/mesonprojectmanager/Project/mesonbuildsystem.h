@@ -50,6 +50,7 @@ public:
 
     bool configure();
     bool setup();
+    bool wipe();
 
     MesonBuildConfiguration* mesonBuildConfiguration();
 

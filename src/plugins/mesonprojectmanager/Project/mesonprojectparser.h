@@ -57,9 +57,12 @@ public:
     Q_SLOT bool configure(const Utils::FilePath &sourcePath,
                           const Utils::FilePath &buildPath,
                           const QStringList &args);
+    Q_SLOT bool wipe(const Utils::FilePath &sourcePath,
+                          const Utils::FilePath &buildPath,
+                          const QStringList &args);
     Q_SLOT bool setup(const Utils::FilePath &sourcePath,
                       const Utils::FilePath &buildPath,
-                      const QStringList &args);
+                      const QStringList &args, bool forceWipe=false);
     Q_SLOT bool parse(const Utils::FilePath &sourcePath, const Utils::FilePath &buildPath);
     Q_SLOT bool parse(const Utils::FilePath &sourcePath);
 

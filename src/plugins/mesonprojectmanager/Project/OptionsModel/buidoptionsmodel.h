@@ -93,10 +93,14 @@ public:
     explicit BuidOptionsModel(QObject *parent = nullptr);
 
     void setConfiguration(const BuildOptionsList &options);
+    bool setData(const QModelIndex &idx, const QVariant &data, int role) override;
 
     QStringList changesAsMesonArgs();
 
+    Q_SIGNAL void configurationChanged();
+
 private:
+    bool hasChanges()const;
     CancellableOptionsList m_options;
 };
 

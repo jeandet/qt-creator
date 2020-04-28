@@ -146,6 +146,17 @@ bool MesonBuildSystem::setup()
     return false;
 }
 
+bool MesonBuildSystem::wipe()
+{
+    LEAVE_IF_BUSY();
+    LOCK();
+    qCDebug(mesonBuildSystemLog) << "Wipe";
+    if (m_parser.wipe(projectDirectory(), buildConfiguration()->buildDirectory(), configArgs(true)))
+        return true;
+    UNLOCK(false);
+    return false;
+}
+
 MesonBuildConfiguration *MesonBuildSystem::mesonBuildConfiguration()
 {
     return static_cast<MesonBuildConfiguration *>(buildConfiguration());
