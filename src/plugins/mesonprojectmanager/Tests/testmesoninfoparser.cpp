@@ -63,23 +63,21 @@ private slots:
         QFETCH(QString, src_dir);
         QFETCH(QStringList, expectedTargets);
         WITH_CONFIGURED_PROJECT(src_dir, build_dir, {
-            MesonInfoParser parser{build_dir.path()};
+            auto result = MesonInfoParser::parse(build_dir.path());
             QStringList targetsNames;
-            const auto targets = parser.targets();
-            std::transform(std::cbegin(targets),
-                           std::cend(targets),
+            std::transform(std::cbegin(result.targets),
+                           std::cend(result.targets),
                            std::back_inserter(targetsNames),
                            [](const auto &target) { return target.name; });
             QVERIFY(targetsNames == expectedTargets);
         })
 
         WITH_UNCONFIGURED_PROJECT(
-            src_dir, introFile, MesonInfoParser parser{&introFile}; {
+            src_dir, introFile,  {
+                auto result = MesonInfoParser::parse(&introFile);
                 QStringList targetsNames;
-                const auto targets = parser.targets();
-                volatile auto options = parser.buildOptions();
-                std::transform(std::cbegin(targets),
-                               std::cend(targets),
+                std::transform(std::cbegin(result.targets),
+                               std::cend(result.targets),
                                std::back_inserter(targetsNames),
                                [](const auto &target) { return target.name; });
                 QVERIFY(targetsNames == expectedTargets);

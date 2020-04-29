@@ -41,7 +41,7 @@ class MesonProcess final: public QObject
     Q_OBJECT
 public:
     MesonProcess();
-    bool run(const Command& command, const Utils::Environment env,bool captureStdo= false);
+    bool run(const Command& command, const Utils::Environment env, const QString& projectName,bool captureStdo= false);
 
     QProcess::ProcessState state() const;
 

@@ -46,13 +46,12 @@ class MesonProjectParser : public QObject
     enum class IntroDataType { file, stdo };
     struct ParserData
     {
-        TargetsList targets;
-        BuildOptionsList buildOptions;
+        MesonInfoParser::Result data;
         std::unique_ptr<MesonProjectNode> rootNode;
     };
 
 public:
-    MesonProjectParser(const Core::Id &meson, Utils::Environment env);
+    MesonProjectParser(const Core::Id &meson, Utils::Environment env, const QString& projectName);
     void setMesonTool(const Core::Id &meson);
     Q_SLOT bool configure(const Utils::FilePath &sourcePath,
                           const Utils::FilePath &buildPath,
@@ -70,8 +69,8 @@ public:
 
     std::unique_ptr<MesonProjectNode> takeProjectNode() { return std::move(m_rootNode); }
 
-    inline const BuildOptionsList &buildOptions() const { return m_buildOptions; };
-    inline const TargetsList &targets() const { return m_targets; }
+    inline const BuildOptionsList &buildOptions() const { return m_parserResult.buildOptions; };
+    inline const TargetsList &targets() const { return m_parserResult.targets; }
     inline const QStringList &targetsNames() const { return m_targetsNames; }
 
     static inline QStringList additionalTargets()
@@ -99,7 +98,7 @@ public:
 
 private:
     bool startParser();
-    static ParserData *extractParserResults(const Utils::FilePath &srcDir, MesonInfoParser &parser);
+    static ParserData *extractParserResults(const Utils::FilePath &srcDir, MesonInfoParser::Result &&parserResult);
     static void addMissingTargets(QStringList &targetList);
     void update(const QFuture<ParserData *> &data);
     ProjectExplorer::RawProjectPart buildRawPart(const Target &target,
@@ -112,14 +111,14 @@ private:
     Core::Id m_meson;
     Utils::FilePath m_buildDir;
     Utils::FilePath m_srcDir;
-    QFuture<ParserData *> m_parserResult;
+    QFuture<ParserData *> m_parserFutureResult;
     bool m_configuring;
     IntroDataType m_introType;
-    BuildOptionsList m_buildOptions; // <- Project build settings
-    TargetsList m_targets;
+    MesonInfoParser::Result m_parserResult;
     QStringList m_targetsNames;
     Utils::QtVersion m_qtVersion;
     std::unique_ptr<MesonProjectNode> m_rootNode; // <- project tree root node
+    QString m_projectName;
 };
 } // namespace Internal
 } // namespace MesonProjectManager

@@ -23,20 +23,13 @@
 **
 ****************************************************************************/
 #pragma once
-#include "mesonprojectnodes.h"
-#include "MesonInfoParser/mesoninfoparser.h"
-#include <utils/fileutils.h>
+#include <versionhelper.h>
 namespace MesonProjectManager {
 namespace Internal {
-class ProjectTree
+struct MesonInfo
 {
-public:
-    ProjectTree();
-    static std::unique_ptr<MesonProjectNode> buildTree(const Utils::FilePath& srcDir,
-                                                       const TargetsList& targets,
-                                                       const std::vector<Utils::FilePath>& bsFiles
-                                                       );
+    Version mesonVersion;
 };
-
 } // namespace Internal
-} // nam
+} // namespace MesonProjectManager
+

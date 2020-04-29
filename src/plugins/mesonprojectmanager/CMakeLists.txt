@@ -42,7 +42,14 @@ add_qtc_plugin(MesonProjectManager
   ExeWrappers/toolwrapper.cpp
   ExeWrappers/mesontools.h
   MesonInfoParser/mesoninfoparser.h
-  MesonInfoParser/mesoninfoparser.cpp
+  MesonInfoParser/buildoptions.h
+  MesonInfoParser/target.h
+  MesonInfoParser/mesoninfo.h
+  MesonInfoParser/parsers/common.h
+  MesonInfoParser/parsers/buildoptionsparser.h
+  MesonInfoParser/parsers/buildsystemfilesparser.h
+  MesonInfoParser/parsers/infoparser.h
+  MesonInfoParser/parsers/targetparser.h
   KitHelper/kitdata.h
   KitHelper/kithelper.h
   Project/mesonproject.h
@@ -124,7 +131,6 @@ add_qtc_test(tst_mesoninfoparser
     ExeWrappers/toolwrapper.cpp
     ExeWrappers/mesontools.h
     MesonInfoParser/mesoninfoparser.h
-    MesonInfoParser/mesoninfoparser.cpp
 )
 
 add_qtc_test(tst_ninjaparser

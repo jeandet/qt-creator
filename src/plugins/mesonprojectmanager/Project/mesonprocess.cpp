@@ -39,19 +39,19 @@ MesonProcess::MesonProcess()
     m_cancelTimer.setInterval(500);
 }
 
-bool MesonProcess::run(const Command &command, const Utils::Environment env, bool captureStdo)
+bool MesonProcess::run(const Command &command, const Utils::Environment env, const QString &projectName, bool captureStdo)
 {
-    if(!sanityCheck(command))
+    if (!sanityCheck(command))
         return false;
     m_currentCommand = command;
     m_stdo.clear();
     m_processWasCanceled = false;
     m_future = decltype(m_future){};
-    setupProcess(command, env, captureStdo);
     ProjectExplorer::TaskHub::clearTasks(ProjectExplorer::Constants::TASK_CATEGORY_BUILDSYSTEM);
+    setupProcess(command, env, captureStdo);
     m_future.setProgressRange(0, 1);
     Core::ProgressManager::addTimedTask(m_future,
-                                        tr("Configuring \"%1\"").arg("TODO Set project Name"),
+                                        tr("Configuring \"%1\"").arg(projectName),
                                         "Meson.Configure",
                                         10);
     emit started();
@@ -164,22 +164,26 @@ void MesonProcess::setupProcess(const Command &command,
     m_process->setWorkingDirectory(command.workDir.toString());
     m_process->setEnvironment(env);
     Utils::CommandLine commandLine{command.exe, command.arguments};
+    Core::MessageManager::write(
+        tr("Running %1 in %2.").arg(commandLine.toUserOutput()).arg(command.workDir.toUserOutput()));
     m_process->setCommand(commandLine);
 }
 
 bool MesonProcess::sanityCheck(const Command &command) const
 {
-    if(!command.exe.exists())
-    {
+    if (!command.exe.exists()) {
         //Should only reach this point if Meson exe is removed while a Meson project is opened
         ProjectExplorer::TaskHub::addTask(
-            ProjectExplorer::BuildSystemTask{ProjectExplorer::Task::TaskType::Error,tr("Following executable doens't exist: %1").arg(command.exe.toString())});
+            ProjectExplorer::BuildSystemTask{ProjectExplorer::Task::TaskType::Error,
+                                             tr("Following executable doens't exist: %1")
+                                                 .arg(command.exe.toString())});
         return false;
     }
-    if(!command.exe.toFileInfo().isExecutable())
-    {
+    if (!command.exe.toFileInfo().isExecutable()) {
         ProjectExplorer::TaskHub::addTask(
-            ProjectExplorer::BuildSystemTask{ProjectExplorer::Task::TaskType::Error,tr("Following command is not executable: %1").arg(command.exe.toString())});
+            ProjectExplorer::BuildSystemTask{ProjectExplorer::Task::TaskType::Error,
+                                             tr("Following command is not executable: %1")
+                                                 .arg(command.exe.toString())});
         return false;
     }
     return true;

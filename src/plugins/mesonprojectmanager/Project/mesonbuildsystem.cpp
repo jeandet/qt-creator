@@ -30,6 +30,7 @@
 #include <Settings/General/settings.h>
 #include <Settings/Tools/KitAspect/mesontoolkitaspect.h>
 #include <projectexplorer/buildconfiguration.h>
+
 #include <QDir>
 #include <QLoggingCategory>
 #include <qtsupport/qtcppkitinfo.h>
@@ -58,7 +59,7 @@ static Q_LOGGING_CATEGORY(mesonBuildSystemLog, "qtc.meson.buildsystem", QtDebugM
 
 MesonBuildSystem::MesonBuildSystem(MesonBuildConfiguration *bc)
     : ProjectExplorer::BuildSystem{bc}
-    , m_parser{MesonToolKitAspect::mesonToolId(bc->target()->kit()), bc->environment()}
+    , m_parser{MesonToolKitAspect::mesonToolId(bc->target()->kit()), bc->environment(),project()->displayName()}
 {
     init();
 }
@@ -177,10 +178,11 @@ void MesonBuildSystem::init()
     connect(mesonBuildConfiguration(), &MesonBuildConfiguration::environmentChanged, this, [this]() {
         m_parser.setEnvironment(buildConfiguration()->environment());
     });
-    connect(project(),
-            &ProjectExplorer::Project::projectFileIsDirty,
-            this,
-            &MesonBuildSystem::parseProject);
+
+    connect(project(), &ProjectExplorer::Project::projectFileIsDirty, this, [this]() {
+        if (buildConfiguration()->isActive())
+            parseProject();
+    });
     connect(&m_parser,
             &MesonProjectParser::parsingCompleted,
             this,
@@ -190,13 +192,13 @@ void MesonBuildSystem::init()
 
 bool MesonBuildSystem::parseProject()
 {
-    QTC_ASSERT(buildConfiguration(), return false );
+    QTC_ASSERT(buildConfiguration(), return false);
     if (!isSetup(buildConfiguration()->buildDirectory()) && Settings::autorunMeson())
         return configure();
     LEAVE_IF_BUSY();
     LOCK();
     qCDebug(mesonBuildSystemLog) << "Starting parser";
-    if(m_parser.parse(projectDirectory(), buildConfiguration()->buildDirectory()))
+    if (m_parser.parse(projectDirectory(), buildConfiguration()->buildDirectory()))
         return true;
     UNLOCK(false);
     return false;

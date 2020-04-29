@@ -58,34 +58,31 @@ void addTargetNode(std::unique_ptr<MesonProjectNode> &root, const Target &target
     });
 }
 
+void addOptionsFile(std::unique_ptr<MesonProjectNode>& project)
+{
+    auto meson_options = project->filePath().pathAppended("meson_options.txt");
+    if (meson_options.exists())
+        project->addNestedNode(std::make_unique<ProjectExplorer::FileNode>(meson_options, ProjectExplorer::FileType::Project));
+}
+
 std::unique_ptr<MesonProjectNode> ProjectTree::buildTree(const Utils::FilePath &srcDir,
-                                                         const TargetsList &targets)
+                                                         const TargetsList &targets, const std::vector<Utils::FilePath> &bsFiles)
 {
     using namespace ProjectExplorer;
-    std::set<Utils::FilePath> mesonFiles;
     std::set<Utils::FilePath> targetPaths;
     auto root = std::make_unique<MesonProjectNode>(srcDir);
     std::for_each(std::cbegin(targets),
                   std::cend(targets),
-                  [&root, &mesonFiles, &targetPaths](const Target &target) {
+                  [&root, &targetPaths](const Target &target) {
                       buildTargetTree(root, target);
-                      mesonFiles.insert(Utils::FilePath::fromString(target.definedIn));
                       targetPaths.insert(
                           Utils::FilePath::fromString(target.definedIn).absolutePath());
                       addTargetNode(root, target);
                   });
-    {
-        std::for_each(std::cbegin(mesonFiles),
-                      std::cend(mesonFiles),
-                      [&root](const Utils::FilePath &file) {
-                          root->addNestedNode(std::make_unique<FileNode>(file, FileType::Project));
-                      });
-    }
-    {
-        auto meson_options = root->filePath().pathAppended("meson_options.txt");
-        if (meson_options.exists())
-            root->addNestedNode(std::make_unique<FileNode>(meson_options, FileType::Project));
-    }
+    std::for_each(std::cbegin(bsFiles),std::cend(bsFiles),[&root](const auto& file)
+                  {
+                      root->addNestedNode(std::make_unique<ProjectExplorer::FileNode>(file, ProjectExplorer::FileType::Project));
+                  } );
     return root;
 }
 } // namespace Internal
