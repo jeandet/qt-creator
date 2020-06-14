@@ -7,6 +7,7 @@ env:
   CLANG_VERSION: 80
   CMAKE_VERSION: 3.17.0
   NINJA_VERSION: 1.10.0
+  MESON_VERSION: 0.54.2
   BUILD_TYPE: Release
   CCACHE_VERSION: 3.7.7
   GOOGLETEST_VERSION: 1.10.0
@@ -45,6 +46,13 @@ jobs:
     - uses: actions/checkout@v2
     - name: Checkout submodules
       run: git submodule update --init src/plugins/help/qlitehtml/litehtml
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v2
+      with:
+         # Semantic version range syntax or exact version of a Python version
+         python-version: '3.8'
+         # Optional - x64 or x86 architecture, defaults to x64
+         architecture: 'x64'
 
     - name: Download Ninja and CMake
       id: cmake_and_ninja
@@ -85,6 +93,12 @@ jobs:
             COMMAND chmod +x ${cmake_dir}/cmake
           )
         endif()
+
+    - name: Install Meson
+      id: meson
+      shell: cmake -P {0}
+      run: |
+        execute_process(COMMAND pip3 install meson==$ENV{MESON_VERSION})
 
     - name: Download Qt
       id: qt
@@ -394,6 +408,10 @@ jobs:
         ProcessorCount(N)
 
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
+
+        if ("${{ runner.os }}" STREQUAL "Linux")
+            set(ENV{QT_QPA_PLATFORM} "offscreen")
+        endif()
 
         execute_process(
           COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/ctest -j ${N}
