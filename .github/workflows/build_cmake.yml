@@ -98,7 +98,11 @@ jobs:
       id: meson
       shell: cmake -P {0}
       run: |
-        execute_process(COMMAND pip3 install meson==$ENV{MESON_VERSION})
+        if ("${{ runner.os }}" STREQUAL "Windows")
+          execute_process(COMMAND pip3 install meson==$ENV{MESON_VERSION})
+        elseif ("${{ runner.os }}" STREQUAL "Linux")
+          execute_process(COMMAND pip3 install meson==$ENV{MESON_VERSION})
+        endif()
 
     - name: Download Qt
       id: qt
