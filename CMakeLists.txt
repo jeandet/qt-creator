@@ -75,6 +75,7 @@ endif()
 install(TARGETS OptionalSvg EXPORT QtCreator)
 
 find_package(Clang COMPONENTS libclang QUIET)
+include(ClangComponents)
 # silence a lot of warnings from building against llvm
 # this would better fit inside a central libclang detection/include cmake file, but since we do not
 # have one put it temporary here
